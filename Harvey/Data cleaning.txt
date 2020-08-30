@@ -1,0 +1,5 @@
+- Initial "datadump"'s Column D is empty and cant be created in Postgre, entire column is deleted instead, similar to any other columns at the back.
+- "Last Move Date" variable in different datestyle compared to the other date variables
+- "Last Move Date" variable created as VARCHAR(50) type instead of date type.
+- "Book date" variable has multiple invalid values, those values are cleared and empty now.
+- "Security Line 1" variable has non UTF-8 encoding existing in multiple lines, those are values are cleaned with Notepad++ and re written with same values
