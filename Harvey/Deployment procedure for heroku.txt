@@ -18,7 +18,7 @@ heroku login
 heroku create fyp-testrun --buildpack heroku/python
 
 #if heroku app created, use this instead.
-heroku git:remote -a fyp-testrun 
+heroku git:remote -a fyp-app-deployment 
 
 https://fyp-testrun.herokuapp.com/
 

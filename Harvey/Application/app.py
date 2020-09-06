@@ -20,7 +20,9 @@ app.debug = True
 
 df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/hello-world-stock.csv')
 
-server.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/Citibank.FYP'
+#server.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/Citibank.FYP'
+#input in virtual environment<SET DATABASE_URL=postgresql://postgres:postgres@localhost:5432/Citibank.FYP>
+server.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 server.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(server)
 
