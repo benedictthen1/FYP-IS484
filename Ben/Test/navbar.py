@@ -18,11 +18,11 @@ html_layout = '''
             <ul class="navbar-nav mr-auto">
               
               <li class="nav-item active">
-                <a class="nav-link" href="{{url_for('home')}}">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="/dash1">Home <span class="sr-only">(current)</span></a>
               </li>
 
               <li class="nav-item">
-                <a class="nav-link" href="/dash1">Stocks</a>
+                <a class="nav-link" href="/dash2">Stocks</a>
               </li>
               
               <li class="nav-item">
