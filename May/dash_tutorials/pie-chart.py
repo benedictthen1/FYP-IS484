@@ -8,7 +8,7 @@ import pandas as pd
 import pandas_datareader.data as web
 import datetime
 
-df = pd.read_csv('TestData.csv')
+df = pd.read_csv('../TestData.csv')
 #print(df.head())
 
 #print(df["Client Name"].unique())

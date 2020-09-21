@@ -6,9 +6,9 @@ from dash.dependencies import Input, Output
 
 app = Flask(__name__, instance_relative_config=False)
 
-@app.route("/method2")
+@app.route("/flask1")
 def hello():
-    return "method2"
+    return "This is flask server with path \"flask1\""
 
 dash_app = dash.Dash(__name__, server=app, routes_pathname_prefix="/dash1/")
 
