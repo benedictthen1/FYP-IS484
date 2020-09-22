@@ -1,5 +1,6 @@
 import dash
 from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
@@ -16,7 +17,7 @@ df = pd.read_csv('../TestData.csv')
 
 client_names = df["Client Name"].unique()
 
-app = dash.Dash()
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 ##### TO-DO List #####
 # Select All/Clear All button for Base Numbers
@@ -25,28 +26,47 @@ app = dash.Dash()
 # Time Series chart for Total Assets & Liabilities over time
 # Cash Interest Rates + Loan Rates
 
-app.layout = html.Div(children=[
-    html.Div(children='''
-    Client's Name:
-    '''),
-    dcc.Dropdown(
-        id='client_name_dropdown',
-        options=[
-            {'label': name, 'value': name} for name in client_names
-        ],
-        value=client_names[0]
-    ),
-    html.Div(children='''
-    Client's Base Numbers:
-    '''),
-    dcc.Checklist(
-        id='base_numbers_checklist',labelStyle={'display': 'inline-block'}
-    ),
-    dcc.Graph(id='asset_class_barchart'),
-    dcc.Graph(id='asset_class_piechart'),
-    dcc.Graph(id='asset_class_sunburst'),
-    dcc.Graph(id='cash_loans_table'),
-    dcc.Graph(id='cash_loans_barchart'),
+app.layout = html.Div([
+    dbc.Row([dbc.Col([html.H3("Client's Name:")],
+                    width={'size':3,'offset':1},
+                    ),
+            dbc.Col([html.H3("Client's Base Numbers:")],
+                    width={'size':8},
+                    ),      
+            ]),
+    dbc.Row([dbc.Col([dcc.Dropdown(
+                        id='client_name_dropdown',
+                        options=[
+                            {'label': name, 'value': name} for name in client_names
+                        ],
+                        value=client_names[0]
+                        )],
+                    width={'size':3,'offset':1},
+                    ),
+            dbc.Col([dcc.Checklist(
+                        id='base_numbers_checklist',labelStyle={'display': 'inline-block'}
+                        )],
+                    width={'size':8},
+                    ),
+            ]),
+    dbc.Row([dbc.Col([dcc.Graph(id='asset_class_barchart')],
+                    style={'height': '500px'}
+                    ),
+            ]),
+    dbc.Row([dbc.Col([dcc.Graph(id='asset_class_piechart')],
+                    width={'size':6},
+                    ),
+            dbc.Col([dcc.Graph(id='asset_class_sunburst')],
+                    width={'size':6},
+                    ),
+            ]),
+    dbc.Row([dbc.Col([dcc.Graph(id='cash_loans_table')],
+                    width={'size':5},
+                    ),
+            dbc.Col([dcc.Graph(id='cash_loans_barchart')],
+                    width={'size':7},
+                    ),
+            ])
     ])
 
 @app.callback(
@@ -88,7 +108,8 @@ def asset_class_barchart(client_name,selected_base_numbers):
            },
             ],
         'layout': {
-            'title': 'Pay Rate for {}'.format(client_name)
+            'title': 'Pay Rate for {}'.format(client_name),
+            'height': 500
         }
     }
     
