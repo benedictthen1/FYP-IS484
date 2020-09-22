@@ -13,19 +13,16 @@ import pandas_datareader.data as web
 import datetime
 
 df = pd.read_csv('../TestData.csv')
-#print(df.head())
 
-#print(df["Client Name"].unique())
 client_names = df["Client Name"].unique()
-# data = df.loc[df["Client Name"] == 'ER250686760']
-# #print(data)
-# group_by_asset_class = data\
-#     .groupby(['Asset Class'], as_index=False)\
-#     .agg({'Nominal Amount (USD)':'sum'})
-
-# print(group_by_asset_class)
 
 app = dash.Dash()
+
+##### TO-DO List #####
+# Select All/Clear All button for Base Numbers
+# Banners for Total Assets/Liab, 1 month return, quarter return, annual return,
+# Banners for risk profile
+# Time Series chart for Total Assets & Liabilities over time
 
 app.layout = html.Div(children=[
     html.Div(children='''
@@ -137,19 +134,24 @@ def cash_loans_table(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     client_data = client_data[client_data["Asset Class"].isin(asset_classes)]
     client_data["Asset Class"].replace({"Investment Cash & Short Term Investments": "Cash"}, inplace=True)
+    
     group_by_asset_class = client_data\
     .groupby(['CCY','Asset Class'], as_index=False)\
     .agg({'Nominal Amount (USD)':'sum'})
+
     transformed_group_by_asset_class = \
     group_by_asset_class.pivot(index='CCY', columns='Asset Class', values='Nominal Amount (USD)')\
     .reset_index().fillna(0)
+
+    if 'Loans' not in transformed_group_by_asset_class.columns:
+        transformed_group_by_asset_class["Loans"] = 0
 
     total_loans = transformed_group_by_asset_class.Loans.sum()
     total_cash = transformed_group_by_asset_class.Cash.sum()
     transformed_group_by_asset_class = transformed_group_by_asset_class.append({'CCY' : '<b>TOTAL</b>' , 'Cash' : f'<b>{total_cash}</b>', 'Loans' : f'<b>{total_loans}</b>'} , ignore_index=True)
 
     fig = go.Figure(data=[go.Table(
-                header=dict(values=["Currency","Cash (USD)","Loans (USD)"],
+                header=dict(values=["<b>Currency</b>","<b>Cash (USD)</b>","<b>Loans (USD)</b>"],
                             fill_color='paleturquoise',
                             align='left'),
                 cells=dict(values=[transformed_group_by_asset_class.CCY, \
@@ -174,7 +176,9 @@ def cash_loans_barchart(selected_base_numbers):
     .groupby(['Asset Class','CCY'], as_index=False)\
     .agg({'Nominal Amount (USD)':'sum'})
 
-    fig = px.bar(group_by_asset_class, x="CCY", y="Nominal Amount (USD)",
+    non_zero_df = group_by_asset_class.loc[group_by_asset_class['Nominal Amount (USD)'] != 0]
+
+    fig = px.bar(non_zero_df, x="CCY", y="Nominal Amount (USD)",
             hover_data={"Nominal Amount (USD)":":.3f"},
             text="Nominal Amount (USD)",color='Asset Class', barmode='group')
     fig.update_layout(
