@@ -26,29 +26,103 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 # Time Series chart for Total Assets & Liabilities over time
 # Cash Interest Rates + Loan Rates
 
+card_risk_current = dbc.Card(
+    [
+        dbc.CardBody([
+            html.H4("Risk Level x", className="card-title"),
+            html.H6("Current Risk Level", className="card-subtitle"),
+        ]),
+    ],inverse=True,outline=False, color="info",
+)
+card_risk_target = dbc.Card(
+    [
+        dbc.CardBody([
+            html.H4("Risk Level x", className="card-title"),
+            html.H6("Target Risk Level", className="card-subtitle"),
+        ]),
+    ],inverse=True,outline=False, color="primary",
+)
+card_assets = dbc.Card(
+    [
+        dbc.CardBody([
+            html.H4("Total Assets", className="card-title"),
+            html.H6("$xx.xxxM", className="card-subtitle"),
+        ]),
+    ],inverse=True,outline=False, color="success",
+)
+card_liab = dbc.Card(
+    [
+        dbc.CardBody([
+            html.H4("Total Liabilities", className="card-title"),
+            html.H6("$xx.xxxM", className="card-subtitle"),
+        ]),
+    ],inverse=True,outline=False, color="danger",
+)
+card_month_return = dbc.Card(
+    [
+        dbc.CardBody([
+            html.H4("$xx.xxxM", className="card-title"),
+            html.H6("Monthly Returns", className="card-subtitle"),
+        ]),
+    ],
+    color="dark",   # https://bootswatch.com/default/ for more card colors
+    inverse=True,   # change color of text (black or white)
+    outline=False,  # True = remove the block colors from the background and header
+)
+card_quarter_return = dbc.Card(
+    [
+        dbc.CardBody([
+            html.H4("$xx.xxxM", className="card-title"),
+            html.H6("Quarterly Returns", className="card-subtitle"),
+        ]),
+    ], 
+    color="dark",   # https://bootswatch.com/default/ for more card colors
+    inverse=True,   # change color of text (black or white)
+    outline=False,  # True = remove the block colors from the background and header
+)
+card_year_return = dbc.Card(
+    [
+        dbc.CardBody([
+            html.H4("$xx.xxxM", className="card-title"),
+            html.H6("Annual Returns", className="card-subtitle"),
+        ]),
+    ], 
+    color="dark",   # https://bootswatch.com/default/ for more card colors
+    inverse=True,   # change color of text (black or white)
+    outline=False,  # True = remove the block colors from the background and header
+)
+
 app.layout = html.Div([
-    dbc.Row([dbc.Col([html.H3("Client's Name:")],
-                    width={'size':3,'offset':1},
-                    ),
-            dbc.Col([html.H3("Client's Base Numbers:")],
-                    width={'size':8},
-                    ),      
-            ]),
-    dbc.Row([dbc.Col([dcc.Dropdown(
+    dbc.Row([dbc.Col([
+                        html.H3("Client's Name:"),
+                        dcc.Dropdown(
                         id='client_name_dropdown',
                         options=[
                             {'label': name, 'value': name} for name in client_names
                         ],
                         value=client_names[0]
-                        )],
-                    width={'size':3,'offset':1},
+                        )
+                    ],
+                    width={'size':3},
                     ),
-            dbc.Col([dcc.Checklist(
+            dbc.Col([
+                        html.H3("Client's Base Numbers:"),
+                        dcc.Checklist(
                         id='base_numbers_checklist',labelStyle={'display': 'inline-block'}
-                        )],
-                    width={'size':8},
-                    ),
+                        )
+                    ],
+                    width={'size':5},
+                    ), 
+            dbc.Col(card_risk_current, width=2),
+            dbc.Col(card_risk_target, width=2),
             ]),
+
+    html.Br(),
+    dbc.Row([dbc.Col(card_assets, width=3),
+             dbc.Col(card_liab, width=3),
+             dbc.Col(card_month_return, width=2),
+             dbc.Col(card_quarter_return, width=2),
+             dbc.Col(card_year_return, width=2)], justify="around"),  # justify="start", "center", "end", "between", "around"
     dbc.Row([dbc.Col([dcc.Graph(id='asset_class_barchart')],
                     style={'height': '500px'}
                     ),
