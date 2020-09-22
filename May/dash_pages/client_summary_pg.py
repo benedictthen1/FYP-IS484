@@ -23,6 +23,7 @@ app = dash.Dash()
 # Banners for Total Assets/Liab, 1 month return, quarter return, annual return,
 # Banners for risk profile
 # Time Series chart for Total Assets & Liabilities over time
+# Cash Interest Rates + Loan Rates
 
 app.layout = html.Div(children=[
     html.Div(children='''
@@ -145,18 +146,24 @@ def cash_loans_table(selected_base_numbers):
 
     if 'Loans' not in transformed_group_by_asset_class.columns:
         transformed_group_by_asset_class["Loans"] = 0
-
+    
+    transformed_group_by_asset_class.insert(2,'Cash Interest Rate (%)', np.NaN) # to add in real interest rates
+    transformed_group_by_asset_class['Loan Rate (%)'] = np.NaN # to add in real loan rates
+    
     total_loans = transformed_group_by_asset_class.Loans.sum()
     total_cash = transformed_group_by_asset_class.Cash.sum()
     transformed_group_by_asset_class = transformed_group_by_asset_class.append({'CCY' : '<b>TOTAL</b>' , 'Cash' : f'<b>{total_cash}</b>', 'Loans' : f'<b>{total_loans}</b>'} , ignore_index=True)
 
     fig = go.Figure(data=[go.Table(
-                header=dict(values=["<b>Currency</b>","<b>Cash (USD)</b>","<b>Loans (USD)</b>"],
+                header=dict(values=["<b>Currency</b>","<b>Cash (USD)</b>",
+                "<b>Cash Interest Rate (%)</b>","<b>Loans (USD)</b>","<b>Loan Rate (%)</b>"],
                             fill_color='paleturquoise',
                             align='left'),
                 cells=dict(values=[transformed_group_by_asset_class.CCY, \
-                transformed_group_by_asset_class.Cash, 
-                transformed_group_by_asset_class.Loans],
+                transformed_group_by_asset_class.Cash,
+                transformed_group_by_asset_class["Cash Interest Rate (%)"],
+                transformed_group_by_asset_class.Loans,
+                transformed_group_by_asset_class["Loan Rate (%)"]],
                         fill_color='lavender',
                         align='left'))
                ])
