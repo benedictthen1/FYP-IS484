@@ -44,18 +44,22 @@ card_risk_target = dbc.Card(
 )
 card_assets = dbc.Card(
     [
-        dbc.CardBody([
-            html.H4("Total Assets", className="card-title"),
-            html.H6("$xx.xxxM", className="card-subtitle"),
-        ]),
+        dbc.CardBody(id='card_assets_value',
+        # children=[
+        #     html.H4("Total Assets", className="card-title"),
+        #     html.H6("$xx.xxxM", className="card-subtitle"),
+        # ]
+        ),
     ],inverse=True,outline=False, color="success",
 )
 card_liab = dbc.Card(
     [
-        dbc.CardBody([
-            html.H4("Total Liabilities", className="card-title"),
-            html.H6("$xx.xxxM", className="card-subtitle"),
-        ]),
+        dbc.CardBody(id='card_liab_value',
+        # children=[
+        #     html.H4("Total Liabilities", className="card-title"),
+        #     html.H6("$xx.xxxM", className="card-subtitle"),
+        # ]
+        ),
     ],inverse=True,outline=False, color="danger",
 )
 card_month_return = dbc.Card(
@@ -222,7 +226,9 @@ def asset_class_sunburst(selected_base_numbers):
     return fig
 
 @app.callback(
-    Output('cash_loans_table','figure'),
+    [Output('card_assets_value','children'),
+    Output('card_liab_value','children'),
+    Output('cash_loans_table','figure')],
     [Input('base_numbers_checklist', 'value')]
 ) 
 def cash_loans_table(selected_base_numbers):
@@ -249,6 +255,16 @@ def cash_loans_table(selected_base_numbers):
     total_cash = transformed_group_by_asset_class.Cash.sum()
     transformed_group_by_asset_class = transformed_group_by_asset_class.append({'CCY' : '<b>TOTAL</b>' , 'Cash' : f'<b>{total_cash}</b>', 'Loans' : f'<b>{total_loans}</b>'} , ignore_index=True)
 
+    card_assets_value = [
+            html.H4("Total Assets", className="card-title"),
+            html.H6("${:.3f}M".format(total_cash/1000000), className="card-subtitle"),
+        ]
+
+    card_liab_value = [
+            html.H4("Total Liabilities", className="card-title"),
+            html.H6("${:.3f}M".format(total_loans/1000000), className="card-subtitle"),
+        ]
+
     fig = go.Figure(data=[go.Table(
                 header=dict(values=["<b>Currency</b>","<b>Cash (USD)</b>",
                 "<b>Cash Interest Rate (%)</b>","<b>Loans (USD)</b>","<b>Loan Rate (%)</b>"],
@@ -263,7 +279,7 @@ def cash_loans_table(selected_base_numbers):
                         align='left'))
                ])
 
-    return fig
+    return card_assets_value,card_liab_value,fig
 
 @app.callback(
     Output('cash_loans_barchart','figure'),
