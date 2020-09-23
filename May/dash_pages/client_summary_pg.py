@@ -11,9 +11,14 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 import pandas_datareader.data as web
-import datetime
+import datetime as dt
 
 df = pd.read_csv('../TestDataManipulated.csv')
+
+# datetime formatting
+df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
+df['Position As of Date'] = df['Position As of Date'].apply(lambda x: dt.datetime.strftime(x, '%Y-%d-%m'))
+df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
 
 client_names = df["Client Name"].unique()
 
@@ -183,14 +188,35 @@ def select_all_base_number_values(client_name):
 def asset_liab_timeseries(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
 
-    client_data["Asset Class"][client_data["Asset Class"]!="Loans"] = "Others" # this is based on assumption that all other assets other than loan are considered as "assets"
+    # this is based on assumption that all other assets other than loan are considered as "assets"
+    client_data["Asset Class"][client_data["Asset Class"]!="Loans"] = "Others" 
     
     group_by_asset_class = client_data\
     .groupby(['Position As of Date','Asset Class'], as_index=False)\
     .agg({'Nominal Amount (USD)':'sum'})
+
+    # this is based on assumption that all other assets other than loan are considered as "assets"
+    group_by_asset_class["Asset Class"][group_by_asset_class["Asset Class"]=="Others"] = "Total Assets"
+    group_by_asset_class["Asset Class"][group_by_asset_class["Asset Class"]=="Loans"] = "Total Liabilities"
     
-    fig = px.area(group_by_asset_class, x="Position As of Date", y="Nominal Amount (USD)", color="Asset Class")
-    
+    fig = px.area(group_by_asset_class, x="Position As of Date", y="Nominal Amount (USD)", 
+    color = "Asset Class", color_discrete_sequence=['#dea5a4', '#779ecb'],
+    labels={"Loans": "Total Liabilities", "Others": "Total Assets"},
+    title = "Client's Total Assets & Liabilities over time")
+    fig.update_traces(mode="markers+lines", hovertemplate=None)
+    fig.update_layout(hovermode="x unified")
+    fig.update_xaxes(
+        rangeslider_visible=True,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=2, label="2d", step="day", stepmode="backward"),
+                dict(count=7, label="1w", step="day", stepmode="backward"),
+                dict(count=1, label="YTD", step="year", stepmode="todate"),
+                dict(count=1, label="1y", step="year", stepmode="backward"),
+                dict(step="all")
+            ])
+        )
+    )
     return fig
 
 @app.callback(
