@@ -13,7 +13,7 @@ import numpy as np
 import pandas_datareader.data as web
 import datetime
 
-df = pd.read_csv('../TestData.csv')
+df = pd.read_csv('../TestDataManipulated.csv')
 
 client_names = df["Client Name"].unique()
 
@@ -24,7 +24,16 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 # Banners for Total Assets/Liab, 1 month return, quarter return, annual return,
 # Banners for risk profile
 # Time Series chart for Total Assets & Liabilities over time
+# 1w, 1m, 1y filter on Time Series chart
 # Cash Interest Rates + Loan Rates
+
+##### Excel Formulas #####
+# Nominal Amount (USD) = Nominal Units*Current Price (or) 
+# Nominal Amount (USD) = Nominal Units*Closing Price
+# % Change from Avg Cost = ((Current Price-Average Cost)/Average Cost)*100 (or) 
+# % Change from Avg Cost = ((Closing Price-Average Cost)/Average Cost)*100
+
+# Estimated Profit/Loss = Nominal Amount (USD) - (Nominal Units*Average Cost)
 
 card_risk_current = dbc.Card(
     [
@@ -127,8 +136,11 @@ app.layout = html.Div([
              dbc.Col(card_month_return, width=2),
              dbc.Col(card_quarter_return, width=2),
              dbc.Col(card_year_return, width=2)], justify="around"),  # justify="start", "center", "end", "between", "around"
+    dbc.Row([dbc.Col([dcc.Graph(id='asset_liab_timeseries')],
+                    ),
+            ]),
     dbc.Row([dbc.Col([dcc.Graph(id='asset_class_barchart')],
-                    style={'height': '500px'}
+                    #style={'height': '500px'}
                     ),
             ]),
     dbc.Row([dbc.Col([dcc.Graph(id='asset_class_piechart')],
@@ -163,6 +175,23 @@ def set_base_number_options(client_name):
 def select_all_base_number_values(client_name):
     client_data = df.loc[df["Client Name"] == client_name]
     return list(client_data["Base Number"].unique())
+
+@app.callback(
+    Output('asset_liab_timeseries','figure'),
+    [Input('base_numbers_checklist', 'value')]
+) 
+def asset_liab_timeseries(selected_base_numbers):
+    client_data = df[df["Base Number"].isin(selected_base_numbers)]
+
+    client_data["Asset Class"][client_data["Asset Class"]!="Loans"] = "Others" # this is based on assumption that all other assets other than loan are considered as "assets"
+    
+    group_by_asset_class = client_data\
+    .groupby(['Position As of Date','Asset Class'], as_index=False)\
+    .agg({'Nominal Amount (USD)':'sum'})
+    
+    fig = px.area(group_by_asset_class, x="Position As of Date", y="Nominal Amount (USD)", color="Asset Class")
+    
+    return fig
 
 @app.callback(
     Output('asset_class_barchart','figure'),
