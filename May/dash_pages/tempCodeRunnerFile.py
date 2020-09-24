@@ -1,5 +1,3 @@
-
-# import pandas as pd
-
-# import pandas_datareader.data as web
-# import datetime as dt
+_asset_class.\
+#     loc[group_by_asset_class['Position As of Date'] == latest_date & \
+#     group_by_asset_class["Asse

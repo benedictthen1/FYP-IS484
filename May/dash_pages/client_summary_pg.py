@@ -26,10 +26,8 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 ##### TO-DO List #####
 # Select All/Clear All button for Base Numbers
-# Banners for Total Assets/Liab, 1 month return, quarter return, annual return,
+# Banners for 1 month return, quarter return, annual return,
 # Banners for risk profile
-# Time Series chart for Total Assets & Liabilities over time
-# 1w, 1m, 1y filter on Time Series chart
 # Cash Interest Rates + Loan Rates
 
 ##### Excel Formulas #####
@@ -38,7 +36,9 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 # % Change from Avg Cost = ((Current Price-Average Cost)/Average Cost)*100 (or) 
 # % Change from Avg Cost = ((Closing Price-Average Cost)/Average Cost)*100
 
+# Estimated Original Amount Paid = Nominal Units*Average Cost
 # Estimated Profit/Loss = Nominal Amount (USD) - (Nominal Units*Average Cost)
+# % Profit/Loss Return = ((Estimated Profit/Loss) / Estimated Original Amount Paid)*100
 
 card_risk_current = dbc.Card(
     [
@@ -161,7 +161,24 @@ app.layout = html.Div([
             dbc.Col([dcc.Graph(id='cash_loans_barchart')],
                     width={'size':7},
                     ),
-            ])
+            ]),
+    dbc.Row([dbc.Col([dcc.Graph(id='profit_loss_timeseries_daily')],
+                    width={'size':6},
+                    ),
+            dbc.Col([dcc.Graph(id='profit_loss_timeseries_daily_total')],
+                    width={'size':3},
+                    ),
+            dbc.Col([dcc.Graph(id='profit_loss_timeseries_daily_percentage')],
+                    width={'size':3},
+                    ),
+            ]),
+    dbc.Row([dbc.Col([dcc.Graph(id='profit_loss_timeseries_breakdown_total')],
+                    width={'size':6},
+                    ),
+            dbc.Col([dcc.Graph(id='profit_loss_timeseries_breakdown_percentage')],
+                    width={'size':6},
+                    ),
+            ]),
     ])
 
 @app.callback(
@@ -182,7 +199,9 @@ def select_all_base_number_values(client_name):
     return list(client_data["Base Number"].unique())
 
 @app.callback(
-    Output('asset_liab_timeseries','figure'),
+    [Output('card_assets_value','children'),
+    Output('card_liab_value','children'),
+    Output('asset_liab_timeseries','figure')],
     [Input('base_numbers_checklist', 'value')]
 ) 
 def asset_liab_timeseries(selected_base_numbers):
@@ -198,10 +217,25 @@ def asset_liab_timeseries(selected_base_numbers):
     # this is based on assumption that all other assets other than loan are considered as "assets"
     group_by_asset_class["Asset Class"][group_by_asset_class["Asset Class"]=="Others"] = "Total Assets"
     group_by_asset_class["Asset Class"][group_by_asset_class["Asset Class"]=="Loans"] = "Total Liabilities"
+
+    latest_date = group_by_asset_class["Position As of Date"].max()
+    latest_data = group_by_asset_class[group_by_asset_class['Position As of Date'] == latest_date]
+    latest_total_cash = latest_data[latest_data["Asset Class"]=="Total Assets"]["Nominal Amount (USD)"].item()
+    latest_total_loans = latest_data[latest_data["Asset Class"]=="Total Liabilities"]["Nominal Amount (USD)"].item()
+
+    card_assets_value = [
+            html.H4("Total Assets", className="card-title"),
+            html.H6("${:.3f}M".format(latest_total_cash/1000000), className="card-subtitle"),
+        ]
+
+    card_liab_value = [
+            html.H4("Total Liabilities", className="card-title"),
+            html.H6("${:.3f}M".format(latest_total_loans/1000000), className="card-subtitle"),
+        ]
     
     fig = px.area(group_by_asset_class, x="Position As of Date", y="Nominal Amount (USD)", 
     color = "Asset Class", color_discrete_sequence=['#dea5a4', '#779ecb'],
-    labels={"Loans": "Total Liabilities", "Others": "Total Assets"},
+    # labels={"Loans": "Total Liabilities", "Others": "Total Assets"},
     title = "Client's Total Assets & Liabilities over time")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x unified")
@@ -209,15 +243,15 @@ def asset_liab_timeseries(selected_base_numbers):
         rangeslider_visible=True,
         rangeselector=dict(
             buttons=list([
-                dict(count=2, label="2d", step="day", stepmode="backward"),
-                dict(count=7, label="1w", step="day", stepmode="backward"),
+                dict(count=1, label="2d", step="day", stepmode="backward"),
+                dict(count=6, label="1w", step="day", stepmode="backward"),
                 dict(count=1, label="YTD", step="year", stepmode="todate"),
                 dict(count=1, label="1y", step="year", stepmode="backward"),
                 dict(step="all")
             ])
         )
     )
-    return fig
+    return card_assets_value,card_liab_value,fig
 
 @app.callback(
     Output('asset_class_barchart','figure'),
@@ -241,7 +275,7 @@ def asset_class_barchart(client_name,selected_base_numbers):
            },
             ],
         'layout': {
-            'title': 'Pay Rate for {}'.format(client_name),
+            'title': 'Nominal Amount (USD) of each asset class for {}'.format(client_name),
             'height': 500
         }
     }
@@ -281,9 +315,7 @@ def asset_class_sunburst(selected_base_numbers):
     return fig
 
 @app.callback(
-    [Output('card_assets_value','children'),
-    Output('card_liab_value','children'),
-    Output('cash_loans_table','figure')],
+    Output('cash_loans_table','figure'),
     [Input('base_numbers_checklist', 'value')]
 ) 
 def cash_loans_table(selected_base_numbers):
@@ -310,15 +342,15 @@ def cash_loans_table(selected_base_numbers):
     total_cash = transformed_group_by_asset_class.Cash.sum()
     transformed_group_by_asset_class = transformed_group_by_asset_class.append({'CCY' : '<b>TOTAL</b>' , 'Cash' : f'<b>{total_cash}</b>', 'Loans' : f'<b>{total_loans}</b>'} , ignore_index=True)
 
-    card_assets_value = [
-            html.H4("Total Assets", className="card-title"),
-            html.H6("${:.3f}M".format(total_cash/1000000), className="card-subtitle"),
-        ]
+    # card_assets_value = [
+    #         html.H4("Total Assets", className="card-title"),
+    #         html.H6("${:.3f}M".format(total_cash/1000000), className="card-subtitle"),
+    #     ]
 
-    card_liab_value = [
-            html.H4("Total Liabilities", className="card-title"),
-            html.H6("${:.3f}M".format(total_loans/1000000), className="card-subtitle"),
-        ]
+    # card_liab_value = [
+    #         html.H4("Total Liabilities", className="card-title"),
+    #         html.H6("${:.3f}M".format(total_loans/1000000), className="card-subtitle"),
+    #     ]
 
     fig = go.Figure(data=[go.Table(
                 header=dict(values=["<b>Currency</b>","<b>Cash (USD)</b>",
@@ -334,7 +366,7 @@ def cash_loans_table(selected_base_numbers):
                         align='left'))
                ])
 
-    return card_assets_value,card_liab_value,fig
+    return fig
 
 @app.callback(
     Output('cash_loans_barchart','figure'),
@@ -364,6 +396,109 @@ def cash_loans_barchart(selected_base_numbers):
         textposition='outside',
         texttemplate = "%{text:.2s}")
     return fig
+
+@app.callback(
+    [Output('profit_loss_timeseries_daily','figure'),
+    Output('profit_loss_timeseries_daily_total','figure'),
+    Output('profit_loss_timeseries_daily_percentage','figure'),
+    Output('profit_loss_timeseries_breakdown_total','figure'),
+    Output('profit_loss_timeseries_breakdown_percentage','figure')],
+    [Input('base_numbers_checklist', 'value')]
+) 
+def profit_loss_timeseries(selected_base_numbers):
+    asset_classes = ['EQUITIES']
+    client_data = df[df["Base Number"].isin(selected_base_numbers)]
+    client_equity_data = client_data[client_data["Asset Class"].isin(asset_classes)]
+    
+    client_equity_data["Original Amount Paid"] = client_equity_data["Nominal Units"]*client_equity_data["Average Cost"]
+    client_equity_data["Estimated Profit/Loss"] = client_equity_data["Nominal Amount (USD)"]-client_equity_data["Original Amount Paid"]
+    client_equity_data["% Profit/Loss"] = client_equity_data["Estimated Profit/Loss"]*100/client_equity_data["Original Amount Paid"]
+
+    group_by_date_equity = client_equity_data.\
+    groupby(['Position As of Date'])["Original Amount Paid", "Estimated Profit/Loss"].\
+    apply(lambda x : x.sum()).reset_index()
+
+    group_by_date_equity["% Profit/Loss"] = group_by_date_equity["Estimated Profit/Loss"]*100/group_by_date_equity["Original Amount Paid"]
+
+    #daily_fig = px.line(group_by_date_equity,x="Position As of Date", y="% Profit/Loss",) 
+            #labels=dict(x="Fruit", y="Amount", color="Time Period"))
+    #daily_fig.add_bar(group_by_date_equity,x="Position As of Date", y="Estimated Profit/Loss",)
+            # hover_data={"Estimated Profit/Loss":":.3f"},
+            # text="Estimated Profit/Loss",)
+    daily_fig = go.Figure()
+
+    
+
+    daily_fig.add_trace(
+        go.Bar(
+            x=group_by_date_equity["Position As of Date"],
+            y=group_by_date_equity["Estimated Profit/Loss"],
+            text=group_by_date_equity["Estimated Profit/Loss"],
+            textposition='outside',
+            texttemplate = "%{text:.2s}",
+            name="Estimated Profit/Loss"
+        ))
+
+    daily_fig.add_trace(
+        go.Scatter(
+            x=group_by_date_equity["Position As of Date"],
+            y=group_by_date_equity["% Profit/Loss"],
+            text=group_by_date_equity["% Profit/Loss"],
+            textposition='top center',
+            texttemplate = "%{text:.2s}",
+            name="% Profit/Loss"
+        ))
+    # fig = px.bar(group_by_date_equity, x="CCY", y="Nominal Amount (USD)",
+    #         hover_data={"Nominal Amount (USD)":":.3f"},
+    #         text="Nominal Amount (USD)",color='Asset Class', barmode='group')
+
+    daily_fig.update_layout(
+    title="Daily Profit/Loss",
+    xaxis_title="Date",
+    yaxis_title="Profit/Loss",
+    legend_title="",
+    )
+    # daily_fig.update_traces(
+    #     textposition='outside',
+    #     texttemplate = "%{text:.2s}")
+    total_fig = px.bar(group_by_date_equity, x="Position As of Date", y="Estimated Profit/Loss",
+            hover_data={"Estimated Profit/Loss":":.3f"},
+            text="Estimated Profit/Loss")
+    total_fig.update_layout(
+    title="Daily Profit/Loss",
+    xaxis_title="Date",
+    yaxis_title="Estimated Profit/Loss",
+    legend_title="",
+    )
+    total_fig.update_traces(
+        textposition='outside',
+        texttemplate = "%{text:.2s}")
+
+    percentage_fig = px.line(group_by_date_equity,x="Position As of Date", y="% Profit/Loss", 
+                    text="% Profit/Loss", title="Daily % Profit/Loss")
+    percentage_fig.update_traces(
+        textposition="top center",
+        texttemplate = "%{text:.2f}%")
+    
+    breakdown_total_fig = px.bar(client_equity_data, x="Position As of Date", y="Estimated Profit/Loss",
+            hover_data={"Estimated Profit/Loss":":.3f"}, color="Name", barmode='group',
+            text="Estimated Profit/Loss")
+    breakdown_total_fig.update_layout(
+    title="Daily Profit/Loss Breakdown by Stock Names",
+    xaxis_title="Date",
+    yaxis_title="Estimated Profit/Loss",
+    legend_title="Stock Names",
+    )
+    breakdown_total_fig.update_traces(
+        textposition='outside',
+        texttemplate = "%{text:.2s}")
+
+    breakdown_percentage_fig = px.line(client_equity_data,x="Position As of Date", y="% Profit/Loss", 
+                    color="Name", title="% Profit/Loss Breakdown by Stock Names")
+    breakdown_percentage_fig.update_traces(mode="markers+lines", hovertemplate=None)
+    breakdown_percentage_fig.update_layout(hovermode="x unified")
+
+    return daily_fig,total_fig,percentage_fig,breakdown_total_fig,breakdown_percentage_fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
