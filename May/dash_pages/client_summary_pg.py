@@ -220,12 +220,8 @@ def asset_liab_timeseries(selected_base_numbers):
 
     latest_date = group_by_asset_class["Position As of Date"].max()
     latest_data = group_by_asset_class[group_by_asset_class['Position As of Date'] == latest_date]
-    #print(latest_data)
     latest_total_cash = latest_data[latest_data["Asset Class"]=="Total Assets"]["Nominal Amount (USD)"].item()
-    try:
-        latest_total_loans = latest_data[latest_data["Asset Class"]=="Total Liabilities"]["Nominal Amount (USD)"].item()
-    except:
-        latest_total_loans = 0
+    latest_total_loans = latest_data[latest_data["Asset Class"]=="Total Liabilities"]["Nominal Amount (USD)"].item()
 
     card_assets_value = [
             html.H4("Total Assets", className="card-title"),
@@ -414,9 +410,7 @@ def profit_loss_timeseries(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     client_equity_data = client_data[client_data["Asset Class"].isin(asset_classes)]
     
-    client_equity_data["Exchange Rate"] = client_equity_data["Nominal Amount (USD)"]/client_equity_data["Nominal Amount (CCY)"]
-    client_equity_data["Original Amount Paid"] = client_equity_data["Nominal Units"]*client_equity_data["Average Cost"]*client_equity_data["Exchange Rate"]
-    #print("Nominal Amount (USD)",client_equity_data["Nominal Amount (USD)"])
+    client_equity_data["Original Amount Paid"] = client_equity_data["Nominal Units"]*client_equity_data["Average Cost"]
     client_equity_data["Estimated Profit/Loss"] = client_equity_data["Nominal Amount (USD)"]-client_equity_data["Original Amount Paid"]
     client_equity_data["% Profit/Loss"] = client_equity_data["Estimated Profit/Loss"]*100/client_equity_data["Original Amount Paid"]
 
