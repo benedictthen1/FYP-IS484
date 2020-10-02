@@ -15,8 +15,6 @@ def init_app():
         # Import Dash application
         from dashboard import init_dashboard
         from dashboard2 import init_dashboard2
-        
-        #from grid import grid_test
         app = init_dashboard(app)
         app = init_dashboard2(app)
 
