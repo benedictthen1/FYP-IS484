@@ -77,7 +77,7 @@ def init_dashboard(server):
     # Create Dash Layout
     dash_app.index_string = html_layout
     dash_app.layout = html.Div([
-        dash_table.DataTable(
+        dcc.Loading(id="loading-1",children=[dash_table.DataTable(
         id="main_table",
         sort_action='native',
         columns=[{'name': i, 'id': i} for i in filtered_data.columns],
@@ -102,7 +102,7 @@ def init_dashboard(server):
         ],
         tooltip_duration=None,
 
-        ),
+        )], type="graph"),
         html.Button(id="submit-btn",n_clicks=0,children="apply"),
 
         dcc.Dropdown(

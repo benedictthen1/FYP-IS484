@@ -6,9 +6,6 @@ html_layout = '''
         <body class="dash-template">
             <header>
               <div class="nav-wrapper">
-                <a href="/">
-                    <h2>Awesomez Dashboard</h2>
-                </a>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
           <a class="navbar-brand" href="/">Citibank</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,26 +15,20 @@ html_layout = '''
             <ul class="navbar-nav mr-auto">
               
               <li class="nav-item active">
-                <a class="nav-link" href="/dash1">Home <span class="sr-only">(current)</span></a>
-              </li>
-
-              <li class="nav-item">
-                <a class="nav-link" href="/dash2">Stocks</a>
+                <a class="nav-link" href="/dash1">Client Portfolio <span class="sr-only">(current)</span></a>
               </li>
               
               <li class="nav-item">
-                <a class="nav-link" href="/dash2">News</a>
+                <a class="nav-link" href="/dash1">Data Table</a>
               </li>
               
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Dropdown
+                Analytics
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="/dash1">Dash1</a>
-                  <a class="dropdown-item" href="/dash2">Dash2</a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#">Something else here</a>
+                  <a class="dropdown-item" href="/dash1">News & Public Opinon</a>
+                  <a class="dropdown-item" href="/dash2">Prediction</a>
                 </div>
               </li>
             </ul>
