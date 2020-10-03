@@ -1,0 +1,2 @@
+- yfinance library's base.py is edited to deal with index problems when trying to retrieve stock info
+- Please copy the yfinance folder + yfinance_df.py together for the dataframe processing to work
