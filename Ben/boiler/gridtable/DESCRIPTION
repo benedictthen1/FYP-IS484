@@ -1,4 +1,4 @@
-Package: gridtable
+pythPackage: gridtable
 Title: grid to dash
 Version: 0.0.1
 Description: grid to dash

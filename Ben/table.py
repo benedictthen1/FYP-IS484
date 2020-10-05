@@ -71,6 +71,10 @@ sidebar = html.Div([
         # use the Collapse component to animate hiding / revealing links
         dbc.Collapse(
             html.Div([
+                html.Div([
+                    html.Button(id="main_select_btn",n_clicks=0,children="Select All"),
+                    html.Button(id="main_clear_btn",n_clicks=0,children="Clear All"),
+                ]),
 
                 html.Div([ #Client title, clear and all button
                     html.H6("Client Name", className="checkbox_words"),
@@ -133,7 +137,7 @@ sidebar = html.Div([
                             labelStyle={'display': 'block'},value = df["CCY"].unique(),id = "ccy_checkbox"
                         ),
                 ],id="ccy_to_ccy_filter_box"),
-                
+
                 html.Button(id="submit-btn",n_clicks=0,children="Apply"),
                 # dcc.Dropdown(
                 #     id="assest_dropdown",
@@ -331,22 +335,30 @@ def toggle_collapse(n, is_open):
 
 #Client filter CLEAR & ALL btn
 @app.callback(Output("client_checkbox", "value"),
-             [Input("client_clear_btn", "n_clicks"),Input("client_all_btn","n_clicks")])
-def client_clear(clear,all):
+             [Input("client_clear_btn", "n_clicks"),Input("client_all_btn","n_clicks"),Input("main_select_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
+def client_clear(clear,all,select_all,clear_all):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "client_clear_btn" in changed_id:
         value = []
+    elif "main_clear_btn" in changed_id:
+        value = []
+    elif "main_select_btn" in changed_id:
+        value = df["Client Name"].unique()
     else:
         value = df["Client Name"].unique()
     return value
 
 #Asset filter CLEAR & ALL btn
 @app.callback(Output("asset_checkbox", "value"),
-             [Input("asset_clear_btn", "n_clicks"),Input("asset_all_btn","n_clicks")])
-def base_clear(clear,all):
+             [Input("asset_clear_btn", "n_clicks"),Input("asset_all_btn","n_clicks"),Input("main_select_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
+def base_clear(clear,all,select_all,clear_all):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "asset_clear_btn" in changed_id:
         value = []
+    elif "main_clear_btn" in changed_id:
+        value = []
+    elif "main_select_btn" in changed_id:
+        value = df["Asset Class"].unique()
     else:
         value = df["Asset Class"].unique()
     return value
@@ -364,8 +376,8 @@ def base_clear(clear,all):
 
 #Base Number Checkbox based on Client input, Base clear and all button filter. 
 @app.callback([Output("base_checkbox","options"),Output("base_checkbox","value")],
-              [Input("client_checkbox","value"),Input("base_clear_btn", "n_clicks"),Input("base_all_btn","n_clicks")])
-def client_input(client_input,clear,all):
+              [Input("client_checkbox","value"),Input("base_clear_btn", "n_clicks"),Input("base_all_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
+def client_input(client_input,clear,all,clear_all):
     if not client_input:
         options = [{'label': i, 'value': i} for i in df["Base Number"].unique()]
         value = []
@@ -376,6 +388,8 @@ def client_input(client_input,clear,all):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "base_clear_btn" in changed_id:
         value = []
+    elif "main_clear_btn" in changed_id:
+        value = []
     else:
         value = df["Base Number"].unique()
 
@@ -383,8 +397,9 @@ def client_input(client_input,clear,all):
 
 # Sub Asset Class Checkbox
 @app.callback([Output("sub_asset_checkbox","options"),Output("sub_asset_checkbox","value")],
-             [Input("asset_checkbox","value"),Input("asset_sub_clear_btn", "n_clicks"),Input("asset_sub_all_btn","n_clicks")])
-def base_input(base_input,clear,all):
+             [Input("asset_checkbox","value"),Input("asset_sub_clear_btn", "n_clicks"),Input("asset_sub_all_btn","n_clicks"),
+             Input("main_select_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
+def base_input(base_input,clear,all,select_all,clear_all):
     if not base_input:
         options = [{'label': i, 'value': i} for i in df["Asset Sub Class"].unique()]
         value = []
@@ -395,10 +410,27 @@ def base_input(base_input,clear,all):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "asset_sub_clear_btn" in changed_id:
         value = []
-    else:
+    elif "main_clear_btn" in changed_id:
+        value = []
+    elif "main_select_btn" in changed_id:
         value = df["Asset Sub Class"].unique()
 
     return options,value
+
+#CCY filter CLEAR & ALL btn
+@app.callback(Output("ccy_checkbox", "value"),
+             [Input("ccy_clear_btn", "n_clicks"),Input("ccy_all_btn","n_clicks"),Input("main_select_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
+def CCY_clear(clear,all,select_all,clear_all):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if "ccy_clear_btn" in changed_id:
+        value = []
+    elif "main_clear_btn" in changed_id:
+        value = []
+    elif "main_select_btn" in changed_id:
+        value = df["CCY"].unique()
+    else:
+        value = df["CCY"].unique()
+    return value
 
 # @app.callback([Output("asset_checkbox","options"),Output("asset_checkbox","value")],
 #              [Input("client_checkbox","value")])
@@ -459,14 +491,17 @@ def base_input(base_input,clear,all):
 
 #Main Table column titles change according to excel tabs
 @app.callback(Output("main_table","columns"),
-              [Input("eq_btn","n_clicks"),Input("main_btn","n_clicks")])
-def main_table_col(sub_click,eq_click,):
+              [Input("eq_btn","n_clicks"),Input("main_btn","n_clicks"),Input("cl_btn","n_clicks")])
+def main_table_col(sub_click,eq_click,cl_click):
     data = df
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "eq_btn" in changed_id:
-        data = data[['Asset Class','Asset Sub Class','Name']]
+        data = data
     elif "main_btn" in changed_id:
-        data = data[['Asset Class']]
+        data = data
+    elif "cl_btn" in changed_id:
+        data = data[['Client Name','Base Number','Asset Class','Asset Sub Class','Nominal Units', 
+        'Nominal Amount (CCY)','Nominal Amount (USD)']]
     else:
         data = data[['Client Name','Base Number','Asset Class','Asset Sub Class', 'Name',
        'Ticker', 'CCY', 'Nominal Units', 'Nominal Amount (CCY)',
@@ -479,9 +514,9 @@ def main_table_col(sub_click,eq_click,):
 
 #MAINT TABLE ADJUST FROM FILTERS
 @app.callback([Output("main_table","data"),Output("main_table","tooltip_data")],
-              [Input("submit-btn","n_clicks"),Input("eq_btn","n_clicks"),Input("main_btn","n_clicks")],
+              [Input("submit-btn","n_clicks"),Input("eq_btn","n_clicks"),Input("main_btn","n_clicks"),Input("cl_btn","n_clicks")],
               [State("client_checkbox","value"),State("base_checkbox","value"),State("asset_checkbox","value"),State("sub_asset_checkbox","value"),State("ccy_checkbox","value")])
-def main_table_gather(sub_click, eq_click, main_click, Client_input, Base_input, Asset_input, Sub_Asset_input, curr_input):
+def main_table_gather(sub_click, eq_click, main_click,cl_click, Client_input, Base_input, Asset_input, Sub_Asset_input, curr_input):
     data = df
     if Client_input and Base_input and Asset_input and Sub_Asset_input and curr_input:
         data =  df[
@@ -491,31 +526,34 @@ def main_table_gather(sub_click, eq_click, main_click, Client_input, Base_input,
             (df["Asset Sub Class"].isin(Sub_Asset_input)) &
             (df["CCY"].isin(curr_input))
             ]
+    elif Client_input and Base_input and Asset_input and Sub_Asset_input:
+        data =  df[
+            (df["Client Name"].isin(Client_input)) & 
+            (df["Base Number"].isin(Base_input)) &
+            (df["Asset Class"].isin(Asset_input)) &
+            (df["Asset Sub Class"].isin(Sub_Asset_input))
+            ]
     elif Client_input and Base_input: 
         data = df[(df["Client Name"].isin(Client_input)) & (df["Base Number"].isin(Base_input))]
     elif Client_input:
         data = df[df["Client Name"].isin(Client_input)]
     elif not Client_input and Base_input:
          data = df[df["Base Number"].isin(Base_input)]
-
-    # elif not Asset_input and not Sub_Asset_input and not curr_input:
-    #     data = df
-    # elif Asset_input and not Sub_Asset_input and not curr_input:
-    #     data = df[df["Asset Class"]==Asset_input]
-    # elif not Asset_input and Sub_Asset_input and not curr_input:
-    #     data = df[df["Asset Sub Class"]==Sub_Asset_input]
-    # elif not Asset_input and not Sub_Asset_input and curr_input:
-    #     data = df[df["CCY"]==curr_input]
-    # else:
-    #     data = df[(df["Asset Class"]==Asset_input) & (df["Asset Sub Class"]==Sub_Asset_input)]
-    #     if data.empty:
-    #         data = df[df["Asset Class"] == Asset_input]
+    elif not Client_input and not Base_input and  not Asset_input and not Sub_Asset_input and not curr_input:
+        data =  df[
+            (df["Client Name"].isin(Client_input)) & 
+            (df["Base Number"].isin(Base_input)) &
+            (df["Asset Class"].isin(Asset_input)) &
+            (df["Asset Sub Class"].isin(Sub_Asset_input))
+            ]
     
-    # changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    # if "eq_btn" in changed_id:
-    #     data = data[['Asset Class','Asset Sub Class','Name']]
-    # elif "main_btn" in changed_id:
-    #     data = data[['Asset Class']]
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if "eq_btn" in changed_id:
+        data = data[data["Asset Class"]=="EQUITIES"]
+    elif "main_btn" in changed_id:
+        data = data
+    elif "cl_btn" in changed_id:
+         data = data[data["Asset Class"]=="Investment Cash & Short Term Investments"]
     # else:
     #     data = data[['Asset Class','Asset Sub Class', 'Name',
     #    'Ticker', 'CCY', 'Nominal Units', 'Nominal Amount (CCY)',

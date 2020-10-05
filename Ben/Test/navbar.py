@@ -2,7 +2,7 @@ html_layout = '''
 <!DOCTYPE html>
     <html>
 
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" href="/style.css">
         <body class="dash-template">
             <header>
               <div class="nav-wrapper">
@@ -19,7 +19,7 @@ html_layout = '''
               </li>
               
               <li class="nav-item">
-                <a class="nav-link" href="/dash1">Data Table</a>
+                <a class="nav-link" href="/dash2">Data Table</a>
               </li>
               
               <li class="nav-item dropdown">
@@ -39,6 +39,7 @@ html_layout = '''
             {%app_entry%}
 
             <footer>
+                {%css%}
                 {%config%}
                 {%scripts%}
                 {%renderer%}

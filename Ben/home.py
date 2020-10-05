@@ -46,7 +46,8 @@ client_names = cdf["Client Name"].unique()
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 #Client Table 
-df = df[df["Asset Class"]== "EQUITIES"]
+# df = df[df["Asset Class"].isin(["EQUITIES","ALTERNATIVE INVESTMENTS","CAPITAL MARKETS","FIXED INCOME"])]
+df = df[df["Asset Class"].isin(["EQUITIES"])]
 df["Profit/Loss"] = (df["Current Price"] - df["Average Cost"]) * df["Nominal Units"]
 #df["Profit/Loss %"] = df["Profit/Loss"]/(df["Current Price"]*df["Nominal Units"]) * 100
 client_table = df.groupby(["Client Name"])[["Profit/Loss","Nominal Amount (CCY)"]].sum().reset_index()
@@ -54,13 +55,14 @@ client_table["Profit/Loss"] = client_table["Profit/Loss"].round(2)
 client_table["Nominal Amount (CCY)"] = client_table["Nominal Amount (CCY)"].round(2)
 client_table["Profit/Loss %"] = client_table["Profit/Loss"]/client_table["Nominal Amount (CCY)"]*100
 client_table["Profit/Loss %"] = client_table["Profit/Loss %"].round(1)
-client_table = client_table[["Client Name","Nominal Amount (CCY)","Profit/Loss","Profit/Loss %"]]
+client_table["Nominal Amount"] = client_table["Nominal Amount (CCY)"]
+client_table = client_table[["Client Name","Nominal Amount","Profit/Loss","Profit/Loss %"]]
 client_table = client_table.sort_values("Profit/Loss %")
 
 #Stock Market Table 
 company_df = df[["Client Name","Asset Class","Name","Ticker","YTD%","1d %","5d %","1m % ","6m %","12m %"]]
 company_df = company_df[company_df["Asset Class"]== "EQUITIES"]
-count_client = company_df.groupby(["Name"])["Client Name"].count().reset_index(name="No of Client").sort_values("Name")
+count_client = company_df.groupby(["Name"])["Client Name"].nunique().reset_index(name="No of Client").sort_values("Name")
 
 company_df2 = df[["Asset Class","Name","Ticker","YTD%","1d %","5d %","1m % ","6m %","12m %"]]
 company_df2= company_df2.drop_duplicates().sort_values("Name")
@@ -80,11 +82,14 @@ def discrete_background_color_bins(client_table, n_bins=6, columns= ['Profit/Los
         ((df_max - df_min) * i) + df_min
         for i in bounds
     ]
+    ranges = np.linspace(df_min-1, df_max+1, num=10)
+    ranges = ranges.astype(int)
+    print(ranges)
     #ranges = [-100, -75,-50, -25 ,-10 ,0, 10, 25, 50, 75, 100]
     #ranges = np.arange(df_min, df_max,100).tolist()
 
     styles = []
-    colours = ['rgb(215,25,28)', 'rgb(201,122,44)','rgb(201,122,44)',
+    colours = ['rgb(215,25,28)','rgb(215,25,28)', 'rgb(201,122,44)','rgb(201,122,44)',
     'rbg(209, 206, 29)','rbg(214, 201, 54)','rgb(26,150,65)']
     for i in range(1, len(bounds)):
         min_bound = ranges[i - 1]
@@ -121,13 +126,13 @@ client_dtable = html.Div([
     dash_table.DataTable(
         id='client_table',
         sort_action='native',
-        style_cell={'textAlign': 'left','textOverflow': 'ellipsis'},
+        style_cell={'textAlign': 'left','textOverflow': 'ellipsis','border': '1px solid black'},
         style_data_conditional=styles,
         style_as_list_view=True,
         fixed_rows={'headers': True},
-        style_table={'overflowY': 'auto','height': '345px',"width": '600px'},
-        style_data={'maxWidth': '70px','minWidth': '70px'},
-        style_header={'fontWeight': 'bold', 'height': 'auto','whiteSpace': 'normal','border': '1px solid grey'},
+        style_table={'overflowY': 'auto','height': '345px',"width": '615px'},
+        style_data={'maxWidth': '80px','minWidth': '80px'},
+        style_header={'fontWeight': 'bold', 'height': 'auto','whiteSpace': 'normal','border': '1px solid black'},
         columns=[{"name": i, "id": i} for i in client_table.columns],
         data=client_table.to_dict('records')
     )
@@ -137,7 +142,7 @@ coy_table = html.Div([
     dash_table.DataTable(
         id='coy_table',
         sort_action='native',
-        style_cell={'textAlign': 'left','textOverflow': 'ellipsis',},
+        style_cell={'textAlign': 'left','textOverflow': 'ellipsis','border': '1px solid black'},
         style_data_conditional=styles2,
         style_as_list_view=True,
         fixed_rows={'headers': True},
@@ -153,7 +158,7 @@ client_coy_table = html.Div([
     dash_table.DataTable(
         id='client_coy_table',
         sort_action='native',
-        style_cell={'textAlign': 'center','textOverflow': 'ellipsis','font_size': '11px',},
+        style_cell={'textAlign': 'center','textOverflow': 'ellipsis','font_size': '11px','border': '1px solid black'},
         style_as_list_view=True,
         fixed_rows={'headers': True},
         style_table={'overflowY': 'auto','height': '345px',"width": '380px'},
@@ -223,7 +228,7 @@ card_custom_right2 = dbc.Card(
 
 # APP LAYOUT
 app.layout = html.Div([
-    html.Div(id="tic_select"),
+  
     # Top Banners Metrics
     html.Div([
         html.Div([html.H2("120"),html.H6("Total Clients")],className="client_metrics"),
@@ -238,6 +243,10 @@ app.layout = html.Div([
         html.H2("Client Performance"),
         client_dtable,
     ],id="top_client_table"),
+
+    # html.Div([
+    #     dcc.Graph(id="client_asset_bar"),
+    # ]),
 
     html.Div([
         html.H2("Stocks Performance"),
@@ -426,15 +435,15 @@ app.callback(Output("fin_modal", "is_open"),
             [Input("coy_table","selected_cells"),Input("close-body-scroll", "n_clicks")],
             [State("fin_modal", "is_open")],)(toggle_modal)
 
-#Information pass in Finance Modal
-@app.callback(Output("tic_select", "children"),
-            [Input("coy_table","selected_cells"),Input("coy_table","derived_virtual_data")])
-def toggle_details(t1, t2):
-    if t1:
-        row_num = t1[0]["row"]
-        col_name = t2[row_num]["Ticker"]
-        ticker = yf.Ticker(col_name)
-        return col_name
+# #Information pass in Finance Modal
+# @app.callback(Output("tic_select", "children"),
+#             [Input("coy_table","selected_cells"),Input("coy_table","derived_virtual_data")])
+# def toggle_details(t1, t2):
+#     if t1:
+#         row_num = t1[0]["row"]
+#         col_name = t2[row_num]["Ticker"]
+#         ticker = yf.Ticker(col_name)
+#         return col_name
 
 #Click on Table cell to activate Client Modal
 app.callback(Output("client_modal", "is_open"),
@@ -450,6 +459,30 @@ app.callback(Output("client_modal", "is_open"),
 #         col_name = t2[row_num]["Client Name"]
 #         return col_name
 
+# #Client Asset class breakdown
+# @app.callback(Output("client_asset_bar", "figure"),
+#             [Input("client_table","selected_cells"),Input("client_table","derived_virtual_data")])
+# def client_asset_bar(table_input1,table_input2):
+#     if table_input1:
+#         row_num = table_input1[0]["row"]
+#         client_name = table_input2[row_num]["Client Name"]
+
+#         cdata = df[df["Client Name"]== client_name]
+#         cdata["Profit/Loss"] = cdata["Profit/Loss"].round(2)
+#         cdata = cdata.groupby(["Asset Class"])[["Profit/Loss","Nominal Amount (CCY)"]].sum().reset_index()
+#         # client_table["Nominal Amount (CCY)"] = client_table["Nominal Amount (CCY)"].round(2)
+#         # client_table["Profit/Loss %"] = client_table["Profit/Loss"]/client_table["Nominal Amount (CCY)"]*100
+#         # client_table["Profit/Loss %"] = client_table["Profit/Loss %"].round(1)
+#         # client_table = client_table[["Client Name","Nominal Amount (CCY)","Profit/Loss","Profit/Loss %"]]
+
+#         print("TEST")
+#         print(cdata)
+
+#         fig = go.Figure(data=[
+#         go.Bar(name='Total Asset', y=cdata["Asset Class"], x=cdata["Profit/Loss"],orientation='h',marker_color="green", text = cdata["Profit/Loss"],textfont_size=8,  textposition='outside',),
+        
+#         ])
+#     return fig
 
 ################################################## FINANCE POP UP PAGE  ##########################################################################
 #Ticker Banner Metrics
@@ -507,7 +540,8 @@ def coy_client_Table(search_btn,table_input1,table_input2,search):
     client_table["Nominal Amount (CCY)"] = client_table["Nominal Amount (CCY)"].round(2)
     client_table["Profit/Loss %"] = client_table["Profit/Loss"]/client_table["Nominal Amount (CCY)"]*100
     client_table["Profit/Loss %"] = client_table["Profit/Loss %"].round(1)
-    client_table = client_table[["Client Name","Nominal Amount (CCY)","Profit/Loss","Profit/Loss %"]]
+    client_table["Nominal Amount"] = client_table["Nominal Amount (CCY)"]
+    client_table = client_table[["Client Name","Nominal Amount","Profit/Loss","Profit/Loss %"]]
     
     data =client_table.to_dict('records')
     columns=([{'name': i, 'id': i} for i in client_table.columns])
@@ -540,7 +574,6 @@ def stats_table_input(search_btn,table_input1,table_input2,search):
     data=data.to_dict('records')
     dec = stock['longBusinessSummary']
     return columns, data, dec
-
 
 #Ticker Price and CandleStick callbacks.
 @app.callback([Output("candle","figure"),Output("coy_name","children"),Output("close_price","children"),Output("price_diff","children"),Output("price_date","children")],
@@ -900,7 +933,7 @@ def custom_section(selected_base_numbers,selected_tab):
         group_by_asset_class.pivot(index='CCY', columns='Asset Class', values='Loan / Cash Rate to client')\
         .reset_index().fillna('-').rename(columns={"Cash":"Cash Rate","Loans":"Loans Rate"})
         df_merged = pd.merge(transformed_group_by_asset_class, transformed_group_by_rate, on=["CCY"])
-        print(df_merged)
+        #print(df_merged)
         non_zero_cash_loan_df = group_by_asset_class.loc[group_by_asset_class['Nominal Amount (USD)'] != 0]
 
         if 'Loans' not in df_merged.columns:
