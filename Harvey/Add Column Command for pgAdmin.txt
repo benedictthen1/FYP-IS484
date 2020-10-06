@@ -44,4 +44,16 @@ ALTER TABLE public."Client"
 	ADD COLUMN "Receive Amount(USD)" VARCHAR(50),
 	ADD COLUMN "Tranch Code" VARCHAR(12),
 	ADD COLUMN "Position Web Description" VARCHAR(300),
-	ADD COLUMN "Security Name Line 1" VARCHAR(300);
+	ADD COLUMN "Security Name Line 1" VARCHAR(300),
+	ADD COLUMN "Rank" VARCHAR(50),
+	ADD COLUMN "Moodys R" VARCHAR(5),
+	ADD COLUMN "S&P R" VARCHAR(5),
+	ADD COLUMN "Fitch" VARCHAR(5),
+	ADD COLUMN "Coupon" VARCHAR(12),
+	ADD COLUMN "YTC" VARCHAR(12),
+	ADD COLUMN "YTM" VARCHAR(12),
+	ADD COLUMN "Coupon type" VARCHAR(8),
+	ADD COLUMN "Issue Date" VARCHAR(50),
+	ADD COLUMN "Next Call Date" VARCHAR(50),
+	ADD COLUMN "Return on Contribution" VARCHAR(20),
+	ADD COLUMN "Market Consensus" VARCHAR(20);

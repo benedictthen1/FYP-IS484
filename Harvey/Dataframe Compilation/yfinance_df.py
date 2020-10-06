@@ -84,5 +84,5 @@ series = pd.Series(percentage_change, name="% Change from Avg Cost")
 #Concatenate % Change in Average Cost series with Main df
 df = pd.concat([df, series], axis=1)
 
-#It should return 46(Client columns) + 8(yFinance Columns) + 1(% Change of Avg Cost) = 55 Columns
+#It should return 46(Client columns) + 8(yFinance Columns) + 1(% Change of Avg Cost) = e55 Columns
 print(df)
