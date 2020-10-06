@@ -20,7 +20,9 @@ from navbar import html_layout
 
 def init_dashboard(server):
     dash_app = dash.Dash(__name__,server=server, routes_pathname_prefix='/dash1/',external_stylesheets=[dbc.themes.BOOTSTRAP])
-    dash_app.index_string = html_layout
+    dash_app.scripts.config.serve_locally=False
+    dash_app.css.config.serve_locally=False
+    #dash_app.index_string = html_layout
 
     #IMPORT DATA & DATA MANIPULATION
     df = pd.read_csv('TestData.csv',encoding='latin1')
@@ -483,6 +485,7 @@ def init_dashboard(server):
     #     return fig
 
 ################################################## FINANCE POP UP PAGE  ##########################################################################
+    #@dash_app.server.route('/assets/style.css')
 #Ticker Banner Metrics
     @dash_app.callback([Output("ytd", "children"),Output("1d", "children"),Output("5d", "children"),Output("1m", "children"),
                 Output("6m", "children"),Output("12m", "children")],

@@ -2,7 +2,7 @@ html_layout = '''
 <!DOCTYPE html>
     <html>
 
-        <link rel="stylesheet" href="/style.css">
+        
         <body class="dash-template">
             <header>
               <div class="nav-wrapper">

@@ -13,9 +13,9 @@ from navbar import html_layout
 
 def init_dashboard2(server):
     dash_app = dash.Dash(__name__,server=server, routes_pathname_prefix='/dash2/',external_stylesheets=[dbc.themes.BOOTSTRAP])
-    dash_app.scripts.config.serve_locally=True
-    dash_app.css.config.serve_locally=True
-    dash_app.index_string = html_layout
+    dash_app.scripts.config.serve_locally=False
+    dash_app.css.config.serve_locally=False
+    #dash_app.index_string = html_layout
 
     df = pd.read_csv('TestData.csv',encoding='latin1')
     df =df[df['Asset Class'].notnull()]
@@ -263,7 +263,7 @@ def init_dashboard2(server):
                 scrollable=True,
             ),
     ])
-
+    #@dash_app.server.route('/assets/style.css')
     ######################## Callbacks ###############################################
     def toggle_modal(n1, n2, is_open):
         if n1 or n2:
