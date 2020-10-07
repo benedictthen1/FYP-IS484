@@ -17,14 +17,14 @@ DATA_PATH = PATH.joinpath("../datasets").resolve()
 
 # owner: shivp Kaggle. Source: https://data.mendeley.com/datasets
 # dataset was modified. Original data: https://www.kaggle.com/shivkp/customer-behaviour
-df = pd.read_csv(DATA_PATH.joinpath("TestData.csv"),encoding='latin1')
-df =df[df['Asset Class'].notnull()]
+tdf = pd.read_csv(DATA_PATH.joinpath("TestData.csv"),encoding='latin1')
+tdf =tdf[tdf['Asset Class'].notnull()]
 
 numeric_cols = ['% Change from Avg Cost','YTD%', '1d %', '5d %', '1m % ', '6m %', '12m %'] + ['Nominal Amount (USD)','Nominal Units','Nominal Amount (CCY)','Current Price','Closing Price', 'Average Cost']
 for col in numeric_cols:
-    df[col] = pd.to_numeric(df[col], errors="coerce")
-    df[col].astype("float")
-    df[col] = df[col].round(2)
+    tdf[col] = pd.to_numeric(tdf[col], errors="coerce")
+    tdf[col].astype("float")
+    tdf[col] = tdf[col].round(2)
 
 #SIDEBAR FILTER 
 sidebar_header = dbc.Row([
@@ -89,12 +89,12 @@ sidebar = html.Div([
 
                 html.Div([ 
                 dcc.Checklist(
-                        options = [{'label': i, 'value': i} for i in df["Client Name"].unique()],
-                        labelStyle={'display': 'block'},value = df["Client Name"].unique(),id = "client_checkbox"
+                        options = [{'label': i, 'value': i} for i in tdf["Client Name"].unique()],
+                        labelStyle={'display': 'block'},value = tdf["Client Name"].unique(),id = "client_checkbox"
                     ),
                 dcc.Checklist(
-                        options = [{'label': i, 'value': i} for i in df["Base Number"].unique()],
-                        labelStyle={'display': 'block'},value = df["Base Number"].unique(),id = "base_checkbox"
+                        options = [{'label': i, 'value': i} for i in tdf["Base Number"].unique()],
+                        labelStyle={'display': 'block'},value = tdf["Base Number"].unique(),id = "base_checkbox"
                     ),    
                 ],id="client_to_base_filter_box"),
 
@@ -113,12 +113,12 @@ sidebar = html.Div([
 
                 html.Div([
                     dcc.Checklist(
-                            options = [{'label': i, 'value': i} for i in df["Asset Class"].unique()],
-                            labelStyle={'display': 'block'},value = df["Asset Class"].unique(),id = "asset_checkbox"
+                            options = [{'label': i, 'value': i} for i in tdf["Asset Class"].unique()],
+                            labelStyle={'display': 'block'},value = tdf["Asset Class"].unique(),id = "asset_checkbox"
                         ),
                     dcc.Checklist(
-                            options = [{'label': i, 'value': i} for i in df["Asset Sub Class"].unique()],
-                            labelStyle={'display': 'block'},value = df["Asset Sub Class"].unique(),id = "sub_asset_checkbox"
+                            options = [{'label': i, 'value': i} for i in tdf["Asset Sub Class"].unique()],
+                            labelStyle={'display': 'block'},value = tdf["Asset Sub Class"].unique(),id = "sub_asset_checkbox"
                         ),
                 ],id="Asset_to_Sub_filter_box"),
 
@@ -132,8 +132,8 @@ sidebar = html.Div([
 
                 html.Div ([
                     dcc.Checklist(
-                            options = [{'label': i, 'value': i} for i in df["CCY"].unique()],
-                            labelStyle={'display': 'block'},value = df["CCY"].unique(),id = "ccy_checkbox"
+                            options = [{'label': i, 'value': i} for i in tdf["CCY"].unique()],
+                            labelStyle={'display': 'block'},value = tdf["CCY"].unique(),id = "ccy_checkbox"
                         ),
                 ],id="ccy_to_ccy_filter_box"),
 
@@ -202,8 +202,8 @@ def discrete_background_color_bins(df, n_bins=7, columns= ['% Change from Avg Co
             })
 
     return (styles)
-print(df.columns)
-(styles) = discrete_background_color_bins(df)
+print(tdf.columns)
+(styles) = discrete_background_color_bins(tdf)
 
 #MAIN DASH TABLE
 main_table = html.Div([
@@ -228,7 +228,7 @@ main_table = html.Div([
                         {
                             column: {'value': str(value), 'type': 'markdown'}
                             for column, value in row.items()
-                        } for row in df.to_dict('rows')
+                        } for row in tdf.to_dict('rows')
                     ],
                     tooltip_duration=None,
         ),
@@ -342,9 +342,9 @@ def client_clear(clear,all,select_all,clear_all):
     elif "main_clear_btn" in changed_id:
         value = []
     elif "main_select_btn" in changed_id:
-        value = df["Client Name"].unique()
+        value = tdf["Client Name"].unique()
     else:
-        value = df["Client Name"].unique()
+        value = tdf["Client Name"].unique()
     return value
 
 #Asset filter CLEAR & ALL btn
@@ -357,9 +357,9 @@ def base_clear(clear,all,select_all,clear_all):
     elif "main_clear_btn" in changed_id:
         value = []
     elif "main_select_btn" in changed_id:
-        value = df["Asset Class"].unique()
+        value = tdf["Asset Class"].unique()
     else:
-        value = df["Asset Class"].unique()
+        value = tdf["Asset Class"].unique()
     return value
 
 #Sub Asset filter CLEAR & ALL btn
@@ -378,11 +378,11 @@ def base_clear(clear,all,select_all,clear_all):
               [Input("client_checkbox","value"),Input("base_clear_btn", "n_clicks"),Input("base_all_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
 def client_input(client_input,clear,all,clear_all):
     if not client_input:
-        options = [{'label': i, 'value': i} for i in df["Base Number"].unique()]
+        options = [{'label': i, 'value': i} for i in tdf["Base Number"].unique()]
         value = []
     else:
-        options = [{'label': i, 'value': i} for i in df["Base Number"][df["Client Name"].isin(client_input)].unique()]
-        value = df["Base Number"][df["Client Name"].isin(client_input)]
+        options = [{'label': i, 'value': i} for i in tdf["Base Number"][tdf["Client Name"].isin(client_input)].unique()]
+        value = tdf["Base Number"][tdf["Client Name"].isin(client_input)]
     
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "base_clear_btn" in changed_id:
@@ -390,7 +390,7 @@ def client_input(client_input,clear,all,clear_all):
     elif "main_clear_btn" in changed_id:
         value = []
     else:
-        value = df["Base Number"].unique()
+        value = tdf["Base Number"].unique()
 
     return options,value
 
@@ -400,11 +400,11 @@ def client_input(client_input,clear,all,clear_all):
              Input("main_select_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
 def base_input(base_input,clear,all,select_all,clear_all):
     if not base_input:
-        options = [{'label': i, 'value': i} for i in df["Asset Sub Class"].unique()]
+        options = [{'label': i, 'value': i} for i in tdf["Asset Sub Class"].unique()]
         value = []
     else:
-        options = [{'label': i, 'value': i} for i in df["Asset Sub Class"][df["Asset Class"].isin(base_input)].unique()]
-        value = df["Asset Sub Class"][df["Asset Class"].isin(base_input)]
+        options = [{'label': i, 'value': i} for i in tdf["Asset Sub Class"][tdf["Asset Class"].isin(base_input)].unique()]
+        value = tdf["Asset Sub Class"][tdf["Asset Class"].isin(base_input)]
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "asset_sub_clear_btn" in changed_id:
@@ -412,7 +412,7 @@ def base_input(base_input,clear,all,select_all,clear_all):
     elif "main_clear_btn" in changed_id:
         value = []
     elif "main_select_btn" in changed_id:
-        value = df["Asset Sub Class"].unique()
+        value = tdf["Asset Sub Class"].unique()
 
     return options,value
 
@@ -426,9 +426,9 @@ def CCY_clear(clear,all,select_all,clear_all):
     elif "main_clear_btn" in changed_id:
         value = []
     elif "main_select_btn" in changed_id:
-        value = df["CCY"].unique()
+        value = tdf["CCY"].unique()
     else:
-        value = df["CCY"].unique()
+        value = tdf["CCY"].unique()
     return value
 
 # @app.callback([Output("asset_checkbox","options"),Output("asset_checkbox","value")],
@@ -492,7 +492,7 @@ def CCY_clear(clear,all,select_all,clear_all):
 @app.callback(Output("main_table","columns"),
               [Input("eq_btn","n_clicks"),Input("main_btn","n_clicks"),Input("cl_btn","n_clicks")])
 def main_table_col(sub_click,eq_click,cl_click):
-    data = df
+    data = tdf
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "eq_btn" in changed_id:
         data = data
@@ -516,35 +516,37 @@ def main_table_col(sub_click,eq_click,cl_click):
               [Input("submit-btn","n_clicks"),Input("eq_btn","n_clicks"),Input("main_btn","n_clicks"),Input("cl_btn","n_clicks")],
               [State("client_checkbox","value"),State("base_checkbox","value"),State("asset_checkbox","value"),State("sub_asset_checkbox","value"),State("ccy_checkbox","value")])
 def main_table_gather(sub_click, eq_click, main_click,cl_click, Client_input, Base_input, Asset_input, Sub_Asset_input, curr_input):
-    data = df
+    data = tdf
     if Client_input and Base_input and Asset_input and Sub_Asset_input and curr_input:
-        data =  df[
-            (df["Client Name"].isin(Client_input)) & 
-            (df["Base Number"].isin(Base_input)) &
-            (df["Asset Class"].isin(Asset_input)) &
-            (df["Asset Sub Class"].isin(Sub_Asset_input)) &
-            (df["CCY"].isin(curr_input))
+        data =  tdf[
+            (tdf["Client Name"].isin(Client_input)) & 
+            (tdf["Base Number"].isin(Base_input)) &
+            (tdf["Asset Class"].isin(Asset_input)) &
+            (tdf["Asset Sub Class"].isin(Sub_Asset_input)) &
+            (tdf["CCY"].isin(curr_input))
             ]
     elif Client_input and Base_input and Asset_input and Sub_Asset_input:
-        data =  df[
-            (df["Client Name"].isin(Client_input)) & 
-            (df["Base Number"].isin(Base_input)) &
-            (df["Asset Class"].isin(Asset_input)) &
-            (df["Asset Sub Class"].isin(Sub_Asset_input))
+        data =  tdf[
+            (tdf["Client Name"].isin(Client_input)) & 
+            (tdf["Base Number"].isin(Base_input)) &
+            (tdf["Asset Class"].isin(Asset_input)) &
+            (tdf["Asset Sub Class"].isin(Sub_Asset_input))
             ]
     elif Client_input and Base_input: 
-        data = df[(df["Client Name"].isin(Client_input)) & (df["Base Number"].isin(Base_input))]
+        data = tdf[(tdf["Client Name"].isin(Client_input)) & (tdf["Base Number"].isin(Base_input))]
     elif Client_input:
-        data = df[df["Client Name"].isin(Client_input)]
+        data = tdf[tdf["Client Name"].isin(Client_input)]
     elif not Client_input and Base_input:
-         data = df[df["Base Number"].isin(Base_input)]
+         data = tdf[tdf["Base Number"].isin(Base_input)]
     elif not Client_input and not Base_input and  not Asset_input and not Sub_Asset_input and not curr_input:
-        data =  df[
-            (df["Client Name"].isin(Client_input)) & 
-            (df["Base Number"].isin(Base_input)) &
-            (df["Asset Class"].isin(Asset_input)) &
-            (df["Asset Sub Class"].isin(Sub_Asset_input))
+        data =  tdf[
+            (tdf["Client Name"].isin(Client_input)) & 
+            (tdf["Base Number"].isin(Base_input)) &
+            (tdf["Asset Class"].isin(Asset_input)) &
+            (tdf["Asset Sub Class"].isin(Sub_Asset_input))
             ]
+    else:
+        data = tdf
     
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "eq_btn" in changed_id:
@@ -553,6 +555,8 @@ def main_table_gather(sub_click, eq_click, main_click,cl_click, Client_input, Ba
         data = data
     elif "cl_btn" in changed_id:
          data = data[data["Asset Class"]=="Investment Cash & Short Term Investments"]
+    else:
+        data = tdf
     # else:
     #     data = data[['Asset Class','Asset Sub Class', 'Name',
     #    'Ticker', 'CCY', 'Nominal Units', 'Nominal Amount (CCY)',

@@ -12,7 +12,7 @@ import plotly.express as px
 
 # Connect to main app.py file
 from app import app
-server = app.server
+from app import server
 
 # Connect to your app pages
 from apps import home, data_table
