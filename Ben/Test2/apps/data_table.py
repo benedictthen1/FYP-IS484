@@ -538,15 +538,13 @@ def main_table_gather(sub_click, eq_click, main_click,cl_click, Client_input, Ba
         data = tdf[tdf["Client Name"].isin(Client_input)]
     elif not Client_input and Base_input:
          data = tdf[tdf["Base Number"].isin(Base_input)]
-    elif not Client_input and not Base_input and  not Asset_input and not Sub_Asset_input and not curr_input:
+    elif not Client_input and not Base_input and not Asset_input and not Sub_Asset_input and not curr_input:
         data =  tdf[
             (tdf["Client Name"].isin(Client_input)) & 
             (tdf["Base Number"].isin(Base_input)) &
             (tdf["Asset Class"].isin(Asset_input)) &
             (tdf["Asset Sub Class"].isin(Sub_Asset_input))
             ]
-    else:
-        data = tdf
     
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if "eq_btn" in changed_id:
@@ -555,8 +553,7 @@ def main_table_gather(sub_click, eq_click, main_click,cl_click, Client_input, Ba
         data = data
     elif "cl_btn" in changed_id:
          data = data[data["Asset Class"]=="Investment Cash & Short Term Investments"]
-    else:
-        data = tdf
+
     # else:
     #     data = data[['Asset Class','Asset Sub Class', 'Name',
     #    'Ticker', 'CCY', 'Nominal Units', 'Nominal Amount (CCY)',
