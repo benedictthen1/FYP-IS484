@@ -18,7 +18,6 @@ DATA_PATH = PATH.joinpath("../datasets").resolve()
 # owner: shivp Kaggle. Source: https://data.mendeley.com/datasets
 # dataset was modified. Original data: https://www.kaggle.com/shivkp/customer-behaviour
 df = pd.read_csv(DATA_PATH.joinpath("TestData.csv"),encoding='latin1')
-
 df =df[df['Asset Class'].notnull()]
 
 numeric_cols = ['% Change from Avg Cost','YTD%', '1d %', '5d %', '1m % ', '6m %', '12m %'] + ['Nominal Amount (USD)','Nominal Units','Nominal Amount (CCY)','Current Price','Closing Price', 'Average Cost']
