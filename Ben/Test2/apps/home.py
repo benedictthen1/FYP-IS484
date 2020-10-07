@@ -804,7 +804,7 @@ def link(t1,t2):
     [Input('client_name_dropdown', 'value')]
 ) 
 def set_base_number_multi_selection(client_name):
-    client_data = df.loc[df["Client Name"] == client_name]
+    client_data = cdf.loc[cdf["Client Name"] == client_name]
     base_numbers = list(client_data["Base Number"].unique())
     multi_select_options = [{'label': base_number, 'value': base_number} for base_number in base_numbers]
     return multi_select_options, base_numbers
