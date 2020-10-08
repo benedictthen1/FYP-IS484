@@ -15,13 +15,7 @@ from pytz import timezone
 import yahoo_fin.stock_info as si
 import datetime as dt
 import pathlib
-
-app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True,
-                meta_tags=[{'name': 'viewport',
-                            'content': 'width=device-width, initial-scale=1.0'}]
-                )
-server = app.server
-app.config["suppress_callback_exceptions"] = True
+from app import app
 
 # get relative data folder
 PATH = pathlib.Path(__file__).parent
@@ -242,7 +236,7 @@ layout = html.Div([
         html.Div([html.H2("120"),html.H6("Total Clients")],className="client_metrics"),
         html.Div([html.H2("29"),html.H6("Losing Clients")],className="client_metrics"),
         html.Div([html.H2("89"),html.H6("Profiting Clients")],className="client_metrics"),
-        html.Div([html.H2("23"),html.H6("Client to remind")],className="client_metrics"),
+        html.Div([html.H2("23"),html.H6("Clients to remind")],className="client_metrics"),
         html.Div([html.H2("16"),html.H6("Risky Clients")],className="client_metrics"),
     ],id="banner_group"),
 
@@ -810,7 +804,7 @@ def link(t1,t2):
     [Input('client_name_dropdown', 'value')]
 ) 
 def set_base_number_multi_selection(client_name):
-    client_data = df.loc[df["Client Name"] == client_name]
+    client_data = cdf.loc[cdf["Client Name"] == client_name]
     base_numbers = list(client_data["Base Number"].unique())
     multi_select_options = [{'label': base_number, 'value': base_number} for base_number in base_numbers]
     return multi_select_options, base_numbers
