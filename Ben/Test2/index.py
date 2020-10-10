@@ -15,13 +15,15 @@ from app import app
 from app import server
 
 # Connect to your app pages
-from apps import home, data_table
+from apps import home, data_table, stocks
 
 
 app.layout = html.Div([
+    dcc.Store(id='session', storage_type='session'),
     dcc.Location(id='url', refresh=False),
     html.Div([
-        dcc.Link('Home |', href='/apps/home'),
+        dcc.Link('Home | ', href='/apps/home'),
+        dcc.Link('Stocks Page | ', href='/apps/stocks'),
         dcc.Link('Data Table', href='/apps/datatable'),
     ],id="links", className="row"),
     html.Div(id='content', children=[])
@@ -33,6 +35,8 @@ app.layout = html.Div([
 def display_page(pathname):
     if pathname == '/apps/home':
         return home.layout
+    if pathname == '/apps/stocks':
+        return stocks.layout
     if pathname == '/apps/datatable':
         return data_table.layout
     else:

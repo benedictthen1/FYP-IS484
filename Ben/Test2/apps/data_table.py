@@ -15,8 +15,6 @@ from app import app
 PATH = pathlib.Path(__file__).parent
 DATA_PATH = PATH.joinpath("../datasets").resolve()
 
-# owner: shivp Kaggle. Source: https://data.mendeley.com/datasets
-# dataset was modified. Original data: https://www.kaggle.com/shivkp/customer-behaviour
 tdf = pd.read_csv(DATA_PATH.joinpath("TestData.csv"),encoding='latin1')
 tdf =tdf[tdf['Asset Class'].notnull()]
 
@@ -296,6 +294,8 @@ layout = html.Div([
 ])
 
 ######################## Callbacks ###############################################
+
+
 def toggle_modal(n1, n2, is_open):
     if n1 or n2:
         return not is_open
@@ -501,12 +501,12 @@ def main_table_col(sub_click,eq_click,cl_click):
     elif "cl_btn" in changed_id:
         data = data[['Client Name','Base Number','Asset Class','Asset Sub Class','Nominal Units', 
         'Nominal Amount (CCY)','Nominal Amount (USD)']]
-    else:
-        data = data[['Client Name','Base Number','Asset Class','Asset Sub Class', 'Name',
-       'Ticker', 'CCY', 'Nominal Units', 'Nominal Amount (CCY)',
-       'Nominal Amount (USD)', '% Change from Avg Cost', 'Current Price',
-       'Closing Price', 'Average Cost', 'YTD%', '1d %', '5d %', '1m % ',
-       '6m %', '12m %', 'Company Description']]
+    # else:
+    #     data = data[['Client Name','Base Number','Asset Class','Asset Sub Class', 'Name',
+    #    'Ticker', 'CCY', 'Nominal Units', 'Nominal Amount (CCY)',
+    #    'Nominal Amount (USD)', '% Change from Avg Cost', 'Current Price',
+    #    'Closing Price', 'Average Cost', 'YTD%', '1d %', '5d %', '1m % ',
+    #    '6m %', '12m %', 'Company Description']]
     
     columns=([{'name': i, 'id': i} for i in data.columns])
     return columns
