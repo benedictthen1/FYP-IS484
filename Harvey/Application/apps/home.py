@@ -56,6 +56,8 @@ client_names = cdf["Client Name"].unique()
 #Client Table 
 # df = df[df["Asset Class"].isin(["EQUITIES","ALTERNATIVE INVESTMENTS","CAPITAL MARKETS","FIXED INCOME"])]
 df = df[df["Asset Class"].isin(["EQUITIES"])]
+
+# Column name in postgreSQL: "Estimated Profit/Loss" 
 df["Profit/Loss"] = (df["Current Price"] - df["Average Cost"]) * df["Nominal Units"]
 #df["Profit/Loss %"] = df["Profit/Loss"]/(df["Current Price"]*df["Nominal Units"]) * 100
 client_table = df.groupby(["Client Name"])[["Profit/Loss","Nominal Amount (CCY)"]].sum().reset_index()
