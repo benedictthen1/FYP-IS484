@@ -65,8 +65,12 @@ ALTER TABLE public."Client"
 	ADD COLUMN "% Profit/Loss Return" VARCHAR(300),
 	ADD COLUMN "Target Risk Level" VARCHAR(5);
 
-#psql import
+#psql import to local
 \copy public."Client" ("Base Number", "Position As of Date", "Client Name", "Asset Class", "Asset Sub Class", "Name", "Ticker", "CCY", "Nominal Units", "Nominal Amount (CCY)", "Nominal Amount (USD)", "Loan / Cash Rate to client", "% Change from Avg Cost", "Current Price", "Closing Price", "Average Cost", "YTD%", "1d %", "5d %", "1m %", "6m %","12m %", "Company Description", "Citi rating", "Citi TARGET", "% to target", "Market Consensus", "12M Div Yield (%)", "Dividend EX Date", "P/E Ratio", "P/B Ratio", "EPS (Current Year)", "EPS (Next Year)", "YoY EPS Growth (%)", "50D MA", "200D MA", "Profit Margin", "Sector", "Country (Domicile)", "Region (Largest Revenue)", "Rank", "Moodys R", "S&P R", "Fitch", "Coupon", "YTC", "YTM", "Coupon type", "Issue Date", "Maturity", "Next Call Date", "Commitment Amount", "Contribution Amount", "Outstanding Commitment", "% Outstanding Amount","Distribution Amount", "Return on Contribution", "Trade Number", "Exchange Rate (CCY to USD)", "Latest Nominal Amount (USD)", "Estimated Original Amount Paid", "Estimated Profit/Loss", "% Profit/Loss Return", "Target Risk Level") FROM 'C:/Users/Harvey/Desktop/FYP-IS~1/Harvey/Client.csv' DELIMITER ',' CSV HEADER
 
-#Export dump file to import over to Heroku
+#Export dump file from local
 pg_dump -Fc --no-acl --no-owner -h localhost -U postgres postgres > mydb.dump
+
+#Import dump file to Heroku postgreSQL (Double quotes in bucket url is important)
+heroku pg:backups:restore "https://mydbfin.s3.amazonaws.com/mydb+v4.sql" DATABASE_URL
+
