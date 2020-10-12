@@ -3,11 +3,19 @@ import numpy as np
 import pandas_datareader.data as web
 import datetime as dt
 
-# df = pd.read_csv('../TestDataManipulatedAllCols.csv')
+df = pd.read_csv('../RiskLevelsAllocation.csv')
 
 # df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
 # df['Position As of Date'] = df['Position As of Date'].apply(lambda x: dt.datetime.strftime(x, '%Y-%d-%m'))
 # df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
+
+# client_data = df.loc[df["Client Name"] == 'SR004022615']
+# base_numbers = list(client_data["Base Number"].unique())
+# print(base_numbers)
+df = df[df["Asset Class"]=="EQUITIES"]
+input_num = 15
+df_sort = df.iloc[(df['Breakdown by Percentage']-input_num).abs().argsort()[:1]]
+print(df_sort['Level'].iloc[0])
 # print(df["Nominal Amount (USD)"].head(3))
 # numeric_cols = df.select_dtypes([np.number]).columns.to_list()
 # print (numeric_cols)
