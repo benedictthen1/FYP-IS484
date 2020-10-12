@@ -1,0 +1,7 @@
+include gridtable/gridtable.min.js
+include gridtable/gridtable.min.js.map
+include gridtable/metadata.json
+include gridtable/package-info.json
+include README.md
+include LICENSE
+include package.json
