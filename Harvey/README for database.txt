@@ -1,4 +1,4 @@
-#pgadmin 4 Column creation
+#pgadmin 4 Client table Column creation
 ALTER TABLE public."Client"
 	ADD COLUMN "Base Number" VARCHAR(32),
 	ADD COLUMN "Client Name" VARCHAR(16),
@@ -64,6 +64,30 @@ ALTER TABLE public."Client"
 	ADD COLUMN "Estimated Profit/Loss" VARCHAR(50),
 	ADD COLUMN "% Profit/Loss Return" VARCHAR(300),
 	ADD COLUMN "Target Risk Level" VARCHAR(5);
+
+#pgadmin 4 RiskAllocation table Column creation
+ALTER TABLE public."RiskAllocation"
+	ADD COLUMN "Asset Class" VARCHAR(32),
+	ADD COLUMN "Breakdown by Percentage" VARCHAR(10),
+    	ADD COLUMN "Level" VARCHAR(50);
+
+INSERT INTO public."RiskAllocation"(
+	"Asset Class", "Breakdown by Percentage", "Level")
+	VALUES ('CASH', '6', '1'),
+			('FIXED INCOME', '94', '1'),
+			('EQUITIES', '0', '1'),
+			('CASH', '4', '2'),
+			('FIXED INCOME' , '66', '2'),
+			('EQUITIES', '30', '2'),
+			('CASH', '2', '3'),
+			('FIXED INCOME', '37.5', '3'),
+			('EQUITIES', '60.5', '3'),
+			('CASH', '2', '4'),
+			('FIXED INCOME', '19', '4'),
+			('EQUITIES', '79', '4'),
+			('CASH', '0', '5'),
+			('FIXED INCOME', '0', '5'),
+			('EQUITIES', '100', '5');
 
 #psql import to local
 \copy public."Client" ("Base Number", "Position As of Date", "Client Name", "Asset Class", "Asset Sub Class", "Name", "Ticker", "CCY", "Nominal Units", "Nominal Amount (CCY)", "Nominal Amount (USD)", "Loan / Cash Rate to client", "% Change from Avg Cost", "Current Price", "Closing Price", "Average Cost", "YTD%", "1d %", "5d %", "1m %", "6m %","12m %", "Company Description", "Citi rating", "Citi TARGET", "% to target", "Market Consensus", "12M Div Yield (%)", "Dividend EX Date", "P/E Ratio", "P/B Ratio", "EPS (Current Year)", "EPS (Next Year)", "YoY EPS Growth (%)", "50D MA", "200D MA", "Profit Margin", "Sector", "Country (Domicile)", "Region (Largest Revenue)", "Rank", "Moodys R", "S&P R", "Fitch", "Coupon", "YTC", "YTM", "Coupon type", "Issue Date", "Maturity", "Next Call Date", "Commitment Amount", "Contribution Amount", "Outstanding Commitment", "% Outstanding Amount","Distribution Amount", "Return on Contribution", "Trade Number", "Exchange Rate (CCY to USD)", "Latest Nominal Amount (USD)", "Estimated Original Amount Paid", "Estimated Profit/Loss", "% Profit/Loss Return", "Target Risk Level") FROM 'C:/Users/Harvey/Desktop/FYP-IS~1/Harvey/Client.csv' DELIMITER ',' CSV HEADER
