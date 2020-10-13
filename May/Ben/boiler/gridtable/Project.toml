@@ -1,0 +1,12 @@
+
+name = "Gridtable"
+uuid = "1b08a953-4be3-4667-9a23-792a796f16a1"
+authors = ["ben then <jxthen.2017@smu.edu.sg>"]
+version = "0.0.1"
+
+[deps]
+Dash = "1b08a953-4be3-4667-9a23-3db579824955"
+
+[compat]
+julia = "1.2"
+Dash = ">=0.1"
