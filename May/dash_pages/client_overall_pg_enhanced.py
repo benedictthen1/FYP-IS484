@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 import pandas_datareader.data as web
 import datetime as dt
+from datetime import date, timedelta
 
 ##### Formulas #####
 # Exchange Rate (CCY to USD) = Nominal Amount (USD)/Nominal Amount (CCY)
@@ -34,9 +35,12 @@ df = pd.read_csv('../Client.csv')
 risk_df = pd.read_csv('../RiskLevelsAllocation.csv')
 
 ### Change Date Format ###
-df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
-#df['Position As of Date'] = df['Position As of Date'].apply(lambda x: dt.datetime.strftime(x, '%Y-%d-%m'))
-#df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
+df[['Position As of Date','Maturity','Next Call Date']] = df[['Position As of Date','Maturity','Next Call Date']].apply(pd.to_datetime)
+df['Dividend EX Date'] = pd.to_datetime(df['Dividend EX Date'], errors='coerce').dt.strftime('%m/%d/%Y')
+df['Dividend EX Date']= pd.to_datetime(df['Dividend EX Date'])
+# df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
+# df['Position As of Date'] = df['Position As of Date'].apply(lambda x: dt.datetime.strftime(x, '%Y-%d-%m'))
+# df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
 
 ### Limit decimal places of all numeric columns in df ###
 numeric_cols = df.select_dtypes([np.number]).columns.to_list()
@@ -75,6 +79,13 @@ card_profit_loss = dbc.Card(
 card_current_risk = dbc.Card(
     [
         dbc.CardBody(id='card_current_risk_value',
+        ),
+    ],inverse=False,outline=True, color="secondary",
+)
+# Target Risk Level Card (This card is under Part 1, refer to app layout)
+card_target_risk = dbc.Card(
+    [
+        dbc.CardBody(id='card_target_risk_value',
         ),
     ],inverse=False,outline=True, color="secondary",
 )
@@ -166,36 +177,47 @@ app.layout = html.Div([
 
     ### Part 2: Overall Banners ###
     dbc.Row([
-            dbc.Col(card_assets, width=2.4),
-            dbc.Col(card_liab, width=2.4),
-            dbc.Col(card_profit_loss, width=2.4),
-            dbc.Col(card_current_risk, width=2.4),
-            dbc.Col(card_reminders, width=2.4)
+            dbc.Col(card_assets, width=2),
+            dbc.Col(card_liab, width=2),
+            dbc.Col(card_profit_loss, width=2),
+            dbc.Col(card_current_risk, width=2),
+            dbc.Col(card_target_risk, width=2),
+            dbc.Col(card_reminders, width=2)
             ], justify="start"), # justify="start", "center", "end", "between", "around"
 
     ### Part 3: Overall Performance & Pie Chart Breakdown ###
     dbc.Row([
-            dbc.Col([dcc.Graph(id='asset_liab_timeseries')], width={'size':7},),
-            dbc.Col([dcc.Graph(id='asset_class_piechart')], width={'size':5},),
+            dbc.Col([dcc.Graph(id='asset_liab_timeseries')], width={'size':6}),
+            dbc.Col([dcc.Graph(id='asset_class_piechart')], width={'size':6}),
             ]),
 
-    ### Part 4: Risk Analysis Piecharts & Reminders ###
+    ### Part 4: Risk Analysis Piecharts & Reminders Summary Table ###
     dbc.Row([
-            dbc.Col([dcc.Graph(id='current_risk_piechart')], width={'size':3},),
-            dbc.Col([dcc.Graph(id='target_risk_piechart')], width={'size':3},),
+            dbc.Col([dcc.Graph(id='current_risk_piechart')], width={'size':3}),
+            dbc.Col([dcc.Graph(id='target_risk_piechart')], width={'size':3}),
+            dbc.Col([
+                dash_table.DataTable(
+                    id='reminders_summary_table',
+                    style_table={'border': 'thin lightgrey solid'},
+                    style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
+                    style_cell={'textAlign':'left','width':'12%'}
+                ),
+                dbc.Button("Show more details", id="reminder_button", outline=True, color="secondary", size="sm", className="mr-1"),
+                ], 
+                width={'size':6}),
             ]),
 
     ### Part 5: Risk Analysis: Barchart, Amount to Target & Current Profit/Loss Breakdown ###
     dbc.Row([
-            dbc.Col([dcc.Graph(id='current_target_risk_barchart')], width={'size':4},),
+            dbc.Col([dcc.Graph(id='current_target_risk_barchart')], width={'size':4}),
             dbc.Col([dash_table.DataTable(
                 id='amount_to_target_table',
                 style_table={'border': 'thin lightgrey solid'},
                 style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
                 style_cell={'textAlign':'left','width':'12%'}
                 )], 
-                width={'size':2},),
-            dbc.Col([dcc.Graph(id='profit_loss_breakdown_barchart')], width={'size':6},)
+                width={'size':2}),
+            dbc.Col([dcc.Graph(id='profit_loss_breakdown_barchart')], width={'size':6})
             ]),
 
     ### Part 6: Asset Type Selection ###
@@ -206,7 +228,7 @@ app.layout = html.Div([
                         id='client_asset_type_dropdown',
                         )
                     ],
-                    width={'size':3},
+                    width={'size':3}
                     ),
             ]),
 
@@ -313,7 +335,7 @@ def overall_section(selected_base_numbers):
                                 )
 
     pie_chart_fig = px.pie(latest_piechart_data, values='Nominal Amount (USD)', names='Asset Class',
-                            title="Current Client's Asset Class Breakdown",
+                            title="Client's Current Assets & Liabilities Breakdown",
                             hover_data=['Nominal Amount (USD)'])
 
     return card_assets_value,card_liab_value,time_series_fig,pie_chart_fig
@@ -326,7 +348,8 @@ def overall_section(selected_base_numbers):
     Output('current_target_risk_barchart','figure'),
     Output('amount_to_target_table','columns'),
     Output('amount_to_target_table','data'),
-    Output('card_current_risk_value','children')],
+    Output('card_current_risk_value','children'),
+    Output('card_target_risk_value','children')],
     [Input('base_numbers_checklist', 'value')]
 ) 
 def risk_analysis_section(selected_base_numbers):
@@ -481,7 +504,60 @@ def risk_analysis_section(selected_base_numbers):
             html.H6(f"Level {current_risk_level} "+target_status_string, className="card-subtitle"),
         ]
 
-    return current_risk_pie_chart,target_risk_pie_chart,current_target_risk_barchart,table_columns,table_data,current_risk_level_card
+    target_risk_level_card = [
+            html.H4("Target Risk Level", className="card-title"),
+            html.H6(f"Level {target_risk_level} ", className="card-subtitle"),
+        ]
+
+    return current_risk_pie_chart,target_risk_pie_chart,current_target_risk_barchart,table_columns,table_data,current_risk_level_card,target_risk_level_card
+
+### Callback for Part 2 & 5: Reminders Banner and Reminders Summary Table ###
+# This callback will return Reminders Banner value and Reminders Summary Table. #
+@app.callback(
+    [Output('reminders_summary_table','columns'),
+    Output('reminders_summary_table','data'),
+    Output('card_reminders_value','children')],
+    [Input('base_numbers_checklist', 'value')]
+) 
+def reminders_section(selected_base_numbers):
+    client_data = df[df["Base Number"].isin(selected_base_numbers)]
+    Eq_FI = ["EQUITIES","FIXED INCOME"]
+    client_data = client_data[client_data["Asset Class"].isin(Eq_FI)]
+
+    common_columns = ["Client Name","Base Number","Position As of Date","Asset Class","Asset Sub Class","Name","Ticker","CCY","Nominal Units","Nominal Amount (CCY)",
+    "Nominal Amount (USD)","Current Price","Closing Price","Average Cost","% Change from Avg Cost","1d %","5d %","1m %","6m %","12m %","YTD%",
+    "Sector","Country (Domicile)","Region (Largest Revenue)"]
+    equities_columns = ["Citi rating","Citi TARGET","% to target","Market Consensus","12M Div Yield (%)",
+    "P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)","50D MA","200D MA","Profit Margin",
+    "Company Description"]
+    equities_date = ["Dividend EX Date"]
+    # "CoCo Action","Duration" are left out in fixed_income_columns because Client.csv do not have them
+    fixed_income_columns = ["Rank","Moodys R","S&P R","Fitch","Coupon","YTC","YTM","Coupon type","Issue Date"]
+    fixed_income_date = ["Maturity","Next Call Date"]
+    reminders_columns = common_columns + equities_columns + fixed_income_columns + equities_date + fixed_income_date
+    reminders_columns_without_dates = common_columns + equities_columns + fixed_income_columns
+
+    reminder_df = client_data[reminders_columns]
+
+    melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+    melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
+
+    today = date.today()
+    next_reminder_date =  today + timedelta(weeks=4) # change time accordingly here
+
+    df_next_reminder = melted_reminder_df[(melted_reminder_df['Date'] <= next_reminder_date) & (melted_reminder_df['Date'] >= today)]
+
+    reminders_count_1m = len(df_next_reminder.index)
+
+    table_columns = [{"name": i, "id": i} for i in df_next_reminder[["Name","Reminder Type","Date"]].columns]
+    table_data = df_next_reminder[["Name","Reminder Type","Date"]].to_dict('records')
+
+    reminders_card = [
+            html.H4("Asset Reminders", className="card-title"),
+            html.H6(f"{reminders_count_1m} (Due in 1 month)", className="card-subtitle"),
+        ]
+
+    return table_columns,table_data,reminders_card
 
 ### Callback for Part 2 & 5: Profit & Loss Banner and Profit & Loss Breakdown Barchart ###
 # This callback will return Profit & Loss Banner value and Profit & Loss Breakdown Barchart. #
@@ -552,7 +628,7 @@ def profit_loss_section(selected_base_numbers):
         sign = "-"
 
     profit_loss_card = [
-            html.H4("Current Total Profit/Loss", className="card-title"),
+            html.H4("Current Profit/Loss", className="card-title"),
             html.H6(sign+"${:.3f}M".format(abs(total_profit_loss/1000000)), className="card-subtitle"),
         ]
 
