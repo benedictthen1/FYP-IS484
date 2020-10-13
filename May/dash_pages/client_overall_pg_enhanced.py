@@ -67,23 +67,23 @@ card_liab = dbc.Card(
 # Total Profit/Loss Card (This card is under Part 1, refer to app layout)
 card_profit_loss = dbc.Card(
     [
-        dbc.CardBody(id='profit_loss_value',
+        dbc.CardBody(id='card_profit_loss_value',
         ),
-    ],inverse=False,outline=True, color="primary",
+    ],inverse=False,outline=True, color="secondary",
 )
 # Current Risk Level Card (This card is under Part 1, refer to app layout)
 card_current_risk = dbc.Card(
     [
-        dbc.CardBody(id='card_current_risk',
+        dbc.CardBody(id='card_current_risk_value',
         ),
-    ],inverse=False,outline=True, color="primary",
+    ],inverse=False,outline=True, color="secondary",
 )
 # Reminders Card (This card is under Part 1, refer to app layout)
 card_reminders = dbc.Card(
     [
-        dbc.CardBody(id='card_reminders',
+        dbc.CardBody(id='card_reminders_value',
         ),
-    ],inverse=False,outline=True, color="primary",
+    ],inverse=False,outline=True, color="secondary",
 )
 
 # There will be 4 cards under Part 4, refer to app layout.
@@ -181,20 +181,21 @@ app.layout = html.Div([
 
     ### Part 4: Risk Analysis Piecharts & Reminders ###
     dbc.Row([
-            dbc.Col([dcc.Graph(id='current_risk_piechart')], width={'size':6},),
-            dbc.Col([dcc.Graph(id='target_risk_piechart')], width={'size':6},),
+            dbc.Col([dcc.Graph(id='current_risk_piechart')], width={'size':3},),
+            dbc.Col([dcc.Graph(id='target_risk_piechart')], width={'size':3},),
             ]),
 
     ### Part 5: Risk Analysis: Barchart, Amount to Target & Current Profit/Loss Breakdown ###
     dbc.Row([
-            dbc.Col([dcc.Graph(id='current_target_risk_barchart')], width={'size':6},),
+            dbc.Col([dcc.Graph(id='current_target_risk_barchart')], width={'size':4},),
             dbc.Col([dash_table.DataTable(
                 id='amount_to_target_table',
                 style_table={'border': 'thin lightgrey solid'},
                 style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
                 style_cell={'textAlign':'left','width':'12%'}
                 )], 
-                width={'size':6},),
+                width={'size':2},),
+            dbc.Col([dcc.Graph(id='profit_loss_breakdown_barchart')], width={'size':6},)
             ]),
 
     ### Part 6: Asset Type Selection ###
@@ -324,7 +325,8 @@ def overall_section(selected_base_numbers):
     Output('target_risk_piechart','figure'),
     Output('current_target_risk_barchart','figure'),
     Output('amount_to_target_table','columns'),
-    Output('amount_to_target_table','data')],
+    Output('amount_to_target_table','data'),
+    Output('card_current_risk_value','children')],
     [Input('base_numbers_checklist', 'value')]
 ) 
 def risk_analysis_section(selected_base_numbers):
@@ -363,9 +365,6 @@ def risk_analysis_section(selected_base_numbers):
     group_by_risk_asset_class = group_by_risk_asset_class.drop_duplicates(subset=['Asset Class'])
 
     group_by_risk_asset_class["Current Breakdown by Percentage"] = group_by_risk_asset_class['Current Nominal Amount (USD)']*100/total_nominal_amount
-    # print(target_risk_df)
-    # print(group_by_risk_asset_class)
-    # target_risk_df.sort_values('Asset Class', inplace=True)
     # print(target_risk_df)
     
     group_by_risk_asset_class = group_by_risk_asset_class.merge(target_risk_df, on="Asset Class")
@@ -409,13 +408,11 @@ def risk_analysis_section(selected_base_numbers):
     #     annotations=[dict(text=f'Current<br>Risk Level<br><b>{current_risk_level}</b>', x=0.25, y=0.5, font_size=20, showarrow=False),
     #                 dict(text=f'Target<br>Risk Level<br><b>{target_risk_level}</b>', x=0.75, y=0.5, font_size=20, showarrow=False)])
 
-
     current_risk_pie_chart = go.Figure(data=[go.Pie(
             labels=group_by_risk_asset_class['Asset Class'],
             values=group_by_risk_asset_class['Current Nominal Amount (USD)'],
             #hover_data=['Current Nominal Amount (USD)'],
             hole=0.7,
-            # Second, make sure that Plotly won't reorder your data while plotting
             sort=False)
     ])
     current_risk_pie_chart.update_layout(
@@ -429,7 +426,6 @@ def risk_analysis_section(selected_base_numbers):
             values=group_by_risk_asset_class['Target Nominal Amount (USD)'],
             #hover_data=['Target Nominal Amount (USD)'],
             hole=0.7,
-            # Second, make sure that Plotly won't reorder your data while plotting
             sort=False)
     ])
     target_risk_pie_chart.update_layout(title_text="Target Risk Analysis",
@@ -474,7 +470,94 @@ def risk_analysis_section(selected_base_numbers):
 
     table_columns = [{"name": i, "id": i} for i in group_by_risk_asset_class[["Asset Class","Amount to Target"]].columns]
     table_data = group_by_risk_asset_class[["Asset Class","Amount to Target"]].to_dict('records')
-    return current_risk_pie_chart,target_risk_pie_chart,current_target_risk_barchart,table_columns,table_data
+
+    if current_risk_level == target_risk_level:
+        target_status_string = "(In Target)"
+    else:
+        target_status_string = "(Out of Target)"
+
+    current_risk_level_card = [
+            html.H4("Current Risk Level", className="card-title"),
+            html.H6(f"Level {current_risk_level} "+target_status_string, className="card-subtitle"),
+        ]
+
+    return current_risk_pie_chart,target_risk_pie_chart,current_target_risk_barchart,table_columns,table_data,current_risk_level_card
+
+### Callback for Part 2 & 5: Profit & Loss Banner and Profit & Loss Breakdown Barchart ###
+# This callback will return Profit & Loss Banner value and Profit & Loss Breakdown Barchart. #
+@app.callback(
+    [Output('profit_loss_breakdown_barchart','figure'),
+    Output('card_profit_loss_value','children')],
+    [Input('base_numbers_checklist', 'value')]
+) 
+def profit_loss_section(selected_base_numbers):
+    client_data = df[df["Base Number"].isin(selected_base_numbers)]
+    latest_date = client_data["Position As of Date"].max()
+    latest_client_data = client_data[client_data['Position As of Date'] == latest_date]
+
+    Eq_FI = ["EQUITIES","FIXED INCOME"]
+    Eq_FI_df = latest_client_data[latest_client_data["Asset Class"].isin(Eq_FI)]
+    Alt_df = latest_client_data[latest_client_data["Asset Class"]=="ALTERNATIVE INVESTMENTS"]
+
+    Eq_FI_df = Eq_FI_df[["Client Name","Base Number","Asset Class","Estimated Profit/Loss"]]
+    Alt_df = Alt_df[["Client Name","Base Number","Asset Class","Distribution Amount","Estimated Profit/Loss"]]
+
+    Alt_Distribution_boolean = pd.notnull(Alt_df["Distribution Amount"])
+    Alt_Distribution_df = Alt_df[Alt_Distribution_boolean]
+    #print(Alt_Distribution_df.tail())
+    Alt_Distribution_df = Alt_Distribution_df[["Client Name","Base Number","Asset Class","Distribution Amount"]][Alt_Distribution_df["Distribution Amount"]!=0]
+    #print(Alt_Distribution_df.tail())
+    Alt_Distribution_df.rename(columns={"Distribution Amount": "Estimated Profit/Loss"}, inplace=True)
+    #print(Eq_FI_df.shape)
+    #print(Alt_Distribution_df.shape)
+
+    Alt_Profit_Loss_boolean = pd.isnull(Alt_df["Distribution Amount"])
+    Alt_Profit_Loss_NA_df = Alt_df[["Client Name","Base Number","Asset Class","Estimated Profit/Loss"]][Alt_Profit_Loss_boolean]
+    #print(Alt_Profit_Loss_NA_df.shape)
+    Alt_Profit_Loss_zero_df = Alt_df[["Client Name","Base Number","Asset Class","Estimated Profit/Loss"]][Alt_df["Distribution Amount"]==0]
+    #print(Alt_Profit_Loss_zero_df.shape)
+
+    frames = [Eq_FI_df,Alt_Distribution_df,Alt_Profit_Loss_NA_df,Alt_Profit_Loss_zero_df]
+    Profit_Loss_df = pd.concat(frames,ignore_index=True)
+    #print(Profit_Loss_df.tail())
+    #print(Profit_Loss_df.shape)
+
+    decimals = 3
+    Profit_Loss_df['Estimated Profit/Loss'] = Profit_Loss_df['Estimated Profit/Loss'].apply(lambda x: round(x, decimals))
+    #print(Profit_Loss_df.head())
+    total_profit_loss = Profit_Loss_df['Estimated Profit/Loss'].sum()
+
+    group_by_PL_asset_class = Profit_Loss_df\
+    .groupby(['Asset Class'], as_index=False)\
+    .agg({'Estimated Profit/Loss':'sum'})
+
+    profit_loss_breakdown_barchart = px.bar(
+        group_by_PL_asset_class, x="Asset Class", y="Estimated Profit/Loss",
+        hover_data={"Estimated Profit/Loss":":.3f"},
+        text="Estimated Profit/Loss")
+    profit_loss_breakdown_barchart.update_layout(
+        title="Client's Current Profit/Loss Breakdown",
+        xaxis_title="By Asset Class",
+        yaxis_title="Profit/Loss",
+        legend_title="",
+        )
+    profit_loss_breakdown_barchart.update_traces(
+        textposition='outside',
+        texttemplate = "%{text:.2s}")
+
+    sign = ""
+    if total_profit_loss > 0:
+        sign = "+"
+    elif total_profit_loss < 0:
+        sign = "-"
+
+    profit_loss_card = [
+            html.H4("Current Total Profit/Loss", className="card-title"),
+            html.H6(sign+"${:.3f}M".format(abs(total_profit_loss/1000000)), className="card-subtitle"),
+        ]
+
+    return profit_loss_breakdown_barchart,profit_loss_card
+
 
 ### Callback for Part 3: Asset Type Selection ("Choose Asset Type" dropdown) ###
 # This callback will return the dropdown options and pre-selected value based on selected base numbers. #
@@ -645,7 +728,6 @@ def custom_section(selected_base_numbers,selected_tab):
         sell_count = equity_latest_table_df[equity_latest_table_df["Citi rating"] == "sell"].count()[0]
         # print(type(buy_count))
         # print(f"No. of buy: {buy_count}")
-
 
         equity_latest_table = go.Figure(data=[go.Table(
                     header=dict(values=["<b>Company Name</b>","<b>Profit/Loss</b>",
