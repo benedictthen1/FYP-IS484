@@ -50,6 +50,8 @@ df[numeric_cols] = df[numeric_cols].apply(lambda x: round(x, decimals))
 ### Get all client names ###
 client_names = df["Client Name"].unique()
 
+
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Total Assets Value Card (This card is under Part 1, refer to app layout)
@@ -176,6 +178,40 @@ def return_standard_tab_content(selected_tab_chart, selected_tab_table):
         
     return standard_tab_content
 
+# this function returns standard_tab_content children
+def return_reminders_summary_table(table_columns, table_data): 
+    reminders_summary_table_content = dbc.Col(
+        [dash_table.DataTable(
+            id='reminders_summary_table',
+            columns = table_columns,
+            data = table_data,
+            style_table={'border': 'thin lightgrey solid'},
+            style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
+            style_cell={'textAlign':'left','width':'12%'}
+            ),
+        dbc.Button("Show more details", id="reminder_button", outline=True, color="secondary", size="sm", className="mr-1")
+        ], 
+        # width={'size':6}
+    )
+        
+    return reminders_summary_table_content
+
+# this function returns standard_tab_content children
+def return_reminders_tab_content(table_columns, table_data): 
+    reminders_tab_content = dbc.Row(
+        dbc.Col([dash_table.DataTable(
+                id='reminders_summary_table',
+                columns = table_columns,
+                data = table_data,
+                style_table={'border': 'thin lightgrey solid'},
+                style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
+                style_cell={'textAlign':'left','width':'12%'}
+            )],   
+        )
+    )
+        
+    return reminders_tab_content
+
 ### The whole app layout ###
 # There are 4 main parts on this app. #
 # Part 1: Main Selection (This area might be replaced with your output. The selection here will affect the entire app.)
@@ -240,16 +276,17 @@ app.layout = html.Div([
     dbc.Row([
             dbc.Col([dcc.Graph(id='current_risk_piechart')], width={'size':3}),
             dbc.Col([dcc.Graph(id='target_risk_piechart')], width={'size':3}),
-            dbc.Col([
-                dash_table.DataTable(
-                    id='reminders_summary_table',
-                    style_table={'border': 'thin lightgrey solid'},
-                    style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
-                    style_cell={'textAlign':'left','width':'12%'}
-                ),
-                dbc.Button("Show more details", id="reminder_button", outline=True, color="secondary", size="sm", className="mr-1"),
-                ], 
-                width={'size':6}),
+            # dbc.Col([
+            #     dash_table.DataTable(
+            #         id='reminders_summary_table',
+            #         style_table={'border': 'thin lightgrey solid'},
+            #         style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
+            #         style_cell={'textAlign':'left','width':'12%'}
+            #     ),
+            #     dbc.Button("Show more details", id="reminder_button", outline=True, color="secondary", size="sm", className="mr-1"),
+            #     ], 
+            #     width={'size':6}),
+            html.Div(id = "reminders_summary_content"),
             ]),
 
     ### Part 5: Risk Analysis: Barchart, Amount to Target & Current Profit/Loss Breakdown ###
@@ -290,7 +327,8 @@ app.layout = html.Div([
     html.Br(),
     ### Part 7: Custom Section ###
     html.Div(id = "tab_content_banners"),   
-    html.Div(id = "tab_content_custom_section")   
+    html.Div(id = "tab_content_custom_section"), 
+    # html.Div(id = "reminders_tab_content")   
     ])
 
 ### Callback for Part 1: "Client's Base Numbers" multi-select section ###
@@ -556,54 +594,79 @@ def risk_analysis_section(selected_base_numbers):
 ### Callback for Part 2 & 5: Reminders Banner and Reminders Summary Table ###
 # This callback will return Reminders Banner value and Reminders Summary Table. #
 @app.callback(
-    [Output('reminders_summary_table','columns'),
-    Output('reminders_summary_table','data'),
-    Output('card_reminders_value','children')],
-    [Input('base_numbers_checklist', 'value')]
+    [
+    # Output('reminders_summary_table','columns'),
+    # Output('reminders_summary_table','data'),
+    Output('reminders_summary_content','children'),
+    Output('card_reminders_value','children'),
+    # Output('reminders_tab_content','children')
+    ],
+    [Input('base_numbers_checklist', 'value'),
+    # Input('client_asset_type_tabs','active_tab')
+    ]
 ) 
 def reminders_section(selected_base_numbers): # currently not based on latest data
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     Eq_FI = ["EQUITIES","FIXED INCOME"]
-    client_data = client_data[client_data["Asset Class"].isin(Eq_FI)]
+    client_asset_classes = list(client_data["Asset Class"].unique())
+    if any(asset in client_asset_classes for asset in Eq_FI):
+        client_data = client_data[client_data["Asset Class"].isin(Eq_FI)]
 
-    common_columns = ["Client Name","Base Number","Position As of Date","Asset Class","Asset Sub Class","Name","Ticker","CCY","Nominal Units","Nominal Amount (CCY)",
-    "Nominal Amount (USD)","Current Price","Closing Price","Average Cost","% Change from Avg Cost","1d %","5d %","1m %","6m %","12m %","YTD%",
-    "Sector","Country (Domicile)","Region (Largest Revenue)"]
-    equities_columns = ["Citi rating","Citi TARGET","% to target","Market Consensus","12M Div Yield (%)",
-    "P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)","50D MA","200D MA","Profit Margin",
-    "Company Description"]
-    equities_date = ["Dividend EX Date"]
-    # "CoCo Action","Duration" are left out in fixed_income_columns because Client.csv do not have them
-    fixed_income_columns = ["Rank","Moodys R","S&P R","Fitch","Coupon","YTC","YTM","Coupon type","Issue Date"]
-    fixed_income_date = ["Maturity","Next Call Date"]
-    reminders_columns = common_columns + equities_columns + fixed_income_columns + equities_date + fixed_income_date
-    reminders_columns_without_dates = common_columns + equities_columns + fixed_income_columns
+        common_columns = ["Client Name","Base Number","Position As of Date","Asset Class","Asset Sub Class","Name","Ticker","CCY","Nominal Units","Nominal Amount (CCY)",
+        "Nominal Amount (USD)","Current Price","Closing Price","Average Cost","% Change from Avg Cost","1d %","5d %","1m %","6m %","12m %","YTD%",
+        "Sector","Country (Domicile)","Region (Largest Revenue)"]
+        equities_columns = ["Citi rating","Citi TARGET","% to target","Market Consensus","12M Div Yield (%)",
+        "P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)","50D MA","200D MA","Profit Margin",
+        "Company Description"]
+        equities_date = ["Dividend EX Date"]
+        # "CoCo Action","Duration" are left out in fixed_income_columns because Client.csv do not have them
+        fixed_income_columns = ["Rank","Moodys R","S&P R","Fitch","Coupon","YTC","YTM","Coupon type","Issue Date"]
+        fixed_income_date = ["Maturity","Next Call Date"]
+        reminders_columns = common_columns + equities_columns + fixed_income_columns + equities_date + fixed_income_date
+        reminders_columns_without_dates = common_columns + equities_columns + fixed_income_columns
 
-    reminder_df = client_data[reminders_columns]
-    # filter by latest date to avoid duplications
-    # latest_date = reminder_df["Position As of Date"].max()
-    # latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
+        reminder_df = client_data[reminders_columns]
+        # filter by latest date to avoid duplications
+        # latest_date = reminder_df["Position As of Date"].max()
+        # latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
 
-    # melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
-    melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
-    melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
+        # melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+        melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+        melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
 
-    today = date.today()
-    next_reminder_date =  today + timedelta(weeks=4) # change time accordingly here
+        today = date.today()
+        next_reminder_date =  today + timedelta(weeks=4) # change time accordingly here
 
-    df_next_reminder = melted_reminder_df[(melted_reminder_df['Date'] <= next_reminder_date) & (melted_reminder_df['Date'] >= today)]
+        df_next_reminder = melted_reminder_df[(melted_reminder_df['Date'] <= next_reminder_date) & (melted_reminder_df['Date'] >= today)]
+        # df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
 
-    reminders_count_1m = len(df_next_reminder.index)
+        reminders_count_1m = len(df_next_reminder.index)
 
-    table_columns = [{"name": i, "id": i} for i in df_next_reminder[["Name","Reminder Type","Date"]].columns]
-    table_data = df_next_reminder[["Name","Reminder Type","Date"]].to_dict('records')
+        if reminders_count_1m != 0:
+            table_columns = [{"name": i, "id": i} for i in df_next_reminder[["Name","Reminder Type","Date"]].columns]
+            table_data = df_next_reminder[["Name","Reminder Type","Date"]].to_dict('records')
+            reminders_summary_content = return_reminders_summary_table(table_columns,table_data)
+        else:
+            reminders_summary_content = "There are no Assets due in 1 month."
+
+    else:
+        reminders_count_1m = 0
+        reminders_summary_content = "This Client or Base Number has no relevant Assets to remind."
 
     reminders_card = [
             html.H4("Asset Reminders", className="card-title"),
             html.H6(f"{reminders_count_1m} (Due in 1 month)", className="card-subtitle"),
         ]
 
-    return table_columns,table_data,reminders_card
+    # if selected_tab == "REMINDERS":
+    #     reminder_tab_table_columns = [{"name": i, "id": i} for i in df_all_reminder.columns]
+    #     reminder_tab_table_data = df_all_reminder.to_dict('records')
+    #     reminder_tab_table = return_reminders_tab_content(reminder_tab_table_columns, reminder_tab_table_data)
+    # else:
+    #     reminder_tab_table = []
+
+    # return table_columns,table_data,reminders_card
+    return reminders_summary_content,reminders_card
 
 ### Callback for Part 2 & 5: Profit & Loss Banner and Profit & Loss Breakdown Barchart ###
 # This callback will return Profit & Loss Banner value and Profit & Loss Breakdown Barchart. #
@@ -836,6 +899,9 @@ def custom_section(selected_base_numbers,selected_tab):
         card_custom_right2_value = no_of_loan_CCY_card
         selected_tab_chart = cash_loan_barchart
         selected_tab_table = cash_loan_table
+
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
     
     elif selected_tab == "EQUITIES":
         client_equity_data = client_data[client_data["Asset Class"]==selected_tab]
@@ -914,6 +980,9 @@ def custom_section(selected_base_numbers,selected_tab):
         card_custom_right2_value = no_of_sell_card
         selected_tab_chart = equity_daily_percentage_fig
         selected_tab_table = equity_latest_table
+
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
     
     elif selected_tab == "FIXED INCOME":
 
@@ -1070,6 +1139,9 @@ def custom_section(selected_base_numbers,selected_tab):
         selected_tab_chart = credit_rating_barchart
         selected_tab_table = fi_latest_table  
 
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
+
     elif selected_tab == "ALTERNATIVE INVESTMENTS":
         client_ai_data = client_data[client_data["Asset Class"]==selected_tab]
         
@@ -1140,7 +1212,10 @@ def custom_section(selected_base_numbers,selected_tab):
         selected_tab_chart = ai_daily_percentage_fig
         selected_tab_table = ai_latest_table
 
-    else: # "CAPITAL MARKETS"
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
+
+    elif selected_tab == "CAPITAL MARKETS": # "CAPITAL MARKETS"
         client_cm_data = client_data[client_data["Asset Class"]==selected_tab]
         
         group_by_date_cm = client_cm_data.\
@@ -1225,12 +1300,58 @@ def custom_section(selected_base_numbers,selected_tab):
         selected_tab_chart = daily_cm_fig
         selected_tab_table = cm_latest_table
 
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
+
     # return card_custom_left1_value, card_custom_left2_value,\
     #     card_custom_right1_value,card_custom_right2_value,\
     #     selected_tab_chart, selected_tab_table
 
-    return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
-        return_standard_tab_content(selected_tab_chart, selected_tab_table)
+    else: # "REMINDER" section
+        client_data = df[df["Base Number"].isin(selected_base_numbers)]
+        Eq_FI = ["EQUITIES","FIXED INCOME"]
+        client_asset_classes = list(client_data["Asset Class"].unique())
+        if any(asset in client_asset_classes for asset in Eq_FI):
+            client_data = client_data[client_data["Asset Class"].isin(Eq_FI)]
+
+            common_columns = ["Client Name","Base Number","Position As of Date","Asset Class","Asset Sub Class","Name","Ticker","CCY","Nominal Units","Nominal Amount (CCY)",
+            "Nominal Amount (USD)","Current Price","Closing Price","Average Cost","% Change from Avg Cost","1d %","5d %","1m %","6m %","12m %","YTD%",
+            "Sector","Country (Domicile)","Region (Largest Revenue)"]
+            equities_columns = ["Citi rating","Citi TARGET","% to target","Market Consensus","12M Div Yield (%)",
+            "P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)","50D MA","200D MA","Profit Margin",
+            "Company Description"]
+            equities_date = ["Dividend EX Date"]
+            # "CoCo Action","Duration" are left out in fixed_income_columns because Client.csv do not have them
+            fixed_income_columns = ["Rank","Moodys R","S&P R","Fitch","Coupon","YTC","YTM","Coupon type","Issue Date"]
+            fixed_income_date = ["Maturity","Next Call Date"]
+            reminders_columns = common_columns + equities_columns + fixed_income_columns + equities_date + fixed_income_date
+            reminders_columns_without_dates = common_columns + equities_columns + fixed_income_columns
+
+            reminder_df = client_data[reminders_columns]
+            # filter by latest date to avoid duplications
+            # latest_date = reminder_df["Position As of Date"].max()
+            # latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
+
+            # melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+            melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+            melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
+
+            today = date.today()
+            df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
+
+            all_reminders_count = len(df_all_reminder.index)
+            
+            if all_reminders_count != 0:
+                reminder_tab_table_columns = [{"name": i, "id": i} for i in df_all_reminder.columns]
+                reminder_tab_table_data = df_all_reminder.to_dict('records')
+                reminder_tab_content = return_reminders_tab_content(reminder_tab_table_columns, reminder_tab_table_data)
+            else:
+                reminder_tab_content = "There are no Assets due to remind for this Client or Base Number."
+
+        else:
+            reminder_tab_content = "This Client or Base Number has no relevant Assets to remind."
+
+        return reminder_tab_content,""
 
 if __name__ == '__main__':
     app.run_server(debug=True)

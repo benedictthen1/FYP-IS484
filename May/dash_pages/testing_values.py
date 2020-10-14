@@ -82,3 +82,11 @@ print(today)
 print(next_week_date)
 print(df_next_week)
 print(count)
+
+all_list = ["ALTERNATIVES",]
+Eq_FI = ["EQUITIES","FIXED INCOME"]
+
+if any(i in all_list for i in Eq_FI):
+    print("exists")
+else:
+    print("not exist")
