@@ -99,37 +99,82 @@ card_reminders = dbc.Card(
 
 # There will be 4 cards under Part 4, refer to app layout.
 # 2 Left cards and 2 Right cards
-# Custom Card Left 1
-card_custom_left1 = dbc.Card(
-    [
-        dbc.CardBody(id='card_custom_left1_value',
-        ),
-    ],color="dark",  inverse=True, outline=False,
-)
+# Custom Card Left 1 (This card is under Part 4, refer to app layout)
+# card_custom_left1 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_left1_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
 
-# Custom Card Left 2
-card_custom_left2 = dbc.Card(
-    [
-        dbc.CardBody(id='card_custom_left2_value',
-        ),
-    ],color="dark",  inverse=True, outline=False,
-)
+# Custom Card Left 2 (This card is under Part 4, refer to app layout)
+# card_custom_left2 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_left2_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
 
-# Custom Card Right 1
-card_custom_right1 = dbc.Card(
-    [
-        dbc.CardBody(id='card_custom_right1_value',
-        ),
-    ],color="dark",  inverse=True, outline=False,
-)
+# Custom Card Right 1 (This card is under Part 4, refer to app layout)
+# card_custom_right1 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_right1_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
 
-# Custom Card Right 2
-card_custom_right2 = dbc.Card(
-    [
-        dbc.CardBody(id='card_custom_right2_value',
-        ),
-    ],color="dark",  inverse=True, outline=False,
-)
+# Custom Card Right 2 (This card is under Part 4, refer to app layout)
+# card_custom_right2 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_right2_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
+
+# Standard Tab Content
+# standard_tab_content = [
+#     dbc.Row([
+#         dbc.Col(card_custom_left1, width=3),
+#         dbc.Col(card_custom_left2, width=3),
+#         dbc.Col(card_custom_right1, width=3),
+#         dbc.Col(card_custom_right2, width=3)
+#         ]),
+#     dbc.Row([
+#         dbc.Col([dcc.Graph(id='selected_tab_chart')],
+#             width={'size':6},
+#             ),
+#         dbc.Col([
+#             dcc.Graph(id='selected_tab_table'),
+#             dbc.Button("Show more details", id="custom_button", outline=True, color="secondary", size="sm", className="mr-1"),
+#             ],width={'size':6},
+#             ),
+#         ]), 
+#     ]
+
+# this function returns tab_content_banners children
+def return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value): 
+    tab_content_banners = dbc.Row([
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_left1_value',children=card_custom_left1_value)],color="dark",  inverse=True, outline=False),width=3),
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_left2_value',children=card_custom_left2_value)],color="dark",  inverse=True, outline=False),width=3),
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_right1_value',children=card_custom_right1_value)],color="dark",  inverse=True, outline=False),width=3),
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_right2_value',children=card_custom_right2_value)],color="dark",  inverse=True, outline=False),width=3),
+            ], justify="start")
+    return tab_content_banners
+
+# this function returns standard_tab_content children
+def return_standard_tab_content(selected_tab_chart, selected_tab_table): 
+    standard_tab_content = dbc.Row([
+            dbc.Col([dcc.Graph(id='selected_tab_chart',figure=selected_tab_chart)],
+                width={'size':6},
+                ),
+            dbc.Col([
+                dcc.Graph(id='selected_tab_table',figure=selected_tab_table),
+                dbc.Button("Show more details", id="custom_button", outline=True, color="secondary", size="sm", className="mr-1"),
+                ],width={'size':6},
+                ),
+            ])
+        
+    return standard_tab_content
 
 ### The whole app layout ###
 # There are 4 main parts on this app. #
@@ -221,34 +266,31 @@ app.layout = html.Div([
             ]),
 
     ### Part 6: Asset Type Selection ###
-    dbc.Row([
-            dbc.Col([
-                        html.H3("Choose Asset Type:"),
-                        dcc.Dropdown(
-                        id='client_asset_type_dropdown',
-                        )
-                    ],
-                    width={'size':3}
-                    ),
-            ]),
+    # dbc.Row([
+    #         dbc.Col([
+    #                     html.H3("Choose Asset Type:"),
+    #                     dcc.Dropdown(
+    #                     id='client_asset_type_dropdown',
+    #                     clearable=False
+    #                     )
+    #                 ],
+    #                 width={'size':3}
+    #                 ),
+    #         ]),
 
     html.Br(),
+    dbc.Row([
+            dbc.Col([
+                dbc.Tabs(
+                id="client_asset_type_tabs",
+                )
+            ])
+        ]),
 
+    html.Br(),
     ### Part 7: Custom Section ###
-    dbc.Row([
-            dbc.Col(card_custom_left1, width=3),
-            dbc.Col(card_custom_left2, width=3),
-            dbc.Col(card_custom_right1, width=3),
-            dbc.Col(card_custom_right2, width=3)
-            ], justify="start"),
-    dbc.Row([
-            dbc.Col([dcc.Graph(id='selected_tab_chart')],
-                    width={'size':6},
-                    ),
-            dbc.Col([dcc.Graph(id='selected_tab_table')],
-                    width={'size':6},
-                    ),
-            ]),      
+    html.Div(id = "tab_content_banners"),   
+    html.Div(id = "tab_content_custom_section")   
     ])
 
 ### Callback for Part 1: "Client's Base Numbers" multi-select section ###
@@ -396,8 +438,8 @@ def risk_analysis_section(selected_base_numbers):
     group_by_risk_asset_class["Target Nominal Amount (USD)"] = total_nominal_amount*(group_by_risk_asset_class['Target Breakdown by Percentage'])/100
 
     group_by_risk_asset_class["Amount to Target"] = group_by_risk_asset_class["Target Nominal Amount (USD)"] - group_by_risk_asset_class["Current Nominal Amount (USD)"]
-    print("Total Nominal Amount:",total_nominal_amount)
-    print(group_by_risk_asset_class)
+    # print("Total Nominal Amount:",total_nominal_amount)
+    # print(group_by_risk_asset_class)
 
     eq_only_risk_df = risk_df[risk_df["Asset Class"]=="EQUITIES"]
     input_num = group_by_risk_asset_class.loc[group_by_risk_asset_class['Asset Class'] == "EQUITIES", 'Current Breakdown by Percentage'].iloc[0]
@@ -454,7 +496,7 @@ def risk_analysis_section(selected_base_numbers):
     target_risk_pie_chart.update_layout(title_text="Target Risk Analysis",
                             annotations=[dict(text=f'Target Risk Level<br><b>{target_risk_level}</b>', x=0.5, y=0.5, font_size=20, showarrow=False)])
 
-    print(list(group_by_risk_asset_class["Asset Class"]))
+    # print(list(group_by_risk_asset_class["Asset Class"]))
     desc_order_group_by_risk_df = group_by_risk_asset_class.sort_values('Asset Class', ascending=False)
 
     current_target_risk_barchart = go.Figure()
@@ -519,7 +561,7 @@ def risk_analysis_section(selected_base_numbers):
     Output('card_reminders_value','children')],
     [Input('base_numbers_checklist', 'value')]
 ) 
-def reminders_section(selected_base_numbers):
+def reminders_section(selected_base_numbers): # currently not based on latest data
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     Eq_FI = ["EQUITIES","FIXED INCOME"]
     client_data = client_data[client_data["Asset Class"].isin(Eq_FI)]
@@ -538,7 +580,11 @@ def reminders_section(selected_base_numbers):
     reminders_columns_without_dates = common_columns + equities_columns + fixed_income_columns
 
     reminder_df = client_data[reminders_columns]
+    # filter by latest date to avoid duplications
+    # latest_date = reminder_df["Position As of Date"].max()
+    # latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
 
+    # melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
     melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
     melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
 
@@ -638,37 +684,65 @@ def profit_loss_section(selected_base_numbers):
 ### Callback for Part 3: Asset Type Selection ("Choose Asset Type" dropdown) ###
 # This callback will return the dropdown options and pre-selected value based on selected base numbers. #
 @app.callback(
-    [Output('client_asset_type_dropdown','options'),
-    Output('client_asset_type_dropdown','value')],
+    [
+    # Output('client_asset_type_dropdown','options'),
+    # Output('client_asset_type_dropdown','value'),
+    Output('client_asset_type_tabs','children'),
+    Output('client_asset_type_tabs','active_tab')],
     [Input('base_numbers_checklist', 'value')]
 ) 
-def set_asset_class_dropdown(selected_base_numbers):
+def set_asset_class_tabs(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     asset_classes = list(client_data["Asset Class"].unique())
     
     excel_tabs = ["EQUITIES","FIXED INCOME","ALTERNATIVE INVESTMENTS","CAPITAL MARKETS"]
-    asset_dropdown_options_list = ["CASH & LIABILITIES"]
+    asset_options_list = ["CASH & LIABILITIES"]
     for tab in excel_tabs:
         if tab in asset_classes:
-            asset_dropdown_options_list.append(tab)
+            asset_options_list.append(tab)
+    asset_options_list.append("REMINDERS")
     
-    asset_dropdown_options = [{'label': tab_option, 'value': tab_option} for tab_option in asset_dropdown_options_list]
+    # asset_options_list = [{'label': tab_option, 'value': tab_option} for tab_option in asset_options_list]
+
+    tabs_children = [dbc.Tab(label=tab_option, tab_id=tab_option) for tab_option in asset_options_list]
+            
     
-    return asset_dropdown_options, asset_dropdown_options_list[0]
+    return tabs_children, asset_options_list[0]
+
+# ### Callback for different Tab Content Layout. ###
+# @app.callback(
+#     [Output("tab_content", "children")],
+#     [Input('client_asset_type_tabs', 'active_tab')]
+# )
+# def tab_content_layout(selected_tab):
+#     excel_tabs = ["CASH & LIABILITIES","EQUITIES","FIXED INCOME","ALTERNATIVE INVESTMENTS","CAPITAL MARKETS"]
+#     if selected_tab in excel_tabs:
+#         print("It came into layout section!")
+#         return standard_tab_content
+
 
 ### Callback for Part 4: Custom Section (the whole section under "Choose Asset Type" dropdown) ###
 # This whole area will change according to what's selected in Part 3 and Part 1. # 
+# @app.callback(
+#     [Output('card_custom_left1_value','children'),
+#     Output('card_custom_left2_value','children'),
+#     Output('card_custom_right1_value','children'),
+#     Output('card_custom_right2_value','children'),
+#     Output('selected_tab_chart','figure'),
+#     Output('selected_tab_table','figure')],
+#     [Input('base_numbers_checklist', 'value'),
+#     # Input('client_asset_type_dropdown', 'value')]
+#     Input('client_asset_type_tabs', 'active_tab')]
+# ) 
 @app.callback(
-    [Output('card_custom_left1_value','children'),
-    Output('card_custom_left2_value','children'),
-    Output('card_custom_right1_value','children'),
-    Output('card_custom_right2_value','children'),
-    Output('selected_tab_chart','figure'),
-    Output('selected_tab_table','figure')],
+    [Output('tab_content_banners','children'),
+    Output('tab_content_custom_section','children')],
     [Input('base_numbers_checklist', 'value'),
-    Input('client_asset_type_dropdown', 'value')]
+    # Input('client_asset_type_dropdown', 'value')]
+    Input('client_asset_type_tabs', 'active_tab')]
 ) 
 def custom_section(selected_base_numbers,selected_tab):
+    # print("It comes in to custom section")
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     
     if selected_tab == "CASH & LIABILITIES":
@@ -763,7 +837,7 @@ def custom_section(selected_base_numbers,selected_tab):
         selected_tab_chart = cash_loan_barchart
         selected_tab_table = cash_loan_table
     
-    elif selected_tab == "EQUITIES" or selected_tab == "FIXED INCOME":
+    elif selected_tab == "EQUITIES":
         client_equity_data = client_data[client_data["Asset Class"]==selected_tab]
         client_equity_data["Exchange Rate"] = client_equity_data["Nominal Amount (USD)"]/client_equity_data["Nominal Amount (CCY)"]
         client_equity_data["Original Amount Paid"] = client_equity_data["Nominal Units"]*client_equity_data["Average Cost"]*client_equity_data["Exchange Rate"]
@@ -841,155 +915,160 @@ def custom_section(selected_base_numbers,selected_tab):
         selected_tab_chart = equity_daily_percentage_fig
         selected_tab_table = equity_latest_table
     
-    # elif selected_tab == "FIXED INCOME":
+    elif selected_tab == "FIXED INCOME":
 
-    #     # Credit Rating Dictionaries
-    #     SP_rating_dict = {
-    #         "AAA" : "Prime",
-    #         "AA+" : "High Grade",
-    #         "AA" : "High Grade",
-    #         "AA-" : "High Grade",
-    #         "A+" : "Upper Medium Grade",
-    #         "A" : "Upper Medium Grade",
-    #         "A-" : "Upper Medium Grade",
-    #         "BBB+" : "Lower Medium Grade",
-    #         "BBB" : "Lower Medium Grade",
-    #         "BBB-" : "Lower Medium Grade",
-    #         "BB+" : "Non Investment Grade Speculative",
-    #         "BB" : "Non Investment Grade Speculative",
-    #         "BB-" : "Non Investment Grade Speculative",
-    #         "B+" : "Highly Speculative",
-    #         "B" : "Highly Speculative",
-    #         "B-" : "Highly Speculative",
-    #         "CCC+" : "Substantial Risks",
-    #         "CCC" : "Extremely Speculative"
-    #     }
-    #     Moody_rating_dict = {
-    #         "Aaa" : "Prime",
-    #         "Aa1" : "High Grade",
-    #         "Aa2" : "High Grade",
-    #         "Aa3-" : "High Grade",
-    #         "A1" : "Upper Medium Grade",
-    #         "A2" : "Upper Medium Grade",
-    #         "A3" : "Upper Medium Grade",
-    #         "Baa1" : "Lower Medium Grade",
-    #         "Baa2" : "Lower Medium Grade",
-    #         "Baa3" : "Lower Medium Grade",
-    #         "Ba1" : "Non Investment Grade Speculative",
-    #         "Ba2" : "Non Investment Grade Speculative",
-    #         "Ba3" : "Non Investment Grade Speculative",
-    #         "B1" : "Highly Speculative",
-    #         "B2" : "Highly Speculative",
-    #         "B3" : "Highly Speculative",
-    #         "Caa1" : "Substantial Risks",
-    #         "Caa2" : "Extremely Speculative"
-    #     }
-    #     Fitch_rating_dict = SP_rating_dict
+        # Credit Rating Dictionaries
+        SP_rating_dict = {
+            "AAA" : "Prime",
+            "AA+" : "High Grade",
+            "AA" : "High Grade",
+            "AA-" : "High Grade",
+            "A+" : "Upper Medium Grade",
+            "A" : "Upper Medium Grade",
+            "A-" : "Upper Medium Grade",
+            "BBB+" : "Lower Medium Grade",
+            "BBB" : "Lower Medium Grade",
+            "BBB-" : "Lower Medium Grade",
+            "BB+" : "Non Investment Grade Speculative",
+            "BB" : "Non Investment Grade Speculative",
+            "BB-" : "Non Investment Grade Speculative",
+            "B+" : "Highly Speculative",
+            "B" : "Highly Speculative",
+            "B-" : "Highly Speculative",
+            "CCC+" : "Substantial Risks",
+            "CCC" : "Extremely Speculative"
+        }
+        Moody_rating_dict = {
+            "Aaa" : "Prime",
+            "Aa1" : "High Grade",
+            "Aa2" : "High Grade",
+            "Aa3-" : "High Grade",
+            "A1" : "Upper Medium Grade",
+            "A2" : "Upper Medium Grade",
+            "A3" : "Upper Medium Grade",
+            "Baa1" : "Lower Medium Grade",
+            "Baa2" : "Lower Medium Grade",
+            "Baa3" : "Lower Medium Grade",
+            "Ba1" : "Non Investment Grade Speculative",
+            "Ba2" : "Non Investment Grade Speculative",
+            "Ba3" : "Non Investment Grade Speculative",
+            "B1" : "Highly Speculative",
+            "B2" : "Highly Speculative",
+            "B3" : "Highly Speculative",
+            "Caa1" : "Substantial Risks",
+            "Caa2" : "Extremely Speculative"
+        }
+        Fitch_rating_dict = SP_rating_dict
 
-    #     client_fi_data = client_data[client_data["Asset Class"]==selected_tab]
-    #     client_fi_data["Exchange Rate"] = client_fi_data["Nominal Amount (USD)"]/client_fi_data["Nominal Amount (CCY)"]
-    #     client_fi_data["Original Amount Paid"] = client_fi_data["Nominal Units"]*client_fi_data["Average Cost"]*client_fi_data["Exchange Rate"]
-    #     client_fi_data["Estimated Profit/Loss"] = client_fi_data["Nominal Amount (USD)"]-client_fi_data["Original Amount Paid"]
-    #     client_fi_data["% Profit/Loss"] = client_fi_data["Estimated Profit/Loss"]*100/client_fi_data["Original Amount Paid"]
+        client_fi_data = client_data[client_data["Asset Class"]==selected_tab]
+        client_fi_data["Exchange Rate"] = client_fi_data["Nominal Amount (USD)"]/client_fi_data["Nominal Amount (CCY)"]
+        client_fi_data["Original Amount Paid"] = client_fi_data["Nominal Units"]*client_fi_data["Average Cost"]*client_fi_data["Exchange Rate"]
+        client_fi_data["Estimated Profit/Loss"] = client_fi_data["Nominal Amount (USD)"]-client_fi_data["Original Amount Paid"]
+        client_fi_data["% Profit/Loss"] = client_fi_data["Estimated Profit/Loss"]*100/client_fi_data["Original Amount Paid"]
 
-    #     group_by_date_fi = client_fi_data.groupby(['Position As of Date'])["Original Amount Paid", "Estimated Profit/Loss"].apply(lambda x : x.sum()).reset_index()
+        group_by_date_fi = client_fi_data.groupby(['Position As of Date'])["Original Amount Paid", "Estimated Profit/Loss"].apply(lambda x : x.sum()).reset_index()
 
-    #     group_by_date_fi["% Profit/Loss"] = group_by_date_fi["Estimated Profit/Loss"]*100/group_by_date_fi["Original Amount Paid"]
+        group_by_date_fi["% Profit/Loss"] = group_by_date_fi["Estimated Profit/Loss"]*100/group_by_date_fi["Original Amount Paid"]
 
-    #     fi_daily_percentage_fig = px.line(group_by_date_fi,x="Position As of Date", y="% Profit/Loss", 
-    #                 text="Estimated Profit/Loss", title="Daily % Profit/Loss")
-    #     fi_daily_percentage_fig.update_traces(
-    #                 textposition="top center",
-    #                 texttemplate = "%{text:.2s}")
+        fi_daily_percentage_fig = px.line(group_by_date_fi,x="Position As of Date", y="% Profit/Loss", 
+                    text="Estimated Profit/Loss", title="Daily % Profit/Loss")
+        fi_daily_percentage_fig.update_traces(
+                    textposition="top center",
+                    texttemplate = "%{text:.2s}")
                     
-    #     rating_selection = ["S&P", "Moody's", "Fitch"]
-    #     selected_rating = "S&P"
-    #     excel_column_mapping = {
-    #         "S&P": "S&P R",
-    #         "Moody's": "Moodys R",
-    #         "Fitch": "Fitch",
-    #         }
-    #     rating_dict_mapping = {
-    #         "S&P": SP_rating_dict,
-    #         "Moody's": Moody_rating_dict,
-    #         "Fitch": Fitch_rating_dict,
-    #         }
-    #     risk_level_mapping = {
-    #         "Prime":"Low Risk",
-    #         "High Grade":"Low Risk",
-    #         "Upper Medium Grade":"Medium Risk",
-    #         "Lower Medium Grade":"Medium Risk",
-    #         "Non Investment Grade Speculative":"High Risk",
-    #         "Highly Speculative":"High Risk",
-    #         "Substantial Risks":"High Risk",
-    #         "Extremely Speculative":"High Risk"
-    #     }
-    #     selected_dict = rating_dict_mapping[selected_rating]
-    #     selected_excel_col = excel_column_mapping[selected_rating]
+        rating_selection = ["S&P", "Moody's", "Fitch"]
+        selected_rating = "S&P"
+        excel_column_mapping = {
+            "S&P": "S&P R",
+            "Moody's": "Moodys R",
+            "Fitch": "Fitch",
+            }
+        rating_dict_mapping = {
+            "S&P": SP_rating_dict,
+            "Moody's": Moody_rating_dict,
+            "Fitch": Fitch_rating_dict,
+            }
+        risk_level_mapping = {
+            "Prime":"Low Risk",
+            "High Grade":"Low Risk",
+            "Upper Medium Grade":"Medium Risk",
+            "Lower Medium Grade":"Medium Risk",
+            "Non Investment Grade Speculative":"High Risk",
+            "Highly Speculative":"High Risk",
+            "Substantial Risks":"High Risk",
+            "Extremely Speculative":"High Risk"
+        }
+        selected_dict = rating_dict_mapping[selected_rating]
+        selected_excel_col = excel_column_mapping[selected_rating]
         
-    #     client_fi_data["Client Credit Rating"] = selected_dict[client_fi_data[selected_excel_col]]
-    #     client_fi_data["Risk Level"] = risk_level_mapping[client_fi_data["Client Credit Rating"]]
+        # client_fi_data["Client Credit Rating"] = selected_dict[client_fi_data[selected_excel_col]]
+        client_fi_data["Client Credit Rating"] = client_fi_data[selected_excel_col].apply(lambda x: selected_dict[x])
+        # client_fi_data["Risk Level"] = risk_level_mapping[client_fi_data["Client Credit Rating"]]
+        client_fi_data["Risk Level"] = client_fi_data["Client Credit Rating"].apply(lambda x: risk_level_mapping[x])
 
-    #     group_by_date_credit_rate = client_fi_data.groupby(['Position As of Date','Client Credit Rating']).size().reset_index(name='counts')
+        group_by_date_credit_rate = client_fi_data.groupby(['Position As of Date','Client Credit Rating']).size().reset_index(name='counts')
 
-    #     latest_date = group_by_date_credit_rate["Position As of Date"].max()
-    #     latest_group_by_date_data = group_by_date_credit_rate[group_by_date_credit_rate['Position As of Date'] == latest_date].reset_index(drop=True)
-
-    #     latest_total_profit_loss = latest_group_by_date_data.at[0,'Estimated Profit/Loss']
-    #     latest_total_return_percentage = latest_group_by_date_data.at[0,'% Profit/Loss']
-
-    #     credit_rating_barchart = px.bar(latest_group_by_date_data, 
-    #                             x='Client Credit Rating', y='counts', color='Client Credit Rating',
-    #                             title = "Current Credit Rating Counts")
-
-    #     latest_data = client_fi_data[client_fi_data['Position As of Date'] == latest_date]
-
-    #     medium_risk_count = latest_data[latest_data["Risk Level"] == "Medium Risk"].count()[0]
-    #     high_risk_count = latest_data[latest_data["Risk Level"] == "High Risk"].count()[0]
-
-    #     fi_latest_table_df = latest_data[["Name","Estimated Profit/Loss","% Profit/Loss",
-    #                         "Client Credit Rating","Maturity","Next Call Date"]]
+        latest_date = group_by_date_credit_rate["Position As of Date"].max()
+        latest_group_by_date_data = group_by_date_credit_rate[group_by_date_credit_rate['Position As of Date'] == latest_date].reset_index(drop=True)
         
-    #     fi_latest_table_df.sort_values("% Profit/Loss", inplace=True, ascending=True)
+        # print(group_by_date_fi)
+        latest_total_profit_loss = group_by_date_fi.loc[group_by_date_fi['Position As of Date'] == latest_date, 'Estimated Profit/Loss'].iloc[0]
+        latest_total_return_percentage = group_by_date_fi.loc[group_by_date_fi['Position As of Date'] == latest_date, '% Profit/Loss'].iloc[0]
+        # latest_total_profit_loss = latest_group_by_date_data.at[0,'Estimated Profit/Loss']
+        # latest_total_return_percentage = latest_group_by_date_data.at[0,'% Profit/Loss']
 
-    #     fi_latest_table = go.Figure(data=[go.Table(
-    #                 header=dict(values=["<b>Company Name</b>","<b>Profit/Loss</b>",
-    #                                 "<b>% Profit/Loss</b>","<b>Client Credit Rating</b>",
-    #                                 "<b>Maturity</b>","<b>Next Call Date</b>"],
-    #                             fill_color='paleturquoise',
-    #                             align='left'),
-    #                 cells=dict(values=[fi_latest_table_df.Name, 
-    #                 fi_latest_table_df["Estimated Profit/Loss"],
-    #                 fi_latest_table_df["% Profit/Loss"],
-    #                 fi_latest_table_df["Client Credit Rating"],
-    #                 fi_latest_table_df["Maturity"],
-    #                 fi_latest_table_df["Next Call Date"],],
-    #                         fill_color='lavender',
-    #                         align='left'))
-    #             ])
+        credit_rating_barchart = px.bar(latest_group_by_date_data, 
+                                x='Client Credit Rating', y='counts', color='Client Credit Rating',
+                                title = "Current Credit Rating Counts")
 
-    #     no_of_medium_risks_card = [
-    #         html.H4("Number of Medium Risks", className="card-title"),
-    #         html.H5(f"{medium_risk_count}", className="card-subtitle"),
-    #     ]
-    #     no_of_high_risks_card = [
-    #         html.H4("Number of High Risks", className="card-title"),
-    #         html.H5(f"{high_risk_count}", className="card-subtitle"),
-    #     ]
-    #     total_profit_loss_card = [
-    #         html.H4("Total Profit/Loss", className="card-title"),
-    #         html.H5("${:.3f}M".format(latest_total_profit_loss/1000000), className="card-subtitle"),
-    #     ]
-    #     total_return_percentage_card = [
-    #         html.H4("% Total Return", className="card-title"),
-    #         html.H5("{:.3f}%".format(latest_total_return_percentage), className="card-subtitle"),
-    #     ]
-    #     card_custom_left1_value = total_profit_loss_card
-    #     card_custom_left2_value = total_return_percentage_card
-    #     card_custom_right1_value = no_of_medium_risks_card
-    #     card_custom_right2_value = no_of_high_risks_card
-    #     selected_tab_chart = credit_rating_barchart
-    #     selected_tab_table = fi_latest_table  
+        latest_data = client_fi_data[client_fi_data['Position As of Date'] == latest_date]
+
+        medium_risk_count = latest_data[latest_data["Risk Level"] == "Medium Risk"].count()[0]
+        high_risk_count = latest_data[latest_data["Risk Level"] == "High Risk"].count()[0]
+
+        fi_latest_table_df = latest_data[["Name","Estimated Profit/Loss","% Profit/Loss",
+                            "Client Credit Rating","Maturity","Next Call Date"]]
+        
+        fi_latest_table_df.sort_values("% Profit/Loss", inplace=True, ascending=True)
+
+        fi_latest_table = go.Figure(data=[go.Table(
+                    header=dict(values=["<b>Company Name</b>","<b>Profit/Loss</b>",
+                                    "<b>% Profit/Loss</b>","<b>Client Credit Rating</b>",
+                                    "<b>Maturity</b>","<b>Next Call Date</b>"],
+                                fill_color='paleturquoise',
+                                align='left'),
+                    cells=dict(values=[fi_latest_table_df.Name, 
+                    fi_latest_table_df["Estimated Profit/Loss"],
+                    fi_latest_table_df["% Profit/Loss"],
+                    fi_latest_table_df["Client Credit Rating"],
+                    fi_latest_table_df["Maturity"],
+                    fi_latest_table_df["Next Call Date"],],
+                            fill_color='lavender',
+                            align='left'))
+                ])
+
+        no_of_medium_risks_card = [
+            html.H4("Number of Medium Risks", className="card-title"),
+            html.H5(f"{medium_risk_count}", className="card-subtitle"),
+        ]
+        no_of_high_risks_card = [
+            html.H4("Number of High Risks", className="card-title"),
+            html.H5(f"{high_risk_count}", className="card-subtitle"),
+        ]
+        total_profit_loss_card = [
+            html.H4("Total Profit/Loss", className="card-title"),
+            html.H5("${:.3f}M".format(latest_total_profit_loss/1000000), className="card-subtitle"),
+        ]
+        total_return_percentage_card = [
+            html.H4("% Total Return", className="card-title"),
+            html.H5("{:.3f}%".format(latest_total_return_percentage), className="card-subtitle"),
+        ]
+        card_custom_left1_value = total_profit_loss_card
+        card_custom_left2_value = total_return_percentage_card
+        card_custom_right1_value = no_of_medium_risks_card
+        card_custom_right2_value = no_of_high_risks_card
+        selected_tab_chart = credit_rating_barchart
+        selected_tab_table = fi_latest_table  
 
     elif selected_tab == "ALTERNATIVE INVESTMENTS":
         client_ai_data = client_data[client_data["Asset Class"]==selected_tab]
@@ -1146,10 +1225,12 @@ def custom_section(selected_base_numbers,selected_tab):
         selected_tab_chart = daily_cm_fig
         selected_tab_table = cm_latest_table
 
-    return card_custom_left1_value, card_custom_left2_value,\
-        card_custom_right1_value,card_custom_right2_value,\
-        selected_tab_chart, selected_tab_table
+    # return card_custom_left1_value, card_custom_left2_value,\
+    #     card_custom_right1_value,card_custom_right2_value,\
+    #     selected_tab_chart, selected_tab_table
 
+    return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
 
 if __name__ == '__main__':
     app.run_server(debug=True)

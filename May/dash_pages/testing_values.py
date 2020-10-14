@@ -59,17 +59,20 @@ print(len(reminders_columns))
 df = df[reminders_columns]
 print(df.shape)
 
+# client_data = df.loc[df["Client Name"] == 'SR250824955']
 client_data = df.loc[df["Client Name"] == 'SR004022615']
-latest_date = client_data["Position As of Date"].max()
-latest_client_data = client_data[client_data['Position As of Date'] == latest_date]
+
+# latest_date = client_data["Position As of Date"].max()
+# latest_client_data = client_data[client_data['Position As of Date'] == latest_date]
 #print(latest_client_data)
 
-melted_df = latest_client_data.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="Date")
+# melted_df = latest_client_data.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="Date")
+melted_df = client_data.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="Date")
 print(melted_df)
-#melted_df.to_csv (r'C:\Users\User\Desktop\melted_df.csv', index = False, header=True)
+melted_df.to_csv (r'C:\Users\User\Desktop\melted_df_not_latest.csv', index = False, header=True)
 
 today = date.today()
-next_week_date =  today + timedelta(weeks=1) # change time accordingly here
+next_week_date =  today + timedelta(weeks=4) # change time accordingly here
 # last_week_date =  today - timedelta(weeks=8)
 
 df_next_week = melted_df[(melted_df['Date'].dt.date <= next_week_date) & (melted_df['Date'].dt.date >= today)]
