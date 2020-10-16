@@ -69,7 +69,7 @@ client_data = df.loc[df["Client Name"] == 'SR004022615']
 # melted_df = latest_client_data.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="Date")
 melted_df = client_data.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="Date")
 print(melted_df)
-melted_df.to_csv (r'C:\Users\User\Desktop\melted_df_not_latest.csv', index = False, header=True)
+# melted_df.to_csv (r'C:\Users\User\Desktop\melted_df_not_latest.csv', index = False, header=True)
 
 today = date.today()
 next_week_date =  today + timedelta(weeks=4) # change time accordingly here

@@ -35,17 +35,9 @@ df = pd.read_csv('../Client.csv')
 risk_df = pd.read_csv('../RiskLevelsAllocation.csv')
 
 ### Change Date Format ###
-# df[['Position As of Date','Maturity','Next Call Date']] = df[['Position As of Date','Maturity','Next Call Date']].apply(pd.to_datetime)
-
-df['Position As of Date'] = pd.to_datetime(df['Position As of Date'], errors='coerce').dt.strftime('%d/%m/%Y')
-df['Position As of Date']= pd.to_datetime(df['Position As of Date'])
-df['Maturity'] = pd.to_datetime(df['Maturity'], errors='coerce').dt.strftime('%d/%m/%Y')
-df['Maturity']= pd.to_datetime(df['Maturity'])
-df['Next Call Date'] = pd.to_datetime(df['Next Call Date'], errors='coerce').dt.strftime('%d/%m/%Y')
-df['Next Call Date']= pd.to_datetime(df['Next Call Date'])
+df[['Position As of Date','Maturity','Next Call Date']] = df[['Position As of Date','Maturity','Next Call Date']].apply(pd.to_datetime)
 df['Dividend EX Date'] = pd.to_datetime(df['Dividend EX Date'], errors='coerce').dt.strftime('%m/%d/%Y')
 df['Dividend EX Date']= pd.to_datetime(df['Dividend EX Date'])
-
 # df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
 # df['Position As of Date'] = df['Position As of Date'].apply(lambda x: dt.datetime.strftime(x, '%Y-%d-%m'))
 # df['Position As of Date']= pd.to_datetime(df['Position As of Date']) 
@@ -58,27 +50,138 @@ df[numeric_cols] = df[numeric_cols].apply(lambda x: round(x, decimals))
 ### Get all client names ###
 client_names = df["Client Name"].unique()
 
-### Initialize Dash app ###
-# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# this function returns sign_string for the values on banners 
-def return_sign_and_color_string(number):
-    sign = ""
-    color = "#003B70"
-    if number > 0:
-        sign = "+"
-        color = "#61BBA0"
-    elif number < 0:
-        sign = "-"
-        color = "#E17F79"
-    return sign, color
+# Total Assets Value Card (This card is under Part 1, refer to app layout)
+card_assets = dbc.Card(
+    [
+        dbc.CardBody(id='card_assets_value',
+        ),
+    ],inverse=True,outline=False, color="success",
+)
+
+# Total Liability Value Card (This card is under Part 1, refer to app layout)
+card_liab = dbc.Card(
+    [
+        dbc.CardBody(id='card_liab_value',
+        ),
+    ],inverse=True,outline=False, color="danger",
+)
+
+# Total Profit/Loss Card (This card is under Part 1, refer to app layout)
+card_profit_loss = dbc.Card(
+    [
+        dbc.CardBody(id='card_profit_loss_value',
+        ),
+    ],inverse=False,outline=True, color="secondary",
+)
+# Current Risk Level Card (This card is under Part 1, refer to app layout)
+card_current_risk = dbc.Card(
+    [
+        dbc.CardBody(id='card_current_risk_value',
+        ),
+    ],inverse=False,outline=True, color="secondary",
+)
+# Target Risk Level Card (This card is under Part 1, refer to app layout)
+card_target_risk = dbc.Card(
+    [
+        dbc.CardBody(id='card_target_risk_value',
+        ),
+    ],inverse=False,outline=True, color="secondary",
+)
+# Reminders Card (This card is under Part 1, refer to app layout)
+card_reminders = dbc.Card(
+    [
+        dbc.CardBody(id='card_reminders_value',
+        ),
+    ],inverse=False,outline=True, color="secondary",
+)
+
+# There will be 4 cards under Part 4, refer to app layout.
+# 2 Left cards and 2 Right cards
+# Custom Card Left 1 (This card is under Part 4, refer to app layout)
+# card_custom_left1 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_left1_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
+
+# Custom Card Left 2 (This card is under Part 4, refer to app layout)
+# card_custom_left2 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_left2_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
+
+# Custom Card Right 1 (This card is under Part 4, refer to app layout)
+# card_custom_right1 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_right1_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
+
+# Custom Card Right 2 (This card is under Part 4, refer to app layout)
+# card_custom_right2 = dbc.Card(
+#     [
+#         dbc.CardBody(id='card_custom_right2_value',
+#         ),
+#     ],color="dark",  inverse=True, outline=False,
+# )
+
+# Standard Tab Content
+# standard_tab_content = [
+#     dbc.Row([
+#         dbc.Col(card_custom_left1, width=3),
+#         dbc.Col(card_custom_left2, width=3),
+#         dbc.Col(card_custom_right1, width=3),
+#         dbc.Col(card_custom_right2, width=3)
+#         ]),
+#     dbc.Row([
+#         dbc.Col([dcc.Graph(id='selected_tab_chart')],
+#             width={'size':6},
+#             ),
+#         dbc.Col([
+#             dcc.Graph(id='selected_tab_table'),
+#             dbc.Button("Show more details", id="custom_button", outline=True, color="secondary", size="sm", className="mr-1"),
+#             ],width={'size':6},
+#             ),
+#         ]), 
+#     ]
+
+# this function returns tab_content_banners children
+def return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value): 
+    tab_content_banners = dbc.Row([
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_left1_value',children=card_custom_left1_value)],color="dark",  inverse=True, outline=False),width=3),
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_left2_value',children=card_custom_left2_value)],color="dark",  inverse=True, outline=False),width=3),
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_right1_value',children=card_custom_right1_value)],color="dark",  inverse=True, outline=False),width=3),
+            dbc.Col(dbc.Card([dbc.CardBody(id='card_custom_right2_value',children=card_custom_right2_value)],color="dark",  inverse=True, outline=False),width=3),
+            ], justify="start")
+    return tab_content_banners
+
+# this function returns standard_tab_content children
+def return_standard_tab_content(selected_tab_chart, selected_tab_table): 
+    standard_tab_content = dbc.Row([
+            dbc.Col([dcc.Graph(id='selected_tab_chart',figure=selected_tab_chart)],
+                width={'size':6},
+                ),
+            dbc.Col([
+                dcc.Graph(id='selected_tab_table',figure=selected_tab_table),
+                dbc.Button("Show more details", id="custom_button", outline=True, color="secondary", size="sm", className="mr-1"),
+                ],width={'size':6},
+                ),
+            ])
+        
+    return standard_tab_content
 
 # this function returns standard_tab_content children
 def return_reminders_summary_table(table_columns, table_data): 
-    reminders_summary_table_content = [
-        dash_table.DataTable(
+    reminders_summary_table_content = dbc.Col(
+        [dash_table.DataTable(
             id='reminders_summary_table',
             columns = table_columns,
             data = table_data,
@@ -87,8 +190,10 @@ def return_reminders_summary_table(table_columns, table_data):
             style_cell={'textAlign':'left','width':'12%'}
             ),
         dbc.Button("Show more details", id="reminder_button", outline=True, color="secondary", size="sm", className="mr-1")
-        ]
-    
+        ], 
+        # width={'size':6}
+    )
+        
     return reminders_summary_table_content
 
 # this function returns standard_tab_content children
@@ -106,142 +211,6 @@ def return_reminders_tab_content(table_columns, table_data):
     )
         
     return reminders_tab_content
-
-cash_liab_tab_content = \
-    dbc.Row([
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_cash_liab_left1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_cash_liab_left2_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_cash_liab_right1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_cash_liab_right2_value')],color="dark",  inverse=True, outline=False),width=3),
-        ], justify="start"
-    ),\
-    html.Br(),\
-    dbc.Row([
-        dbc.Col([dcc.Graph(id='cash_liab_chart')],
-            width={'size':6},
-            ),
-        dbc.Col([
-            dash_table.DataTable(
-                id='cash_liab_table',
-                style_table={'border': 'thin lightgrey solid'},
-                style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
-                style_cell={'textAlign':'left','width':'12%'}
-                ),
-            dbc.Button("Show more details", id="cash_liab_button", outline=True, color="secondary", size="sm", className="mr-1"),
-            ],width={'size':6},
-            ),
-    ])
-
-equities_tab_content = \
-    dbc.Row([
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_equities_left1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_equities_left2_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_equities_right1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_equities_right2_value')],color="dark",  inverse=True, outline=False),width=3),
-        ], justify="start"
-    ),\
-    html.Br(),\
-    dbc.Row([
-        dbc.Col([dcc.Graph(id='equities_chart')],
-            width={'size':6},
-            ),
-        dbc.Col([
-            dash_table.DataTable(
-                id='equities_table',
-                style_table={'border': 'thin lightgrey solid'},
-                style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
-                style_cell={'textAlign':'left','width':'12%'}
-                ),
-            dbc.Button("Show more details", id="equities_button", outline=True, color="secondary", size="sm", className="mr-1"),
-            ],width={'size':6},
-            ),
-    ])
-
-fixed_income_tab_content = \
-    dbc.Row([
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_fixed_income_left1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_fixed_income_left2_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_fixed_income_right1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_fixed_income_right2_value')],color="dark",  inverse=True, outline=False),width=3),
-        ], justify="start"
-    ),\
-    html.Br(),\
-    dbc.Row([
-        dbc.Col([dcc.Graph(id='fixed_income_chart')],
-            width={'size':6},
-            ),
-        dbc.Col([
-            dash_table.DataTable(
-                id='fixed_income_table',
-                style_table={'border': 'thin lightgrey solid'},
-                style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
-                style_cell={'textAlign':'left','width':'12%'}
-                ),
-            dbc.Button("Show more details", id="fixed_income_button", outline=True, color="secondary", size="sm", className="mr-1"),
-            ],width={'size':6},
-            ),
-    ])
-
-alternatives_tab_content = \
-    dbc.Row([
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_alternatives_left1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_alternatives_left2_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_alternatives_right1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_alternatives_right2_value')],color="dark",  inverse=True, outline=False),width=3),
-        ], justify="start"
-    ),\
-    html.Br(),\
-    dbc.Row([
-        dbc.Col([dcc.Graph(id='alternatives_chart')],
-            width={'size':6},
-            ),
-        dbc.Col([
-            dash_table.DataTable(
-                id='alternatives_table',
-                style_table={'border': 'thin lightgrey solid'},
-                style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
-                style_cell={'textAlign':'left','width':'12%'}
-                ),
-            dbc.Button("Show more details", id="alternatives_button", outline=True, color="secondary", size="sm", className="mr-1"),
-            ],width={'size':6},
-            ),
-    ])
-
-capital_markets_tab_content = \
-    dbc.Row([
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_capital_markets_left1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_capital_markets_left2_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_capital_markets_right1_value')],color="dark",  inverse=True, outline=False),width=3),
-        dbc.Col(dbc.Card([dbc.CardBody(id='card_capital_markets_right2_value')],color="dark",  inverse=True, outline=False),width=3),
-        ], justify="start"
-    ),\
-    html.Br(),\
-    dbc.Row([
-        dbc.Col([dcc.Graph(id='capital_markets_chart')],
-            width={'size':6},
-            ),
-        dbc.Col([
-            dash_table.DataTable(
-                id='capital_markets_table',
-                style_table={'border': 'thin lightgrey solid'},
-                style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
-                style_cell={'textAlign':'left','width':'12%'}
-                ),
-            dbc.Button("Show more details", id="capital_markets_button", outline=True, color="secondary", size="sm", className="mr-1"),
-            ],width={'size':6},
-            ),
-    ])
-
-reminders_tab_content = \
-    dbc.Row([
-        dash_table.DataTable(
-            id='reminders_tab_table',
-            style_table={'border': 'thin lightgrey solid'},
-            style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
-            style_cell={'textAlign':'left','width':'12%'}
-            ),
-    ])
-
 
 ### The whole app layout ###
 # There are 4 main parts on this app. #
@@ -261,7 +230,7 @@ app.layout = html.Div([
     ### Part 1: Main Selection ###
     dbc.Row([
             dbc.Col([
-                        html.H3("Client's Name:",style={'color': 'white'}),
+                        html.H3("Client's Name:"),
                         dcc.Dropdown(
                         id='client_name_dropdown',
                         options=[
@@ -274,7 +243,7 @@ app.layout = html.Div([
                     width={'size':3},
                     ),
             dbc.Col([
-                        html.H3("Client's Base Numbers:",style={'color': 'white'}),
+                        html.H3("Client's Base Numbers:"),
                         # dcc.Checklist(
                         # id='base_numbers_checklist',labelStyle={'display': 'inline-block'}
                         # )
@@ -283,81 +252,84 @@ app.layout = html.Div([
                     ],
                     width={'size':9},
                     ), 
-        ],style={'backgroundColor': "#003B70"}),
+            ]),
 
     html.Br(),
 
     ### Part 2: Overall Banners ###
     dbc.Row([
-            dbc.Col(dbc.Card([dbc.CardBody(id='card_assets_value')],color="white", outline=False),width=2),
-            dbc.Col(dbc.Card([dbc.CardBody(id='card_liab_value')],color="white", outline=False),width=2),
-            dbc.Col(dbc.Card([dbc.CardBody(id='card_profit_loss_value')],color="white", outline=False),width=2),
-            dbc.Col(dbc.Card([dbc.CardBody(id='card_current_risk_value')],color="white", outline=False),width=2),
-            dbc.Col(dbc.Card([dbc.CardBody(id='card_target_risk_value')],color="white", outline=False),width=2),
-            dbc.Col(dbc.Card([dbc.CardBody(id='card_reminders_value')],color="white", outline=False),width=2),
+            dbc.Col(card_assets, width=2),
+            dbc.Col(card_liab, width=2),
+            dbc.Col(card_profit_loss, width=2),
+            dbc.Col(card_current_risk, width=2),
+            dbc.Col(card_target_risk, width=2),
+            dbc.Col(card_reminders, width=2)
             ], justify="start"), # justify="start", "center", "end", "between", "around"
-    
-    html.Br(),
+
     ### Part 3: Overall Performance & Pie Chart Breakdown ###
     dbc.Row([
-            dbc.Col([
-                html.H5(children='Assets & Liabilities over time', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
-                dcc.Graph(id='asset_liab_timeseries')], width={'size':6}),
-            dbc.Col([
-                html.H5(children='Current Assets & Liabilities Breakdown', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
-                dcc.Graph(id='asset_class_piechart')], width={'size':6}),
-            ]),
-    html.Br(),
-    dbc.Row([
-            dbc.Col(html.H5(children='Risk Analysis', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),width=6),
-            dbc.Col(html.H5(children='Reminders: Assets Due in 1 Month', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),width=6),
+            dbc.Col([dcc.Graph(id='asset_liab_timeseries')], width={'size':6}),
+            dbc.Col([dcc.Graph(id='asset_class_piechart')], width={'size':6}),
             ]),
 
     ### Part 4: Risk Analysis Piecharts & Reminders Summary Table ###
     dbc.Row([
-
             dbc.Col([dcc.Graph(id='current_risk_piechart')], width={'size':3}),
             dbc.Col([dcc.Graph(id='target_risk_piechart')], width={'size':3}),
-            html.Div(id = "reminders_summary_content", style={'backgroundColor': "white"}),
+            # dbc.Col([
+            #     dash_table.DataTable(
+            #         id='reminders_summary_table',
+            #         style_table={'border': 'thin lightgrey solid'},
+            #         style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
+            #         style_cell={'textAlign':'left','width':'12%'}
+            #     ),
+            #     dbc.Button("Show more details", id="reminder_button", outline=True, color="secondary", size="sm", className="mr-1"),
+            #     ], 
+            #     width={'size':6}),
+            html.Div(id = "reminders_summary_content"),
             ]),
-    html.Br(),
+
     ### Part 5: Risk Analysis: Barchart, Amount to Target & Current Profit/Loss Breakdown ###
     dbc.Row([
-            dbc.Col([
-                html.H5(children='Risk Analysis: Current vs Target', style={'textAlign': 'center','color': 'white','backgroundColor': "#3A6790"}),
-                dcc.Graph(id='current_target_risk_barchart')], width={'size':4}),
-            dbc.Col([
-                html.H5(children='Risk Analysis: Amount to Target', style={'textAlign': 'center','color': 'white','backgroundColor': "#3A6790"}),
-                dash_table.DataTable(
+            dbc.Col([dcc.Graph(id='current_target_risk_barchart')], width={'size':4}),
+            dbc.Col([dash_table.DataTable(
                 id='amount_to_target_table',
                 style_table={'border': 'thin lightgrey solid'},
                 style_header={'backgroundColor':'lightgrey','fontWeight':'bold'},
                 style_cell={'textAlign':'left','width':'12%'}
                 )], 
-                width={'size':2},
-                # style={'backgroundColor': "white"}
-                ),
-            dbc.Col([
-                html.H5(children='Current Profit/Loss Breakdown', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
-                dcc.Graph(id='profit_loss_breakdown_barchart')], width={'size':6})
+                width={'size':2}),
+            dbc.Col([dcc.Graph(id='profit_loss_breakdown_barchart')], width={'size':6})
             ]),
+
+    ### Part 6: Asset Type Selection ###
+    # dbc.Row([
+    #         dbc.Col([
+    #                     html.H3("Choose Asset Type:"),
+    #                     dcc.Dropdown(
+    #                     id='client_asset_type_dropdown',
+    #                     clearable=False
+    #                     )
+    #                 ],
+    #                 width={'size':3}
+    #                 ),
+    #         ]),
 
     html.Br(),
     dbc.Row([
             dbc.Col([
-                dbc.Tabs([
-                    dbc.Tab(label="CASH & LIABILITIES", tab_id="CASH & LIABILITIES",children=cash_liab_tab_content),
-                    dbc.Tab(label="EQUITIES", tab_id="EQUITIES",children=equities_tab_content),
-                    dbc.Tab(label="FIXED INCOME", tab_id="FIXED INCOME",children=fixed_income_tab_content),
-                    dbc.Tab(label="ALTERNATIVES", tab_id="ALTERNATIVES",children=alternatives_tab_content),
-                    dbc.Tab(label="CAPITAL MARKETS", tab_id="CAPITAL MARKETS",children=capital_markets_tab_content),
-                    dbc.Tab(label="REMINDERS", tab_id="REMINDERS",children= reminders_tab_content),
-                ]
+                dbc.Tabs(
+                id="client_asset_type_tabs",
                 )
             ])
         ]),
-   
-    ],style={'backgroundColor': "#CED8E2"})
+
+    html.Br(),
+    ### Part 7: Custom Section ###
+    html.Div(id = "tab_content_banners"),   
+    html.Div(id = "tab_content_custom_section"), 
+    # html.Div(id = "reminders_tab_content")   
+    ])
 
 ### Callback for Part 1: "Client's Base Numbers" multi-select section ###
 # This callback will return the multi-select options and pre-select all base numbers based on selected client name. #
@@ -368,9 +340,8 @@ app.layout = html.Div([
 ) 
 def set_base_number_multi_selection(client_name):
     client_data = df.loc[df["Client Name"] == client_name]
-    # base_numbers_list = ["All Base Numbers"]
     base_numbers = list(client_data["Base Number"].unique())
-    # base_numbers_list += base_numbers
+    # multi_select_options = [{'label': "All Base Numbers", 'value': base_numbers}]
     multi_select_options = [{'label': base_number, 'value': base_number} for base_number in base_numbers]
     return multi_select_options, base_numbers
 
@@ -381,14 +352,9 @@ def set_base_number_multi_selection(client_name):
     Output('card_liab_value','children'),
     Output('asset_liab_timeseries','figure'),
     Output('asset_class_piechart','figure')],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
+    [Input('base_numbers_checklist', 'value')]
 ) 
-def overall_section(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
-    
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
+def overall_section(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     group_by_asset_class = client_data\
     .groupby(['Position As of Date','Asset Class'], as_index=False)\
@@ -420,20 +386,19 @@ def overall_section(selected_client_name,selected_base_numbers):
     except:
         latest_total_loans = 0
 
-    total_cash_sign, total_cash_color = return_sign_and_color_string(latest_total_cash)
     card_assets_value = [
-            html.H5("Total Assets", style={"color":"#003B70"}),
-            html.H2(children=total_cash_sign+"${:.3f}M".format(abs(latest_total_cash/1000000)), style={"color":total_cash_color}),
+            html.H4("Total Assets", className="card-title"),
+            html.H6("${:.3f}M".format(latest_total_cash/1000000), className="card-subtitle"),
         ]
-    total_loans_sign, total_loans_color = return_sign_and_color_string(abs(latest_total_loans)*(-1))
+
     card_liab_value = [
-            html.H5("Total Liabilities", style={"color":"#003B70"}),
-            html.H2(children="${:.3f}M".format(abs(latest_total_loans/1000000)), style={"color":total_loans_color}),
+            html.H4("Total Liabilities", className="card-title"),
+            html.H6("${:.3f}M".format(latest_total_loans/1000000), className="card-subtitle"),
         ]
     
     time_series_fig = px.area(group_by_date_asset_class, x="Position As of Date", y="Nominal Amount (USD)", 
-                                color = "Asset Class", color_discrete_sequence=['#dea5a4', '#779ecb'],)
-                                # title = "Client's Total Assets & Liabilities over time")
+                                color = "Asset Class", color_discrete_sequence=['#dea5a4', '#779ecb'],
+                                title = "Client's Total Assets & Liabilities over time")
     time_series_fig.update_traces(mode="markers+lines", hovertemplate=None)
     time_series_fig.update_layout(hovermode="x unified")
     time_series_fig.update_xaxes(
@@ -450,7 +415,7 @@ def overall_section(selected_client_name,selected_base_numbers):
                                 )
 
     pie_chart_fig = px.pie(latest_piechart_data, values='Nominal Amount (USD)', names='Asset Class',
-                            # title="Client's Current Assets & Liabilities Breakdown",
+                            title="Client's Current Assets & Liabilities Breakdown",
                             hover_data=['Nominal Amount (USD)'])
 
     return card_assets_value,card_liab_value,time_series_fig,pie_chart_fig
@@ -465,14 +430,9 @@ def overall_section(selected_client_name,selected_base_numbers):
     Output('amount_to_target_table','data'),
     Output('card_current_risk_value','children'),
     Output('card_target_risk_value','children')],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
+    [Input('base_numbers_checklist', 'value')]
 ) 
-def risk_analysis_section(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
-
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
+def risk_analysis_section(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     latest_date = client_data["Position As of Date"].max()
     latest_client_data = client_data[client_data['Position As of Date'] == latest_date]
@@ -524,6 +484,33 @@ def risk_analysis_section(selected_client_name,selected_base_numbers):
     nearest_eq_df = eq_only_risk_df.iloc[(eq_only_risk_df['Breakdown by Percentage']-input_num).abs().argsort()[:1]]
     current_risk_level = nearest_eq_df['Level'].iloc[0]
 
+    # current_risk_pie_chart = px.pie(group_by_risk_asset_class, values='Current Nominal Amount (USD)', names='Asset Class', color="Asset Class",
+    #                         hover_data=['Current Nominal Amount (USD)'],hole=0.7)
+
+    # current_risk_pie_chart.update_layout(title_text="Current Risk Analysis", 
+    #                                     annotations=[dict(text='Current Risk Level<br><b>X</b>', x=0.5, y=0.5, font_size=20, showarrow=False)])
+
+    # target_risk_pie_chart = px.pie(group_by_risk_asset_class, values='Target Nominal Amount (USD)', names='Asset Class', color="Asset Class",
+    #                         hover_data=['Target Nominal Amount (USD)'],hole=0.7)
+
+    # target_risk_pie_chart.update_layout(title_text="Target Risk Analysis",
+    #                                     annotations=[dict(text=f'Target Risk Level<br><b>{target_risk_level}</b>', x=0.5, y=0.5, font_size=20, showarrow=False)])
+
+
+    # risk_analysis_pie_chart = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
+    # risk_analysis_pie_chart.add_trace(go.Pie(labels=group_by_risk_asset_class['Asset Class'], values=group_by_risk_asset_class['Current Nominal Amount (USD)'], sort=False, name="Current Risk Level"),
+    #             1, 1)
+    # risk_analysis_pie_chart.add_trace(go.Pie(labels=group_by_risk_asset_class['Asset Class'], values=group_by_risk_asset_class['Target Nominal Amount (USD)'], sort=False, name="Target Risk Level"),
+    #             1, 2)
+
+    # risk_analysis_pie_chart.update_traces(hole=.7, hoverinfo="label+percent+name")
+
+    # risk_analysis_pie_chart.update_layout(
+    #     title_text="Risk Analysis",
+    #     # Add annotations in the center of the donut pies.
+    #     annotations=[dict(text=f'Current<br>Risk Level<br><b>{current_risk_level}</b>', x=0.25, y=0.5, font_size=20, showarrow=False),
+    #                 dict(text=f'Target<br>Risk Level<br><b>{target_risk_level}</b>', x=0.75, y=0.5, font_size=20, showarrow=False)])
+
     current_risk_pie_chart = go.Figure(data=[go.Pie(
             labels=group_by_risk_asset_class['Asset Class'],
             values=group_by_risk_asset_class['Current Nominal Amount (USD)'],
@@ -532,9 +519,9 @@ def risk_analysis_section(selected_client_name,selected_base_numbers):
             sort=False)
     ])
     current_risk_pie_chart.update_layout(
-        # title_text="Current Risk Analysis",
+        title_text="Current Risk Analysis",
         annotations=[dict(text=f'Current Risk Level<br><b>{current_risk_level}</b>',x=0.5, y=0.5, font_size=20,showarrow=False)],
-        showlegend=True
+        showlegend=False
         )
     
     target_risk_pie_chart = go.Figure(data=[go.Pie(
@@ -544,8 +531,7 @@ def risk_analysis_section(selected_client_name,selected_base_numbers):
             hole=0.7,
             sort=False)
     ])
-    target_risk_pie_chart.update_layout(
-                            # title_text="Target Risk Analysis",
+    target_risk_pie_chart.update_layout(title_text="Target Risk Analysis",
                             annotations=[dict(text=f'Target Risk Level<br><b>{target_risk_level}</b>', x=0.5, y=0.5, font_size=20, showarrow=False)])
 
     # print(list(group_by_risk_asset_class["Asset Class"]))
@@ -579,7 +565,7 @@ def risk_analysis_section(selected_client_name,selected_base_numbers):
     )
 
     current_target_risk_barchart.update_layout(
-    # title="Risk Analysis: Current vs Target",
+    title="Risk Analysis: Current vs Target",
     yaxis_title="Asset Class",
     xaxis_title="Percentage",
     legend_title="",
@@ -590,19 +576,17 @@ def risk_analysis_section(selected_client_name,selected_base_numbers):
 
     if current_risk_level == target_risk_level:
         target_status_string = "(In Target)"
-        color = "#61BBA0" # Pastel Green
     else:
         target_status_string = "(Out of Target)"
-        color = "#E17F79" # Pastel Green
 
     current_risk_level_card = [
-            html.H5("Current Risk Level", style={"color":"#003B70"}),
-            html.H2(f"Level {current_risk_level} "+target_status_string, style={"color":color}),
+            html.H4("Current Risk Level", className="card-title"),
+            html.H6(f"Level {current_risk_level} "+target_status_string, className="card-subtitle"),
         ]
 
     target_risk_level_card = [
-            html.H5("Target Risk Level", style={"color":"#003B70"}),
-            html.H2(f"Level {target_risk_level} ", style={"color":"#003B70"}),
+            html.H4("Target Risk Level", className="card-title"),
+            html.H6(f"Level {target_risk_level} ", className="card-subtitle"),
         ]
 
     return current_risk_pie_chart,target_risk_pie_chart,current_target_risk_barchart,table_columns,table_data,current_risk_level_card,target_risk_level_card
@@ -611,19 +595,17 @@ def risk_analysis_section(selected_client_name,selected_base_numbers):
 # This callback will return Reminders Banner value and Reminders Summary Table. #
 @app.callback(
     [
-    Output('reminders_tab_table','columns'),
-    Output('reminders_tab_table','data'),
+    # Output('reminders_summary_table','columns'),
+    # Output('reminders_summary_table','data'),
     Output('reminders_summary_content','children'),
     Output('card_reminders_value','children'),
+    # Output('reminders_tab_content','children')
     ],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
+    [Input('base_numbers_checklist', 'value'),
+    # Input('client_asset_type_tabs','active_tab')
+    ]
 ) 
-def reminders_section(selected_client_name,selected_base_numbers): # currently not based on latest data
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
-    
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
+def reminders_section(selected_base_numbers): # currently not based on latest data
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     Eq_FI = ["EQUITIES","FIXED INCOME"]
     client_asset_classes = list(client_data["Asset Class"].unique())
@@ -653,20 +635,10 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
         melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
 
         today = date.today()
-        next_reminder_date =  today + timedelta(weeks=52) # change time accordingly here
+        next_reminder_date =  today + timedelta(weeks=4) # change time accordingly here
 
         df_next_reminder = melted_reminder_df[(melted_reminder_df['Date'] <= next_reminder_date) & (melted_reminder_df['Date'] >= today)]
         # df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
-        df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
-
-        all_reminders_count = len(df_all_reminder.index)
-        
-        if all_reminders_count != 0:
-            reminder_tab_table_columns = [{"name": i, "id": i} for i in df_all_reminder.columns]
-            reminder_tab_table_data = df_all_reminder.to_dict('records')
-        else:
-            reminder_tab_table_columns = []
-            reminder_tab_table_data = []
 
         reminders_count_1m = len(df_next_reminder.index)
 
@@ -674,42 +646,36 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
             table_columns = [{"name": i, "id": i} for i in df_next_reminder[["Name","Reminder Type","Date"]].columns]
             table_data = df_next_reminder[["Name","Reminder Type","Date"]].to_dict('records')
             reminders_summary_content = return_reminders_summary_table(table_columns,table_data)
-            color = "#E17F79" #Pastel Red
         else:
             reminders_summary_content = "There are no Assets due in 1 month."
-            color = "#003B70" #Dark Blue
-            reminder_tab_table_columns = [{"name": "There are no Assets due in 1 month.", "id": "nan"}]
-            reminder_tab_table_data = []
-
 
     else:
         reminders_count_1m = 0
-        color = "#003B70" #Dark Blue
-        reminders_summary_content = "Selected Client or Base Number has no relevant Assets to remind."
-        reminder_tab_table_columns = [{"name": "Selected Client or Base Number has no relevant Assets to remind.", "id": "nan"}]
-        reminder_tab_table_data = []
+        reminders_summary_content = "This Client or Base Number has no relevant Assets to remind."
 
-    card_reminders_value = [
-            html.H5("Asset Reminders", style={"color":"#003B70"}),
-            html.H2(f"{reminders_count_1m} (Due in 1 month)", style={"color":color}),
+    reminders_card = [
+            html.H4("Asset Reminders", className="card-title"),
+            html.H6(f"{reminders_count_1m} (Due in 1 month)", className="card-subtitle"),
         ]
 
+    # if selected_tab == "REMINDERS":
+    #     reminder_tab_table_columns = [{"name": i, "id": i} for i in df_all_reminder.columns]
+    #     reminder_tab_table_data = df_all_reminder.to_dict('records')
+    #     reminder_tab_table = return_reminders_tab_content(reminder_tab_table_columns, reminder_tab_table_data)
+    # else:
+    #     reminder_tab_table = []
 
-    return reminder_tab_table_columns, reminder_tab_table_data, reminders_summary_content,card_reminders_value
+    # return table_columns,table_data,reminders_card
+    return reminders_summary_content,reminders_card
 
 ### Callback for Part 2 & 5: Profit & Loss Banner and Profit & Loss Breakdown Barchart ###
 # This callback will return Profit & Loss Banner value and Profit & Loss Breakdown Barchart. #
 @app.callback(
     [Output('profit_loss_breakdown_barchart','figure'),
     Output('card_profit_loss_value','children')],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
+    [Input('base_numbers_checklist', 'value')]
 ) 
-def profit_loss_section(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
-
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
+def profit_loss_section(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
     latest_date = client_data["Position As of Date"].max()
     latest_client_data = client_data[client_data['Position As of Date'] == latest_date]
@@ -750,56 +716,100 @@ def profit_loss_section(selected_client_name,selected_base_numbers):
     .groupby(['Asset Class'], as_index=False)\
     .agg({'Estimated Profit/Loss':'sum'})
 
-    group_by_PL_asset_class["Color"] = np.where(group_by_PL_asset_class["Estimated Profit/Loss"]<0, '#E17F79', '#3A6790')
-    # print(group_by_PL_asset_class)
     profit_loss_breakdown_barchart = px.bar(
         group_by_PL_asset_class, x="Asset Class", y="Estimated Profit/Loss",
         hover_data={"Estimated Profit/Loss":":.3f"},
-        text="Estimated Profit/Loss",color = "Color", color_discrete_sequence=group_by_PL_asset_class["Color"].unique())
+        text="Estimated Profit/Loss")
     profit_loss_breakdown_barchart.update_layout(
-        # title="Client's Current Profit/Loss Breakdown",
+        title="Client's Current Profit/Loss Breakdown",
         xaxis_title="By Asset Class",
         yaxis_title="Profit/Loss",
         legend_title="",
-        showlegend=False
         )
     profit_loss_breakdown_barchart.update_traces(
         textposition='outside',
         texttemplate = "%{text:.2s}")
 
-    sign, color = return_sign_and_color_string(total_profit_loss)
+    sign = ""
+    if total_profit_loss > 0:
+        sign = "+"
+    elif total_profit_loss < 0:
+        sign = "-"
 
-    card_profit_loss_value = [
-            html.H5("Current Profit/Loss", style={"color":"#003B70"}),
-            html.H2(children=sign+"${:.3f}M".format(abs(total_profit_loss/1000000)), style={"color":color}),
+    profit_loss_card = [
+            html.H4("Current Profit/Loss", className="card-title"),
+            html.H6(sign+"${:.3f}M".format(abs(total_profit_loss/1000000)), className="card-subtitle"),
         ]
 
-    return profit_loss_breakdown_barchart,card_profit_loss_value
+    return profit_loss_breakdown_barchart,profit_loss_card
 
 
-### Callback for cash_liab_tab_content ###
+### Callback for Part 3: Asset Type Selection ("Choose Asset Type" dropdown) ###
+# This callback will return the dropdown options and pre-selected value based on selected base numbers. #
 @app.callback(
-    [Output("card_cash_liab_left1_value", "children"),
-    Output("card_cash_liab_left2_value", "children"),
-    Output("card_cash_liab_right1_value", "children"),
-    Output("card_cash_liab_right2_value", "children"),
-    Output("cash_liab_chart", "figure"),
-    Output("cash_liab_table", "columns"),
-    Output("cash_liab_table", "data")],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
-)
-def render_cash_liab_tab_content_values(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
-    
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
+    [
+    # Output('client_asset_type_dropdown','options'),
+    # Output('client_asset_type_dropdown','value'),
+    Output('client_asset_type_tabs','children'),
+    Output('client_asset_type_tabs','active_tab')],
+    [Input('base_numbers_checklist', 'value')]
+) 
+def set_asset_class_tabs(selected_base_numbers):
     client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_asset_classes = list(client_data["Asset Class"].unique())
-    asset_classes = ['Investment Cash & Short Term Investments', 'Loans']
+    asset_classes = list(client_data["Asset Class"].unique())
+    
+    excel_tabs = ["EQUITIES","FIXED INCOME","ALTERNATIVE INVESTMENTS","CAPITAL MARKETS"]
+    asset_options_list = ["CASH & LIABILITIES"]
+    for tab in excel_tabs:
+        if tab in asset_classes:
+            asset_options_list.append(tab)
+    asset_options_list.append("REMINDERS")
+    
+    # asset_options_list = [{'label': tab_option, 'value': tab_option} for tab_option in asset_options_list]
 
-    if any(asset in client_asset_classes for asset in asset_classes):
-        
+    tabs_children = [dbc.Tab(label=tab_option, tab_id=tab_option) for tab_option in asset_options_list]
+            
+    
+    return tabs_children, asset_options_list[0]
+
+# ### Callback for different Tab Content Layout. ###
+# @app.callback(
+#     [Output("tab_content", "children")],
+#     [Input('client_asset_type_tabs', 'active_tab')]
+# )
+# def tab_content_layout(selected_tab):
+#     excel_tabs = ["CASH & LIABILITIES","EQUITIES","FIXED INCOME","ALTERNATIVE INVESTMENTS","CAPITAL MARKETS"]
+#     if selected_tab in excel_tabs:
+#         print("It came into layout section!")
+#         return standard_tab_content
+
+
+### Callback for Part 4: Custom Section (the whole section under "Choose Asset Type" dropdown) ###
+# This whole area will change according to what's selected in Part 3 and Part 1. # 
+# @app.callback(
+#     [Output('card_custom_left1_value','children'),
+#     Output('card_custom_left2_value','children'),
+#     Output('card_custom_right1_value','children'),
+#     Output('card_custom_right2_value','children'),
+#     Output('selected_tab_chart','figure'),
+#     Output('selected_tab_table','figure')],
+#     [Input('base_numbers_checklist', 'value'),
+#     # Input('client_asset_type_dropdown', 'value')]
+#     Input('client_asset_type_tabs', 'active_tab')]
+# ) 
+@app.callback(
+    [Output('tab_content_banners','children'),
+    Output('tab_content_custom_section','children')],
+    [Input('base_numbers_checklist', 'value'),
+    # Input('client_asset_type_dropdown', 'value')]
+    Input('client_asset_type_tabs', 'active_tab')]
+) 
+def custom_section(selected_base_numbers,selected_tab):
+    # print("It comes in to custom section")
+    client_data = df[df["Base Number"].isin(selected_base_numbers)]
+    
+    if selected_tab == "CASH & LIABILITIES":
+        asset_classes = ['Investment Cash & Short Term Investments', 'Loans']
         client_data = client_data[client_data["Asset Class"].isin(asset_classes)]
         client_data["Asset Class"].replace({"Investment Cash & Short Term Investments": "Cash"}, inplace=True)
 
@@ -817,7 +827,7 @@ def render_cash_liab_tab_content_values(selected_client_name,selected_base_numbe
         #print(transformed_group_by_asset_class)
         transformed_group_by_rate = \
         group_by_asset_class.pivot(index='CCY', columns='Asset Class', values='Loan / Cash Rate to client')\
-        .reset_index().fillna(0).rename(columns={"Cash":"Cash Rate","Loans":"Loans Rate"})
+        .reset_index().fillna('-').rename(columns={"Cash":"Cash Rate","Loans":"Loans Rate"})
         df_merged = pd.merge(transformed_group_by_asset_class, transformed_group_by_rate, on=["CCY"])
         #print(df_merged)
         non_zero_cash_loan_df = group_by_asset_class.loc[group_by_asset_class['Nominal Amount (USD)'] != 0]
@@ -830,18 +840,29 @@ def render_cash_liab_tab_content_values(selected_client_name,selected_base_numbe
         
         cash_count = np.count_nonzero(df_merged["Cash"], axis=0)
         loans_count = np.count_nonzero(df_merged["Loans"], axis=0)
+        # print(f"cash_count: {cash_count}")
+        # print("loans_count:",loans_count)
 
         total_loans = df_merged.Loans.sum()
         total_cash = df_merged.Cash.sum()
-        df_merged = df_merged.append({'CCY' : 'TOTAL' , \
-            'Cash' : total_cash, 'Loans' : total_loans,\
-            'Cash Rate':'-', 'Loans Rate' : '-'} , ignore_index=True)
+        df_merged = df_merged.append({'CCY' : '<b>TOTAL</b>' , \
+            'Cash' : f'<b>{total_cash}</b>', 'Loans' : f'<b>{total_loans}</b>',\
+            'Cash Rate':'<b>-</b>', 'Loans Rate' : '<b>-</b>'} , ignore_index=True)
 
-        # table_columns = [{"name": i, "id": i} for i in df_merged[["CCY","Cash","Cash Rate","Loans","Loans Rate"]].columns]
-        # table_data = df_merged[["CCY","Cash","Cash Rate","Loans","Loans Rate"]].to_dict('records')
-       
-        table_columns = [{"name": i, "id": i} for i in df_merged.columns]
-        table_data = df_merged.to_dict('records')
+
+        cash_loan_table = go.Figure(data=[go.Table(
+                    header=dict(values=["<b>Currency</b>","<b>Cash (USD)</b>",
+                                    "<b>Loans (USD)</b>","<b>Cash Rate (%)</b>","<b>Loan Rate (%)</b>"],
+                                fill_color='paleturquoise',
+                                align='left'),
+                    cells=dict(values=[df_merged.CCY, \
+                    df_merged.Cash,
+                    df_merged.Loans,
+                    df_merged["Cash Rate"],
+                    df_merged["Loans Rate"]],
+                            fill_color='lavender',
+                            align='left'))
+                ])
 
         cash_loan_barchart = px.bar(non_zero_cash_loan_df, x="CCY", y="Nominal Amount (USD)",
                 hover_data={"Nominal Amount (USD)":":.3f"},
@@ -856,65 +877,34 @@ def render_cash_liab_tab_content_values(selected_client_name,selected_base_numbe
             textposition='outside',
             texttemplate = "%{text:.2s}")
         
-        
         no_of_cash_CCY_card = [
-            html.H5("Number of CCY (Cash)"),
-            html.H2(f"{cash_count}"),
+            html.H4("Number of CCY (Cash)", className="card-title"),
+            html.H6(f"{cash_count}", className="card-subtitle"),
         ]
         no_of_loan_CCY_card = [
-            html.H5("Number of CCY (Loans)"),
-            html.H2(f"{loans_count}"),
+            html.H4("Number of CCY (Loans)", className="card-title"),
+            html.H6(f"{loans_count}", className="card-subtitle"),
         ]
-        total_cash_sign, total_cash_color = return_sign_and_color_string(total_cash)
         total_cash_value_card = [
-            html.H5("Total Cash"),
-            html.H2(total_cash_sign+"${:.3f}M".format(abs(total_cash/1000000)), style={"color":total_cash_color}),
+            html.H4("Total Cash", className="card-title"),
+            html.H6("${:.3f}M".format(total_cash/1000000), className="card-subtitle"),
         ]
-        total_loans_sign, total_loans_color = return_sign_and_color_string(abs(total_loans)*(-1))
-        if total_loans == 0: total_loans_color = "white"
         total_loan_value_card = [
-            html.H5("Total Loans"),
-            html.H2("${:.3f}M".format(abs(total_loans/1000000)), style={"color":total_loans_color}),
+            html.H4("Total Loans", className="card-title"),
+            html.H6("${:.3f}M".format(total_loans/1000000), className="card-subtitle"),
         ]
         card_custom_left1_value = total_cash_value_card
         card_custom_left2_value = total_loan_value_card
         card_custom_right1_value = no_of_cash_CCY_card
         card_custom_right2_value = no_of_loan_CCY_card
         selected_tab_chart = cash_loan_barchart
-        selected_tab_table_columns = table_columns
-        selected_tab_table_data = table_data
-    else:
-        card_custom_left1_value = []
-        card_custom_left2_value = []
-        card_custom_right1_value = []
-        card_custom_right2_value = []
-        selected_tab_chart = go.Figure()
-        selected_tab_table_columns = [{"name": "Selected Client or Base Number has no information for CASH & LIABILITIES.", "id": "nan"}]
-        selected_tab_table_data = []
+        selected_tab_table = cash_loan_table
 
-    return card_custom_left1_value, card_custom_left2_value, card_custom_right1_value, card_custom_right2_value, selected_tab_chart, selected_tab_table_columns, selected_tab_table_data
-
-@app.callback(
-    [Output("card_equities_left1_value", "children"),
-    Output("card_equities_left2_value", "children"),
-    Output("card_equities_right1_value", "children"),
-    Output("card_equities_right2_value", "children"),
-    Output("equities_chart", "figure"),
-    Output("equities_table", "columns"),
-    Output("equities_table", "data")],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
-)
-def render_equities_tab_content_values(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
     
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_asset_classes = list(client_data["Asset Class"].unique())
-
-    if "EQUITIES" in client_asset_classes:
-        client_equity_data = client_data[client_data["Asset Class"]=="EQUITIES"]
+    elif selected_tab == "EQUITIES":
+        client_equity_data = client_data[client_data["Asset Class"]==selected_tab]
         client_equity_data["Exchange Rate"] = client_equity_data["Nominal Amount (USD)"]/client_equity_data["Nominal Amount (CCY)"]
         client_equity_data["Original Amount Paid"] = client_equity_data["Nominal Units"]*client_equity_data["Average Cost"]*client_equity_data["Exchange Rate"]
         #print("Nominal Amount (USD)",client_equity_data["Nominal Amount (USD)"])
@@ -936,13 +926,16 @@ def render_equities_tab_content_values(selected_client_name,selected_base_number
         latest_date = group_by_date_equity["Position As of Date"].max()
         latest_group_by_date_data = group_by_date_equity[group_by_date_equity['Position As of Date'] == latest_date].reset_index(drop=True)
         # print(latest_group_by_date_data)
-        
+        #latest_total_profit_loss =group_by_date_equity.loc[(group_by_date_equity["Position As of Date"]==latest_date),"Estimated Profit/Loss"]
+        #latest_total_profit_loss = pd.to_numeric(latest_group_by_date_data.loc["Estimated Profit/Loss"])
+        #latest_total_amount_paid = latest_group_by_date_data["Original Amount Paid"]
         latest_total_profit_loss = latest_group_by_date_data.at[0,'Estimated Profit/Loss']
         latest_total_return_percentage = latest_group_by_date_data.at[0,'% Profit/Loss']
         # print(latest_total_profit_loss)
+        # print("${:.3f}M".format(latest_total_profit_loss/1000000))
 
         latest_data = client_equity_data[client_equity_data['Position As of Date'] == latest_date]
-        equity_latest_table_df = latest_data[["Name","Ticker","Estimated Profit/Loss","% Profit/Loss","Citi rating"]]
+        equity_latest_table_df = latest_data[["Name","Estimated Profit/Loss","% Profit/Loss","Citi rating"]]
         
         equity_latest_table_df.sort_values("% Profit/Loss", inplace=True, ascending=True)
         # print(equity_latest_table_df)
@@ -952,65 +945,48 @@ def render_equities_tab_content_values(selected_client_name,selected_base_number
         # print(type(buy_count))
         # print(f"No. of buy: {buy_count}")
 
-        table_columns = [{"name": i, "id": i} for i in equity_latest_table_df.columns]
-        table_data = equity_latest_table_df.to_dict('records')
+        equity_latest_table = go.Figure(data=[go.Table(
+                    header=dict(values=["<b>Company Name</b>","<b>Profit/Loss</b>",
+                                    "<b>% Profit/Loss</b>","<b>Citi rating</b>"],
+                                fill_color='paleturquoise',
+                                align='left'),
+                    cells=dict(values=[equity_latest_table_df.Name, \
+                    equity_latest_table_df["Estimated Profit/Loss"],
+                    equity_latest_table_df["% Profit/Loss"],
+                    equity_latest_table_df["Citi rating"]],
+                            fill_color='lavender',
+                            align='left'))
+                ])
 
         no_of_buy_card = [
-            html.H5("Number of Buy"),
-            html.H2(f"{buy_count}"),
+            html.H4("Number of Buy", className="card-title"),
+            html.H5(f"{buy_count}", className="card-subtitle"),
         ]
         no_of_sell_card = [
-            html.H5("Number of Sell"),
-            html.H2(f"{sell_count}"),
+            html.H4("Number of Sell", className="card-title"),
+            html.H5(f"{sell_count}", className="card-subtitle"),
         ]
-        total_pl_sign, total_pl_color = return_sign_and_color_string(latest_total_profit_loss)
         total_profit_loss_card = [
-            html.H5("Total Profit/Loss"),
-            html.H2(total_pl_sign+"${:.3f}M".format(abs(latest_total_profit_loss/1000000)), style={"color":total_pl_color}),
+            html.H4("Total Profit/Loss", className="card-title"),
+            html.H5("${:.3f}M".format(latest_total_profit_loss/1000000), className="card-subtitle"),
         ]
-        total_return_sign, total_return_color = return_sign_and_color_string(latest_total_return_percentage)
         total_return_percentage_card = [
-            html.H5("% Total Return"),
-            html.H2(total_return_sign+"{:.3f}%".format(abs(latest_total_return_percentage)), style={"color":total_return_color}),
+            html.H4("% Total Return", className="card-title"),
+            html.H5("{:.3f}%".format(latest_total_return_percentage), className="card-subtitle"),
         ]
         card_custom_left1_value = total_profit_loss_card
         card_custom_left2_value = total_return_percentage_card
         card_custom_right1_value = no_of_buy_card
         card_custom_right2_value = no_of_sell_card
         selected_tab_chart = equity_daily_percentage_fig
-        selected_tab_table_columns = table_columns
-        selected_tab_table_data = table_data
-    else:
-        card_custom_left1_value = []
-        card_custom_left2_value = []
-        card_custom_right1_value = []
-        card_custom_right2_value = []
-        selected_tab_chart = go.Figure()
-        selected_tab_table_columns = [{"name": "Selected Client or Base Number has no information for EQUITIES.", "id": "nan"}]
-        selected_tab_table_data = []
+        selected_tab_table = equity_latest_table
 
-    return card_custom_left1_value, card_custom_left2_value, card_custom_right1_value, card_custom_right2_value, selected_tab_chart, selected_tab_table_columns, selected_tab_table_data
-
-@app.callback(
-    [Output("card_fixed_income_left1_value", "children"),
-    Output("card_fixed_income_left2_value", "children"),
-    Output("card_fixed_income_right1_value", "children"),
-    Output("card_fixed_income_right2_value", "children"),
-    Output("fixed_income_chart", "figure"),
-    Output("fixed_income_table", "columns"),
-    Output("fixed_income_table", "data")],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
-)
-def render_fixed_income_tab_content_values(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
     
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_asset_classes = list(client_data["Asset Class"].unique())
+    elif selected_tab == "FIXED INCOME":
 
-    if "FIXED INCOME" in client_asset_classes:
+        # Credit Rating Dictionaries
         SP_rating_dict = {
             "AAA" : "Prime",
             "AA+" : "High Grade",
@@ -1053,7 +1029,7 @@ def render_fixed_income_tab_content_values(selected_client_name,selected_base_nu
         }
         Fitch_rating_dict = SP_rating_dict
 
-        client_fi_data = client_data[client_data["Asset Class"]=="FIXED INCOME"]
+        client_fi_data = client_data[client_data["Asset Class"]==selected_tab]
         client_fi_data["Exchange Rate"] = client_fi_data["Nominal Amount (USD)"]/client_fi_data["Nominal Amount (CCY)"]
         client_fi_data["Original Amount Paid"] = client_fi_data["Nominal Units"]*client_fi_data["Average Cost"]*client_fi_data["Exchange Rate"]
         client_fi_data["Estimated Profit/Loss"] = client_fi_data["Nominal Amount (USD)"]-client_fi_data["Original Amount Paid"]
@@ -1062,6 +1038,12 @@ def render_fixed_income_tab_content_values(selected_client_name,selected_base_nu
         group_by_date_fi = client_fi_data.groupby(['Position As of Date'])["Original Amount Paid", "Estimated Profit/Loss"].apply(lambda x : x.sum()).reset_index()
 
         group_by_date_fi["% Profit/Loss"] = group_by_date_fi["Estimated Profit/Loss"]*100/group_by_date_fi["Original Amount Paid"]
+
+        fi_daily_percentage_fig = px.line(group_by_date_fi,x="Position As of Date", y="% Profit/Loss", 
+                    text="Estimated Profit/Loss", title="Daily % Profit/Loss")
+        fi_daily_percentage_fig.update_traces(
+                    textposition="top center",
+                    texttemplate = "%{text:.2s}")
                     
         rating_selection = ["S&P", "Moody's", "Fitch"]
         selected_rating = "S&P"
@@ -1101,6 +1083,8 @@ def render_fixed_income_tab_content_values(selected_client_name,selected_base_nu
         # print(group_by_date_fi)
         latest_total_profit_loss = group_by_date_fi.loc[group_by_date_fi['Position As of Date'] == latest_date, 'Estimated Profit/Loss'].iloc[0]
         latest_total_return_percentage = group_by_date_fi.loc[group_by_date_fi['Position As of Date'] == latest_date, '% Profit/Loss'].iloc[0]
+        # latest_total_profit_loss = latest_group_by_date_data.at[0,'Estimated Profit/Loss']
+        # latest_total_return_percentage = latest_group_by_date_data.at[0,'% Profit/Loss']
 
         credit_rating_barchart = px.bar(latest_group_by_date_data, 
                                 x='Client Credit Rating', y='counts', color='Client Credit Rating',
@@ -1111,71 +1095,55 @@ def render_fixed_income_tab_content_values(selected_client_name,selected_base_nu
         medium_risk_count = latest_data[latest_data["Risk Level"] == "Medium Risk"].count()[0]
         high_risk_count = latest_data[latest_data["Risk Level"] == "High Risk"].count()[0]
 
-        fi_latest_table_df = latest_data[["Name","Ticker","Estimated Profit/Loss","% Profit/Loss",
+        fi_latest_table_df = latest_data[["Name","Estimated Profit/Loss","% Profit/Loss",
                             "Client Credit Rating","Maturity","Next Call Date"]]
         
         fi_latest_table_df.sort_values("% Profit/Loss", inplace=True, ascending=True)
 
-        table_columns = [{"name": i, "id": i} for i in fi_latest_table_df.columns]
-        table_data = fi_latest_table_df.to_dict('records')
+        fi_latest_table = go.Figure(data=[go.Table(
+                    header=dict(values=["<b>Company Name</b>","<b>Profit/Loss</b>",
+                                    "<b>% Profit/Loss</b>","<b>Client Credit Rating</b>",
+                                    "<b>Maturity</b>","<b>Next Call Date</b>"],
+                                fill_color='paleturquoise',
+                                align='left'),
+                    cells=dict(values=[fi_latest_table_df.Name, 
+                    fi_latest_table_df["Estimated Profit/Loss"],
+                    fi_latest_table_df["% Profit/Loss"],
+                    fi_latest_table_df["Client Credit Rating"],
+                    fi_latest_table_df["Maturity"],
+                    fi_latest_table_df["Next Call Date"],],
+                            fill_color='lavender',
+                            align='left'))
+                ])
 
         no_of_medium_risks_card = [
-            html.H5("Number of Medium Risks"),
-            html.H2(f"{medium_risk_count}", style={"color":"#E17F79"}),
+            html.H4("Number of Medium Risks", className="card-title"),
+            html.H5(f"{medium_risk_count}", className="card-subtitle"),
         ]
         no_of_high_risks_card = [
-            html.H5("Number of High Risks"),
-            html.H2(f"{high_risk_count}", style={"color":"#E17F79"}),
+            html.H4("Number of High Risks", className="card-title"),
+            html.H5(f"{high_risk_count}", className="card-subtitle"),
         ]
-        total_pl_sign, total_pl_color = return_sign_and_color_string(latest_total_profit_loss)
         total_profit_loss_card = [
-            html.H5("Total Profit/Loss"),
-            html.H2(total_pl_sign+"${:.3f}M".format(abs(latest_total_profit_loss/1000000)), style={"color":total_pl_color}),
+            html.H4("Total Profit/Loss", className="card-title"),
+            html.H5("${:.3f}M".format(latest_total_profit_loss/1000000), className="card-subtitle"),
         ]
-        total_return_sign, total_return_color = return_sign_and_color_string(latest_total_return_percentage)
         total_return_percentage_card = [
-            html.H5("% Total Return"),
-            html.H2(total_return_sign+"{:.3f}%".format(abs(latest_total_return_percentage)), style={"color":total_return_color}),
+            html.H4("% Total Return", className="card-title"),
+            html.H5("{:.3f}%".format(latest_total_return_percentage), className="card-subtitle"),
         ]
         card_custom_left1_value = total_profit_loss_card
         card_custom_left2_value = total_return_percentage_card
         card_custom_right1_value = no_of_medium_risks_card
         card_custom_right2_value = no_of_high_risks_card
         selected_tab_chart = credit_rating_barchart
-        selected_tab_table_columns = table_columns
-        selected_tab_table_data = table_data
-    else: 
-        card_custom_left1_value = []
-        card_custom_left2_value = []
-        card_custom_right1_value = []
-        card_custom_right2_value = []
-        selected_tab_chart = go.Figure()
-        selected_tab_table_columns = [{"name": "Selected Client or Base Number has no information for FIXED INCOME.", "id": "nan"}]
-        selected_tab_table_data = []
+        selected_tab_table = fi_latest_table  
 
-    return card_custom_left1_value, card_custom_left2_value, card_custom_right1_value, card_custom_right2_value, selected_tab_chart, selected_tab_table_columns, selected_tab_table_data
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
 
-@app.callback(
-    [Output("card_alternatives_left1_value", "children"),
-    Output("card_alternatives_left2_value", "children"),
-    Output("card_alternatives_right1_value", "children"),
-    Output("card_alternatives_right2_value", "children"),
-    Output("alternatives_chart", "figure"),
-    Output("alternatives_table", "columns"),
-    Output("alternatives_table", "data")],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
-)
-def render_alternatives_tab_content_values(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
-    
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_asset_classes = list(client_data["Asset Class"].unique())
-
-    if "ALTERNATIVE INVESTMENTS" in client_asset_classes:
-        client_ai_data = client_data[client_data["Asset Class"]=="ALTERNATIVE INVESTMENTS"]
+    elif selected_tab == "ALTERNATIVE INVESTMENTS":
+        client_ai_data = client_data[client_data["Asset Class"]==selected_tab]
         
         client_ai_data["% Outstanding Amount"] = client_ai_data["Outstanding Commitment"]*100/client_ai_data["Commitment Amount"]
         client_ai_data["% Return on Contribution"] = ((client_ai_data["Distribution Amount"]/client_ai_data["Contribution Amount"])-1)*100
@@ -1198,75 +1166,57 @@ def render_alternatives_tab_content_values(selected_client_name,selected_base_nu
         latest_total_return_contribution = latest_group_by_date_data.at[0,'% Total Return on Contribution']
 
         latest_data = client_ai_data[client_ai_data['Position As of Date'] == latest_date]
-        ai_latest_table_df = latest_data[["Asset Sub Class","Name","Commitment Amount","Contribution Amount","% Outstanding Amount","Distribution Amount","% Return on Contribution"]]
+        ai_latest_table_df = latest_data[["Asset Sub Class","Name","Commitment Amount","Contribution Amount","% Outstanding Amount","% Return on Contribution"]]
         
         ai_latest_table_df.sort_values("% Return on Contribution", inplace=True, ascending=True)
         negative_returns_count = np.sum((ai_latest_table_df["% Return on Contribution"] < 0).values.ravel())
         positive_returns_count = np.sum((ai_latest_table_df["% Return on Contribution"] > 0).values.ravel())
         # print(negative_returns_count)
         # print(positive_returns_count)
-
-        table_columns = [{"name": i, "id": i} for i in ai_latest_table_df.columns]
-        table_data = ai_latest_table_df.to_dict('records')
+        ai_latest_table = go.Figure(data=[go.Table(
+                    header=dict(values=["<b>Asset Sub Class</b>","<b>Company Name</b>",
+                                    "<b>Commitment Amount</b>","<b>Contribution Amount</b>",
+                                    "<b>% Outstanding Amount</b>","<b>% Return on Contribution</b>"],
+                                fill_color='paleturquoise',
+                                align='left'),
+                    cells=dict(values=[ai_latest_table_df["Asset Sub Class"], 
+                    ai_latest_table_df.Name, 
+                    ai_latest_table_df["Commitment Amount"], 
+                    ai_latest_table_df["Contribution Amount"], 
+                    ai_latest_table_df["% Outstanding Amount"], 
+                    ai_latest_table_df["% Return on Contribution"], ],
+                            fill_color='lavender',
+                            align='left'))
+                ])
 
         no_of_positive_returns_card = [
-            html.H5("Number of Positive Returns"),
-            html.H2(f"{positive_returns_count}", style={"color":"#61BBA0"}),
+            html.H4("Number of Positive Returns", className="card-title"),
+            html.H5(f"{positive_returns_count}", className="card-subtitle"),
         ]
         no_of_negative_returns_card = [
-            html.H5("Number of Negative Returns"),
-            html.H2(f"{negative_returns_count}", style={"color":"#E17F79"}),
+            html.H4("Number of Negative Returns", className="card-title"),
+            html.H5(f"{negative_returns_count}", className="card-subtitle"),
         ]
-        total_dis_sign, total_dis_color = return_sign_and_color_string(latest_total_distribution_amount)
         total_distribution_card = [
-            html.H5("Total Distribution Amount"),
-            html.H2(total_dis_sign+"${:.3f}M".format(abs(latest_total_distribution_amount/1000000)), style={"color":total_dis_color}),
+            html.H4("Total Distribution Amount", className="card-title"),
+            html.H5("${:.3f}M".format(latest_total_distribution_amount/1000000), className="card-subtitle"),
         ]
-        total_return_sign, total_return_color = return_sign_and_color_string(latest_total_return_contribution)
         total_return_contribution_card = [
-            html.H5("% Total Return on Contribution"),
-            html.H2(total_return_sign+"{:.3f}%".format(abs(latest_total_return_contribution)), style={"color":total_return_color}),
+            html.H4("% Total Return on Contribution", className="card-title"),
+            html.H5("{:.3f}%".format(latest_total_return_contribution), className="card-subtitle"),
         ]
         card_custom_left1_value = total_distribution_card
         card_custom_left2_value = total_return_contribution_card
         card_custom_right1_value = no_of_positive_returns_card
         card_custom_right2_value = no_of_negative_returns_card
         selected_tab_chart = ai_daily_percentage_fig
-        selected_tab_table_columns = table_columns
-        selected_tab_table_data = table_data
-        
-    else:
-        card_custom_left1_value = []
-        card_custom_left2_value = []
-        card_custom_right1_value = []
-        card_custom_right2_value = []
-        selected_tab_chart = go.Figure()
-        selected_tab_table_columns = [{"name": "Selected Client or Base Number has no information for ALTERNATIVE INVESTMENTS.", "id": "nan"}]
-        selected_tab_table_data = []
+        selected_tab_table = ai_latest_table
 
-    return card_custom_left1_value, card_custom_left2_value, card_custom_right1_value, card_custom_right2_value, selected_tab_chart, selected_tab_table_columns, selected_tab_table_data
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
 
-@app.callback(
-    [Output("card_capital_markets_left1_value", "children"),
-    Output("card_capital_markets_left2_value", "children"),
-    Output("card_capital_markets_right1_value", "children"),
-    Output("card_capital_markets_right2_value", "children"),
-    Output("capital_markets_chart", "figure"),
-    Output("capital_markets_table", "columns"),
-    Output("capital_markets_table", "data")],
-    [Input('client_name_dropdown', 'value'),
-    Input('base_numbers_checklist', 'value')]
-)
-def render_capital_markets_tab_content_values(selected_client_name,selected_base_numbers):
-    # client_data = df.loc[df["Client Name"] == selected_client_name]
-    
-    # if selected_base_numbers != "All Base Numbers" and selected_base_numbers != None:
-    #     client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_data = df[df["Base Number"].isin(selected_base_numbers)]
-    client_asset_classes = list(client_data["Asset Class"].unique())
-
-    if "CAPITAL MARKETS" in client_asset_classes:
-        client_cm_data = client_data[client_data["Asset Class"]=="CAPITAL MARKETS"]
+    elif selected_tab == "CAPITAL MARKETS": # "CAPITAL MARKETS"
+        client_cm_data = client_data[client_data["Asset Class"]==selected_tab]
         
         group_by_date_cm = client_cm_data.\
         groupby(['Position As of Date'])["Nominal Amount (CCY)", "Nominal Amount (USD)"].\
@@ -1314,45 +1264,94 @@ def render_capital_markets_tab_content_values(selected_client_name,selected_base
         negative_values_count = np.sum((cm_latest_table_df["Nominal Amount (USD)"] < 0).values.ravel())
         positive_values_count = np.sum((cm_latest_table_df["Nominal Amount (USD)"] > 0).values.ravel())
 
-        table_columns = [{"name": i, "id": i} for i in cm_latest_table_df.columns]
-        table_data = cm_latest_table_df.to_dict('records')
+        cm_latest_table = go.Figure(data=[go.Table(
+                    header=dict(values=["<b>Asset Sub Class</b>","<b>Trade Number</b>",
+                                    "<b>Nominal Amount (CCY)</b>","<b>Nominal Amount (USD)</b>"],
+                                fill_color='paleturquoise',
+                                align='left'),
+                    cells=dict(values=[cm_latest_table_df["Asset Sub Class"], 
+                    cm_latest_table_df["Trade Number"], 
+                    cm_latest_table_df["Nominal Amount (CCY)"], 
+                    cm_latest_table_df["Nominal Amount (USD)"]],
+                            fill_color='lavender',
+                            align='left'))
+                ])
 
         no_of_positive_values_card = [
-            html.H5("Number of Positive Trades"),
-            html.H2(f"{positive_values_count}", style={"color":"#61BBA0"}),
+            html.H4("Number of Positive Trades", className="card-title"),
+            html.H5(f"{positive_values_count}", className="card-subtitle"),
         ]
         no_of_negative_values_card = [
-            html.H5("Number of Negative Trades"),
-            html.H2(f"{negative_values_count}", style={"color":"#E17F79"}),
+            html.H4("Number of Negative Trades", className="card-title"),
+            html.H5(f"{negative_values_count}", className="card-subtitle"),
         ]
-        total_nominal_sign, total_nominal_color = return_sign_and_color_string(latest_total_nominal_amount)
         total_nominal_amount_card = [
-            html.H5("Total Nominal Amount (USD)"),
-            html.H2(total_nominal_sign+"${:.3f}M".format(abs(latest_total_nominal_amount/1000000)), style={"color":total_nominal_color}),
+            html.H4("Total Nominal Amount (USD)", className="card-title"),
+            html.H5("${:.3f}M".format(latest_total_nominal_amount/1000000), className="card-subtitle"),
         ]
         no_of_sub_assets_card = [
-            html.H5("Number of Different Sub Assets"),
-            html.H2(f"{no_of_asset_sub_class}"),
+            html.H4("Number of Different Sub Assets", className="card-title"),
+            html.H5(f"{no_of_asset_sub_class}", className="card-subtitle"),
         ]
         card_custom_left1_value = total_nominal_amount_card
         card_custom_left2_value = no_of_sub_assets_card
         card_custom_right1_value = no_of_positive_values_card
         card_custom_right2_value = no_of_negative_values_card
         selected_tab_chart = daily_cm_fig
-        selected_tab_table_columns = table_columns
-        selected_tab_table_data = table_data       
-    
-    else:
-        card_custom_left1_value = []
-        card_custom_left2_value = []
-        card_custom_right1_value = []
-        card_custom_right2_value = []
-        selected_tab_chart = go.Figure()
-        selected_tab_table_columns = [{"name": "Selected Client or Base Number has no information for CAPITAL MARKETS.", "id": "nan"}]
-        selected_tab_table_data = []
+        selected_tab_table = cm_latest_table
 
-    return card_custom_left1_value, card_custom_left2_value, card_custom_right1_value, card_custom_right2_value, selected_tab_chart, selected_tab_table_columns, selected_tab_table_data
+        return return_tab_content_banners(card_custom_left1_value, card_custom_left2_value,card_custom_right1_value,card_custom_right2_value),\
+        return_standard_tab_content(selected_tab_chart, selected_tab_table)
 
+    # return card_custom_left1_value, card_custom_left2_value,\
+    #     card_custom_right1_value,card_custom_right2_value,\
+    #     selected_tab_chart, selected_tab_table
+
+    else: # "REMINDER" section
+        client_data = df[df["Base Number"].isin(selected_base_numbers)]
+        Eq_FI = ["EQUITIES","FIXED INCOME"]
+        client_asset_classes = list(client_data["Asset Class"].unique())
+        if any(asset in client_asset_classes for asset in Eq_FI):
+            client_data = client_data[client_data["Asset Class"].isin(Eq_FI)]
+
+            common_columns = ["Client Name","Base Number","Position As of Date","Asset Class","Asset Sub Class","Name","Ticker","CCY","Nominal Units","Nominal Amount (CCY)",
+            "Nominal Amount (USD)","Current Price","Closing Price","Average Cost","% Change from Avg Cost","1d %","5d %","1m %","6m %","12m %","YTD%",
+            "Sector","Country (Domicile)","Region (Largest Revenue)"]
+            equities_columns = ["Citi rating","Citi TARGET","% to target","Market Consensus","12M Div Yield (%)",
+            "P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)","50D MA","200D MA","Profit Margin",
+            "Company Description"]
+            equities_date = ["Dividend EX Date"]
+            # "CoCo Action","Duration" are left out in fixed_income_columns because Client.csv do not have them
+            fixed_income_columns = ["Rank","Moodys R","S&P R","Fitch","Coupon","YTC","YTM","Coupon type","Issue Date"]
+            fixed_income_date = ["Maturity","Next Call Date"]
+            reminders_columns = common_columns + equities_columns + fixed_income_columns + equities_date + fixed_income_date
+            reminders_columns_without_dates = common_columns + equities_columns + fixed_income_columns
+
+            reminder_df = client_data[reminders_columns]
+            # filter by latest date to avoid duplications
+            # latest_date = reminder_df["Position As of Date"].max()
+            # latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
+
+            # melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+            melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+            melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
+
+            today = date.today()
+            df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
+
+            all_reminders_count = len(df_all_reminder.index)
+            
+            if all_reminders_count != 0:
+                reminder_tab_table_columns = [{"name": i, "id": i} for i in df_all_reminder.columns]
+                reminder_tab_table_data = df_all_reminder.to_dict('records')
+                reminder_tab_content = return_reminders_tab_content(reminder_tab_table_columns, reminder_tab_table_data)
+            else:
+                reminder_tab_content = "There are no Assets due to remind for this Client or Base Number."
+
+        else:
+            reminder_tab_content = "This Client or Base Number has no relevant Assets to remind."
+
+        return reminder_tab_content,""
 
 if __name__ == '__main__':
     app.run_server(debug=True)
