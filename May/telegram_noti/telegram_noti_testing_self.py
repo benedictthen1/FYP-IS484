@@ -50,7 +50,7 @@ print("Noti Start Time (hour):",now.time().hour)
 send_msg(chat_id, "Hi, I'll be test sending you 2 messages everyday (at 8am and 8pm).")
 start_hour = now.time().hour
 while True:   
-    if start_hour <= 8:
+    if start_hour <= 8 or start_hour > 20:
         next_trigger = 8
     else:
         next_trigger = 20
