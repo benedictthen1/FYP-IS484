@@ -15,6 +15,36 @@ import numpy as np
 import pandas_datareader.data as web
 import datetime as dt
 
+from datetime import date,time, datetime, timedelta   
+
+import requests 
+import json
+
+# chat_id = 387218772 # fill in your chat id here
+chat_id = -376934065 # fill in your chat id here
+api_token = '1075159647:AAGLjAejPey6VpHyOxAqbUR2tS18BnhXdP4' # fill in your API token here
+base_url = 'https://api.telegram.org/bot{}/'.format(api_token)
+sendMsg_url = base_url + 'sendMessage'
+sendPhoto_url = base_url + 'sendPhoto'
+
+def send_msg(chat_id, msg_text):
+
+	# write your code here
+	params = {'chat_id':chat_id,'text':msg_text}
+	r = requests.post(sendMsg_url, params=params)
+	print(r.status_code)
+	print(r.text)
+	# threading.Timer(interval_sec,send_msg,(chat_id,msg_text)).start()
+	return r.json()["result"]["message_id"]
+
+msg_text = 'Test Importing Dash chart and sending thru tele.' # fill in a message here
+
+
+# import os
+
+# if not os.path.exists("images"):
+#     os.mkdir("images")
+
 df = pd.read_csv('../Client.csv')
 risk_df = pd.read_csv('../RiskLevelsAllocation.csv')
 
@@ -65,10 +95,22 @@ risk_analysis_df['Count'] = 1
 
 risk_levels = ["All Levels",1,2,3,4,5]
 
+############ for telegram ################
+pie_figure = px.pie(risk_analysis_df, values='Count', names='Current Risk Level',
+                    title='Overall Current Risk Profiles Breakdown'
+                ).update_traces(textposition='inside', textinfo='percent+label').update_layout(legend_title="Current Risk Level")
+
+pie_figure.write_image("pie_figure.png")
+
+photo_path = open('pie_figure.png', 'rb')
+
+
 ################# End of Data Processing for Risky Client Information #########################
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
+msg_id = send_msg(chat_id, msg_text)
+r = requests.post(base_url + 'sendPhoto', data={'chat_id': chat_id}, files={'photo': photo_path})
+print(r.status_code)
 app.layout = html.Div([
     dbc.Row([
             # This is Overall Current Risk Profiles Breakdown Piechart
