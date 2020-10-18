@@ -90,7 +90,7 @@ def return_reminders_summary_table(table_columns, table_data, detailed_table_col
         dbc.Button("Show more details", id="reminder_button", outline=True, color="secondary", size="sm", className="mr-1"),
         dbc.Modal(
             [
-                dbc.ModalHeader("Reminders: Detailed Table"),
+                dbc.ModalHeader("Reminders: Detailed Table of All Assets Due (today onwards)"),
                 dbc.ModalBody(dbc.Row([
                         dash_table.DataTable(
                             id='reminders_detailed_table',
@@ -353,7 +353,7 @@ app.layout = html.Div([
     html.Br(),
     dbc.Row([
             dbc.Col(html.H5(children='Risk Analysis', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),width=6),
-            dbc.Col(html.H5(children='Reminders: Assets Due in 1 Month', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),width=6),
+            dbc.Col(html.H5(id='reminders_summary_title', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),width=6),
             ]),
 
     ### Part 4: Risk Analysis Piecharts & Reminders Summary Table ###
@@ -705,6 +705,7 @@ def risk_analysis_section(selected_client_name,selected_base_numbers):
     Output('reminders_tab_table','columns'),
     Output('reminders_tab_table','data'),
     Output('reminders_summary_content','children'),
+    Output('reminders_summary_title','children'),
     Output('card_reminders_value','children'),
     ],
     [Input('client_name_dropdown', 'value'),
@@ -736,16 +737,17 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
 
         reminder_df = client_data[reminders_columns]
         # filter by latest date to avoid duplications
-        # latest_date = reminder_df["Position As of Date"].max()
-        # latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
+        latest_date = reminder_df["Position As of Date"].max()
+        latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
 
-        # melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
-        melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+        melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+        # melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
         melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
 
         melted_reminder_df = melted_reminder_df.drop_duplicates()
         today = date.today()
         next_reminder_date =  today + timedelta(weeks=52) # change time accordingly here
+        time_string = "1 Year" # change accordingly here also
 
         df_next_reminder = melted_reminder_df[(melted_reminder_df['Date'] <= next_reminder_date) & (melted_reminder_df['Date'] >= today)]
         # df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
@@ -754,6 +756,10 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
         df_next_reminder = df_next_reminder.drop_duplicates()
         # print(df_next_reminder)
         df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
+
+        df_all_reminder = df_all_reminder.drop_duplicates()
+
+        df_all_reminder.sort_values("Date", inplace=True, ascending=True)
 
         all_reminders_count = len(df_all_reminder.index)
         
@@ -766,15 +772,17 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
 
         reminders_count_1m = len(df_next_reminder.index)
 
+        reminders_summary_title = f'Reminders: Assets Due in {time_string}'
+
         if reminders_count_1m != 0:
             table_columns = [{"name": i, "id": i} for i in df_next_reminder.columns]
             table_data = df_next_reminder.to_dict('records')
             reminders_summary_content = return_reminders_summary_table(table_columns,table_data,reminder_tab_table_columns,reminder_tab_table_data)
             color = "#E17F79" #Pastel Red
         else:
-            reminders_summary_content = "There are no Assets due in 1 month."
+            reminders_summary_content = f"There are no Assets due in {time_string}."
             color = "#003B70" #Dark Blue
-            reminder_tab_table_columns = [{"name": "There are no Assets due in 1 month.", "id": "nan"}]
+            reminder_tab_table_columns = [{"name": f"There are no Assets due in {time_string}.", "id": "nan"}]
             reminder_tab_table_data = []
 
 
@@ -787,11 +795,11 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
 
     card_reminders_value = [
             html.H5("Asset Reminders", style={"color":"#003B70"}),
-            html.H2(f"{reminders_count_1m} (Due in 1 month)", style={"color":color}),
+            html.H2(f"{reminders_count_1m} (Due in {time_string})", style={"color":color}),
         ]
 
 
-    return reminder_tab_table_columns, reminder_tab_table_data, reminders_summary_content,card_reminders_value
+    return reminder_tab_table_columns, reminder_tab_table_data, reminders_summary_content,reminders_summary_title,card_reminders_value
 
 
 
