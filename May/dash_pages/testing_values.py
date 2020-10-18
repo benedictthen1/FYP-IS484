@@ -100,4 +100,98 @@ from datetime import date, timedelta
 # print(df)
 # df = df.drop_duplicates()
 # print(df)
+df = pd.read_csv('../Client.csv')
+risk_df = pd.read_csv('../RiskLevelsAllocation.csv')
 
+df['Position As of Date'] = pd.to_datetime(df['Position As of Date'], errors='coerce').dt.strftime('%d/%m/%Y')
+df['Position As of Date']= pd.to_datetime(df['Position As of Date'])
+df['Maturity'] = pd.to_datetime(df['Maturity'], errors='coerce').dt.strftime('%d/%m/%Y')
+df['Maturity']= pd.to_datetime(df['Maturity'])
+df['Next Call Date'] = pd.to_datetime(df['Next Call Date'], errors='coerce').dt.strftime('%d/%m/%Y')
+df['Next Call Date']= pd.to_datetime(df['Next Call Date'])
+df['Dividend EX Date'] = pd.to_datetime(df['Dividend EX Date'], errors='coerce').dt.strftime('%m/%d/%Y')
+df['Dividend EX Date']= pd.to_datetime(df['Dividend EX Date'])
+
+latest_date = df["Position As of Date"].max()
+latest_client_data = df[df['Position As of Date'] == latest_date]
+
+# Eq_FI = ["EQUITIES","FIXED INCOME"]
+# client_data = latest_client_data[latest_client_data["Asset Class"].isin(Eq_FI)]
+
+# common_columns = ["Client Name","Base Number","Position As of Date","Asset Class","Asset Sub Class","Name","Ticker","CCY","Nominal Units","Nominal Amount (CCY)",
+# "Nominal Amount (USD)","Current Price","Closing Price","Average Cost","% Change from Avg Cost","1d %","5d %","1m %","6m %","12m %","YTD%",
+# "Sector","Country (Domicile)","Region (Largest Revenue)"]
+# equities_columns = ["Citi rating","Citi TARGET","% to target","Market Consensus","12M Div Yield (%)",
+# "P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)","50D MA","200D MA","Profit Margin",
+# "Company Description"]
+# equities_date = ["Dividend EX Date"]
+# # "CoCo Action","Duration" are left out in fixed_income_columns because Client.csv do not have them
+# fixed_income_columns = ["Rank","Moodys R","S&P R","Fitch","Coupon","YTC","YTM","Coupon type","Issue Date"]
+# fixed_income_date = ["Maturity","Next Call Date"]
+# reminders_columns = common_columns + equities_columns + fixed_income_columns + equities_date + fixed_income_date
+# reminders_columns_without_dates = common_columns + equities_columns + fixed_income_columns
+
+# reminder_df = client_data[reminders_columns]
+
+# melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
+# melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
+
+# melted_reminder_df = melted_reminder_df.drop_duplicates()
+# today = date.today()
+# next_reminder_date =  today + timedelta(weeks=52) # change time accordingly here
+# # time_string = "1 Year" # change accordingly here also
+
+# df_next_reminder = melted_reminder_df[(melted_reminder_df['Date'] <= next_reminder_date) & (melted_reminder_df['Date'] >= today)]
+# # df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
+# # df_next_reminder = df_next_reminder[["Name","Reminder Type","Date"]]
+# # print(df_next_reminder)
+# df_next_reminder = df_next_reminder.drop_duplicates()
+# print(df_next_reminder["Date"].unique())
+# print(len(df_next_reminder["Client Name"].unique()))
+# df_overdue_reminder = melted_reminder_df[melted_reminder_df['Date'] <= today]
+
+# df_overdue_reminder = df_overdue_reminder.drop_duplicates()
+# print(len(df_overdue_reminder["Client Name"].unique()))
+
+
+################ Profit/Loss Breakdown ####################
+
+Eq_FI = ["EQUITIES","FIXED INCOME"]
+Eq_FI_df = latest_client_data[latest_client_data["Asset Class"].isin(Eq_FI)]
+Alt_df = latest_client_data[latest_client_data["Asset Class"]=="ALTERNATIVE INVESTMENTS"]
+
+Eq_FI_df = Eq_FI_df[["Client Name","Base Number","Asset Class","Estimated Profit/Loss"]]
+Alt_df = Alt_df[["Client Name","Base Number","Asset Class","Distribution Amount","Estimated Profit/Loss"]]
+
+Alt_Distribution_boolean = pd.notnull(Alt_df["Distribution Amount"])
+Alt_Distribution_df = Alt_df[Alt_Distribution_boolean]
+#print(Alt_Distribution_df.tail())
+Alt_Distribution_df = Alt_Distribution_df[["Client Name","Base Number","Asset Class","Distribution Amount"]][Alt_Distribution_df["Distribution Amount"]!=0]
+#print(Alt_Distribution_df.tail())
+Alt_Distribution_df.rename(columns={"Distribution Amount": "Estimated Profit/Loss"}, inplace=True)
+#print(Eq_FI_df.shape)
+#print(Alt_Distribution_df.shape)
+
+Alt_Profit_Loss_boolean = pd.isnull(Alt_df["Distribution Amount"])
+Alt_Profit_Loss_NA_df = Alt_df[["Client Name","Base Number","Asset Class","Estimated Profit/Loss"]][Alt_Profit_Loss_boolean]
+#print(Alt_Profit_Loss_NA_df.shape)
+Alt_Profit_Loss_zero_df = Alt_df[["Client Name","Base Number","Asset Class","Estimated Profit/Loss"]][Alt_df["Distribution Amount"]==0]
+#print(Alt_Profit_Loss_zero_df.shape)
+
+frames = [Eq_FI_df,Alt_Distribution_df,Alt_Profit_Loss_NA_df,Alt_Profit_Loss_zero_df]
+Profit_Loss_df = pd.concat(frames,ignore_index=True)
+#print(Profit_Loss_df.tail())
+#print(Profit_Loss_df.shape)
+
+# decimals = 3
+# Profit_Loss_df['Estimated Profit/Loss'] = Profit_Loss_df['Estimated Profit/Loss'].apply(lambda x: round(x, decimals))
+# #print(Profit_Loss_df.head())
+# total_profit_loss = Profit_Loss_df['Estimated Profit/Loss'].sum()
+
+group_by_PL_asset_class = Profit_Loss_df\
+.groupby(['Client Name'], as_index=False)\
+.agg({'Estimated Profit/Loss':'sum'})
+
+print(group_by_PL_asset_class)
+negative_client_count = sum(n < 0 for n in group_by_PL_asset_class['Estimated Profit/Loss'].values.flatten())
+print(negative_client_count)

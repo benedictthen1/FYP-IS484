@@ -91,26 +91,28 @@ risk_analysis_df["Current Risk Level"] = risk_analysis_df['Current Nominal Amoun
 risk_analysis_df['Target Status'] = np.where(risk_analysis_df['Target Risk Level']==risk_analysis_df['Current Risk Level'], 'In Target', 'Out of Target')
 
 risk_analysis_df['Count'] = 1
-#print(risk_analysis_df)
+# risk_analysis_df = risk_analysis_df['Target Status'].value_counts().to_frame().reset_index()
+# out_of_target_client_no = risk_analysis_df.loc[risk_analysis_df['index'] == "Out of Target", 'Target Status'].iloc[0]
+# print(out_of_target_client_no)
 
 risk_levels = ["All Levels",1,2,3,4,5]
 
 ############ for telegram ################
-pie_figure = px.pie(risk_analysis_df, values='Count', names='Current Risk Level',
-                    title='Overall Current Risk Profiles Breakdown'
-                ).update_traces(textposition='inside', textinfo='percent+label').update_layout(legend_title="Current Risk Level")
+# pie_figure = px.pie(risk_analysis_df, values='Count', names='Current Risk Level',
+#                     title='Overall Current Risk Profiles Breakdown'
+#                 ).update_traces(textposition='inside', textinfo='percent+label').update_layout(legend_title="Current Risk Level")
 
-pie_figure.write_image("pie_figure.png")
+# pie_figure.write_image("pie_figure.png")
 
-photo_path = open('pie_figure.png', 'rb')
+# photo_path = open('pie_figure.png', 'rb')
 
 
 ################# End of Data Processing for Risky Client Information #########################
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-msg_id = send_msg(chat_id, msg_text)
-r = requests.post(base_url + 'sendPhoto', data={'chat_id': chat_id}, files={'photo': photo_path})
-print(r.status_code)
+# msg_id = send_msg(chat_id, msg_text)
+# r = requests.post(base_url + 'sendPhoto', data={'chat_id': chat_id}, files={'photo': photo_path})
+# print(r.status_code)
 app.layout = html.Div([
     dbc.Row([
             # This is Overall Current Risk Profiles Breakdown Piechart
