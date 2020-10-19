@@ -761,6 +761,8 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
 
         df_all_reminder.sort_values("Date", inplace=True, ascending=True)
 
+        # melted_reminder_df.sort_values("Date", inplace=True, ascending=True)
+        # all_reminders_count = len(melted_reminder_df.index)
         all_reminders_count = len(df_all_reminder.index)
         
         if all_reminders_count != 0:
@@ -990,12 +992,17 @@ def render_cash_liab_tab_content_values(selected_client_name,selected_base_numbe
             html.H2(f"{loans_count}"),
         ]
         total_cash_sign, total_cash_color = return_sign_and_color_string(total_cash)
+        if total_cash == 0 or np.isnan(total_cash): 
+            total_cash_color = "white"
+            total_cash = 0
         total_cash_value_card = [
             html.H5("Total Cash"),
             html.H2(total_cash_sign+"${:.3f}M".format(abs(total_cash/1000000)), style={"color":total_cash_color}),
         ]
         total_loans_sign, total_loans_color = return_sign_and_color_string(abs(total_loans)*(-1))
-        if total_loans == 0: total_loans_color = "white"
+        if total_loans == 0 or np.isnan(total_loans): 
+            total_loans_color = "white"
+            total_loans = 0
         total_loan_value_card = [
             html.H5("Total Loans"),
             html.H2("${:.3f}M".format(abs(total_loans/1000000)), style={"color":total_loans_color}),
@@ -1088,11 +1095,17 @@ def render_equities_tab_content_values(selected_client_name,selected_base_number
             html.H2(f"{sell_count}"),
         ]
         total_pl_sign, total_pl_color = return_sign_and_color_string(latest_total_profit_loss)
+        if latest_total_profit_loss == 0 or np.isnan(latest_total_profit_loss): 
+            total_pl_color = "white"
+            latest_total_profit_loss = 0
         total_profit_loss_card = [
             html.H5("Total Profit/Loss"),
             html.H2(total_pl_sign+"${:.3f}M".format(abs(latest_total_profit_loss/1000000)), style={"color":total_pl_color}),
         ]
         total_return_sign, total_return_color = return_sign_and_color_string(latest_total_return_percentage)
+        if latest_total_return_percentage == 0 or np.isnan(latest_total_return_percentage): 
+            total_return_color = "white"
+            latest_total_return_percentage = 0
         total_return_percentage_card = [
             html.H5("% Total Return"),
             html.H2(total_return_sign+"{:.3f}%".format(abs(latest_total_return_percentage)), style={"color":total_return_color}),
@@ -1260,11 +1273,18 @@ def render_fixed_income_tab_content_values(selected_client_name,selected_base_nu
             html.H2(f"{high_risk_count}", style={"color":"#E17F79"}),
         ]
         total_pl_sign, total_pl_color = return_sign_and_color_string(latest_total_profit_loss)
+        if latest_total_profit_loss == 0 or np.isnan(latest_total_profit_loss): 
+            total_pl_color = "white"
+            latest_total_profit_loss = 0
         total_profit_loss_card = [
             html.H5("Total Profit/Loss"),
             html.H2(total_pl_sign+"${:.3f}M".format(abs(latest_total_profit_loss/1000000)), style={"color":total_pl_color}),
         ]
+
         total_return_sign, total_return_color = return_sign_and_color_string(latest_total_return_percentage)
+        if latest_total_return_percentage == 0 or np.isnan(latest_total_return_percentage): 
+            total_return_color = "white"
+            latest_total_return_percentage = 0
         total_return_percentage_card = [
             html.H5("% Total Return"),
             html.H2(total_return_sign+"{:.3f}%".format(abs(latest_total_return_percentage)), style={"color":total_return_color}),
@@ -1350,11 +1370,20 @@ def render_alternatives_tab_content_values(selected_client_name,selected_base_nu
             html.H2(f"{negative_returns_count}", style={"color":"#E17F79"}),
         ]
         total_dis_sign, total_dis_color = return_sign_and_color_string(latest_total_distribution_amount)
+        if latest_total_distribution_amount == 0 or np.isnan(latest_total_distribution_amount): 
+            total_dis_color = "white"
+            latest_total_distribution_amount = 0
+
         total_distribution_card = [
             html.H5("Total Distribution Amount"),
             html.H2(total_dis_sign+"${:.3f}M".format(abs(latest_total_distribution_amount/1000000)), style={"color":total_dis_color}),
         ]
         total_return_sign, total_return_color = return_sign_and_color_string(latest_total_return_contribution)
+        if latest_total_return_contribution == 0 or np.isnan(latest_total_return_contribution): 
+            total_return_color = "white"
+            latest_total_return_contribution = 0
+
+        # print(latest_total_return_contribution)
         total_return_contribution_card = [
             html.H5("% Total Return on Contribution"),
             html.H2(total_return_sign+"{:.3f}%".format(abs(latest_total_return_contribution)), style={"color":total_return_color}),
@@ -1458,6 +1487,9 @@ def render_capital_markets_tab_content_values(selected_client_name,selected_base
             html.H2(f"{negative_values_count}", style={"color":"#E17F79"}),
         ]
         total_nominal_sign, total_nominal_color = return_sign_and_color_string(latest_total_nominal_amount)
+        if latest_total_nominal_amount == 0 or np.isnan(latest_total_nominal_amount): 
+            total_nominal_color = "white"
+            latest_total_nominal_amount = 0
         total_nominal_amount_card = [
             html.H5("Total Nominal Amount (USD)"),
             html.H2(total_nominal_sign+"${:.3f}M".format(abs(latest_total_nominal_amount/1000000)), style={"color":total_nominal_color}),
