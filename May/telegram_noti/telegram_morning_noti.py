@@ -9,10 +9,6 @@ import json
 import threading
 from threading import Thread
 
-morning_time_hr = 13
-evening_time_hr = 17
-morning_time_string = "1pm"
-evening_time_string = "5pm"
 
 def return_values_for_tele_msg():
     ############ Import all data files #################
@@ -197,29 +193,12 @@ def return_evening_msg_text(poorly_performing_client_count,out_of_target_client_
     return evening_msg_text
 
 now = datetime.now()
-print("Noti Start Time (hour):",now.time().hour)
-send_msg(chat_id, f"Hi, I'll be test sending you 2 messages everyday (at {morning_time_string} and {evening_time_string}).")
-start_hour = now.time().hour
-while True:   
-    if start_hour <= morning_time_hr or start_hour > evening_time_hr:
-        next_trigger = morning_time_hr
-    else:
-        next_trigger = evening_time_hr
-    print("Noti Next Trigger (hour):",next_trigger)
-    while now.time().hour != next_trigger:
-        now = datetime.now()
-    print("Noti Trigger Time Now:",now.time())
-    if now.time().hour == morning_time_hr:
-        poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y,no_of_clients_overdue = return_values_for_tele_msg()
-        morning_msg_text = return_morning_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y)
-        send_msg(chat_id, morning_msg_text)
-        start_hour = evening_time_hr
-    elif now.time().hour == evening_time_hr:
-        poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y,no_of_clients_overdue = return_values_for_tele_msg()
-        evening_msg_text = return_evening_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y)
-        send_msg(chat_id, evening_msg_text)
-        start_hour = morning_time_hr
-    
+print("Noti Trigger Time Now:",now.time())
+poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y,no_of_clients_overdue = return_values_for_tele_msg()
+morning_msg_text = return_morning_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y)
+send_msg(chat_id, morning_msg_text)
+
+
 
 
 
