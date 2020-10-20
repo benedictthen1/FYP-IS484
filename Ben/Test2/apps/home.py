@@ -432,12 +432,6 @@ layout = html.Div([
 ])
 
 #================================================== CALLBACKS =============================================================================
-@app.callback(Output('url2', 'pathname'),
-              [Input("coy_table","selected_cells")])
-def change_link(t1):
-    if t1:
-        pathname = '/apps/stocks' 
-        return pathname
 
 def toggle_modal(n1, n2, is_open):
     if n1 or n2:
@@ -498,15 +492,15 @@ app.callback(Output("client_modal", "is_open"),
 #         ])
 #     return fig
 
-@app.callback(
-Output('session', 'data'),
-[Input("coy_table","selected_cells"),Input("coy_table","derived_virtual_data")])
-def store(table_input1,table_input2):
-    if table_input1:
-        row_num = table_input1[0]["row"]
-        col_name = table_input2[row_num]["Ticker"]
-        #print(col_name)
-        return {'test': col_name}
+# @app.callback(
+# Output('coy_session', 'data'),
+# [Input("coy_table","selected_cells"),Input("coy_table","derived_virtual_data")])
+# def store(table_input1,table_input2):
+#     if table_input1:
+#         row_num = table_input1[0]["row"]
+#         col_name = table_input2[row_num]["Ticker"]
+#         #print(col_name)
+        # return {'test': col_name}
 
 # @app.callback(
 # Output('session_output', 'children'),

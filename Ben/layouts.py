@@ -13,9 +13,9 @@ from datetime import datetime, timedelta
 from pytz import timezone
 import yahoo_fin.stock_info as si
 
-#ticker = yf.Ticker("aapl")
-#hist = ticker.history(period="1y",interval="1d")
-#print(hist)
+ticker = yf.Ticker("aaapl")
+hist = ticker.history(period="1y",interval="1d")
+print(len(hist))
 
 #balance_sheet = si.get_quote_table("aapl")
 # balance_sheet = si.get_data("aapl")
@@ -30,7 +30,7 @@ for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors="coerce")
     df[col].astype("float")
     df[col] = df[col].round(2)
-print(df.columns)
+#print(df.columns)
 
 #DASH APP
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])

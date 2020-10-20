@@ -29,16 +29,15 @@ for col in numeric_cols:
 print(df.columns)
 
 fig = go.Figure()
-# fig.update_xaxes(showline=True, linewidth=1, linecolor='Grey', gridcolor='Grey')
-# fig.update_yaxes(showline=False, linewidth=1, linecolor='Grey', gridcolor='Grey')
 
 stats_table = html.Div([
     dash_table.DataTable(
         id='stats_table',
-        style_header = {'display': 'none'},
+        fixed_rows={'headers': True},
+        style_header={'fontWeight': 'bold', 'height': 'auto','whiteSpace': 'normal','border': '1px solid grey'},
         style_cell={'textAlign': 'left','backgroundColor': "#f9f9f9",},
         style_as_list_view=True,
-        style_table={'overflowY': 'auto','height': '345px'},
+        style_table={'overflowY': 'auto','height': '370px'},
         #columns=[{"name": i, "id": i} for i in df.columns],
         #data=df.to_dict('records'))
     )
@@ -63,26 +62,31 @@ client_coy_table = html.Div([
 layout = html.Div([
 
     html.Div([
-    dcc.Input(id="input", type="text", placeholder="search ticker"),
-    dbc.Button("Apply", color="dark",size="sm", id="search-button",n_clicks=0, className="mr-1"),
+        dcc.Input(id="input", type="text", placeholder="search ticker"),
+        dbc.Button("Apply", color="dark",size="sm", id="search-button",n_clicks=0, className="mr-1"),
     ],className="search_style"),
-    html.P(id = "price_date"),
+
     html.Div([
         html.Div([
-            html.H5(id ="coy_name"),
+            html.Div([
+                html.H5(id ="coy_name"),
+                #html.Div(id="sector"),
+                dbc.Badge(id="sector", color="dark", className="sector"),
+            ],id="coy_name_sector"),
+            html.Br(),
             html.Div([
                 html.H6(id = "close_price"),
                 html.H6(id = "price_diff"),
             ],id = "tic_price_info"),
-           
+            html.P(id = "price_date"),
         ],id="ticker_info_table"),
 
-        html.Div([html.Div(id="ytd"),html.H6("YTD %")],className="tick_metrics"),
-        html.Div([html.Div(id="1d"),html.H6("1D %")],className="tick_metrics"),
-        html.Div([html.Div(id="5d"),html.H6("5D %")],className="tick_metrics"),
-        html.Div([html.Div(id="1m"),html.H6("1M %")],className="tick_metrics"),
-        html.Div([html.Div(id="6m"),html.H6("6M %")],className="tick_metrics"),
-        html.Div([html.Div(id="12m"),html.H6("12M %")],className="tick_metrics"),
+        html.Div([html.Div(id="ytd"),html.H5("YTD %")],className="tick_metrics"),
+        html.Div([html.Div(id="1d"),html.H5("1D %")],className="tick_metrics"),
+        html.Div([html.Div(id="5d"),html.H5("5D %")],className="tick_metrics"),
+        html.Div([html.Div(id="1m"),html.H5("1M %")],className="tick_metrics"),
+        html.Div([html.Div(id="6m"),html.H5("6M %")],className="tick_metrics"),
+        html.Div([html.Div(id="12m"),html.H5("12M %")],className="tick_metrics"),
         
 
     ],className="container-display"),
@@ -126,6 +130,7 @@ layout = html.Div([
             dbc.Button("1M", color="dark",size="sm", id="1m-button",n_clicks=0, className="mr-1"),
             dbc.Button("6M", color="dark",size="sm", id="6m-button",n_clicks=0, className="mr-1"),
             dbc.Button("1Y", color="dark",size="sm", id="1y-button",n_clicks=0, className="mr-1"),
+            dbc.Button("YTD", color="dark",size="sm", id="ytd-button",n_clicks=0, className="mr-1"),
 
             dcc.Graph(figure=fig, id="candle"),
 
@@ -145,28 +150,25 @@ layout = html.Div([
 ])
 
 ##### CALLBACKS ######
-# @app.callback(
-# Output('session_output', 'children'),
-# [Input("session", 'data')])
-# def data(data):
-#     if data:
-#         print("TSTING SESSION")
-#         print(data["test"])
-#         return data["test"]
 
 #Metrics Banners
 @app.callback([Output("ytd", "children"),Output("1d", "children"),Output("5d", "children"),Output("1m", "children"),
                Output("6m", "children"),Output("12m", "children")],
-              [Input("session","data"),Input("search-button","n_clicks")],[State("input","value")])
+              [Input("coy_session","data"),Input("search-button","n_clicks")],[State("input","value")])
 def banner(ses_data,search_btn,search):
+    
     if search_btn:
         tdf = yf.Ticker(search)
     elif ses_data:
         tdf = yf.Ticker(ses_data["test"])
     else:
         tdf = yf.Ticker("aapl")
-
+    
     hist = tdf.history(period="1mo",interval="1d")
+
+    if len(hist) == 0:
+        tdf = yf.Ticker("aapl")
+        hist = tdf.history(period="1mo",interval="1d")
     d1 = ((hist["Close"].iloc[-1] - hist["Close"].iloc[-2])/hist["Close"].iloc[-1]*100).round(2)
     d5 = ((hist["Close"].iloc[-1] - hist["Close"].iloc[-6])/hist["Close"].iloc[-1]*100).round(2)
     m1 = ((hist["Close"].iloc[-1] - hist["Close"].iloc[1])/hist["Close"].iloc[-1]*100).round(2)
@@ -176,23 +178,62 @@ def banner(ses_data,search_btn,search):
     y1 = ((hist3["Close"].iloc[-1] - hist3["Close"].iloc[1])/hist3["Close"].iloc[-1]*100).round(2)
     hist4 = tdf.history(period="ytd")
     ytd = ((hist4["Close"].iloc[-1] - hist4["Close"].iloc[1])/hist4["Close"].iloc[-1]*100).round(2)
-  
-    return ytd,d1,d5,m1,m6,y1
+
+    if ytd > 0:
+        ytd = "+" + str(ytd)
+        style = {'color': '#0bf40b'}
+    else:
+        style = {'color': 'red'}
+
+    if d1 > 0:
+        d1 = "+" + str(d1)
+        style2 = {'color': '#0bf40b'}
+    else:
+        style2 = {'color': 'red'}
+
+    if d5 > 0:
+        d5 = "+" + str(d5)
+        style3 = {'color': '#0bf40b'}
+    else:
+        style3 = {'color': 'red'}
+
+    if m1 > 0:
+        m1 = "+" + str(m1)
+        style4 = {'color': '#0bf40b'}
+    else:
+        style4 = {'color': 'red'}
+    
+    if y1 > 0:
+        y1 = "+" + str(y1)
+        style5 = {'color': '#0bf40b'}
+    else:
+        style5 = {'color': 'red'}
+
+    if m6 > 0:
+        m6 = "+" + str(m6)
+        style6 = {'color': '#0bf40b'}
+    else:
+        style6 = {'color': 'red'}
+
+    ytd_f = html.Div(ytd, style = style)
+    d1_f = html.Div(d1, style = style2)
+    d5_f = html.Div(d5, style = style3)
+    m1_f = html.Div(m1, style = style4)
+    y1_f = html.Div(y1, style = style5)
+    m6_f = html.Div(m6, style = style6)
+    return ytd_f,d1_f,d5_f,m1_f,m6_f,y1_f
 
 #Clients invested in the company table
 @app.callback([Output("client_coy_table", "data"),Output("client_coy_table","columns")],
-            [Input("session","data"),Input("search-button","n_clicks")],[State("input","value")])
+            [Input("coy_session","data"),Input("search-button","n_clicks")],[State("input","value")])
 def coy_client_Table(ses_data,search_btn,search):
     data = df
     if search_btn:
-        #search = search.str.upper
-        data = df
+        search = search.upper()
         data=df[df["Ticker"]==search]
     elif ses_data:
-        data = df 
         data=df[df["Ticker"]==ses_data["test"]]
     else:
-        data = df
         data=df[df["Ticker"]=="AAPL"]
 
     data = data[data["Asset Class"]== "EQUITIES"]
@@ -210,21 +251,21 @@ def coy_client_Table(ses_data,search_btn,search):
 
     return data,columns
     
-    
-
 #Cashflorw bar chart
 @app.callback(Output("cashflow_bar", "figure"),
-            [Input("session","data"),Input("search-button","n_clicks")],[State("input","value")])
+            [Input("coy_session","data"),Input("search-button","n_clicks")],[State("input","value")])
 def bar_chart_input(ses_data,search_btn,search):
     if search_btn:
-        cashflow = si.get_cash_flow(search)
-        cf = cashflow.T
+        try:
+            cashflow = si.get_cash_flow(search)
+        except KeyError:
+            cashflow = si.get_cash_flow("aapl")
     elif ses_data:
         cashflow = si.get_cash_flow(ses_data["test"])
-        cf = cashflow.T
     else:
         cashflow = si.get_cash_flow("aapl")
-        cf = cashflow.T
+
+    cf = cashflow.T
 
     cf["date"] = cf.index
     date= cf["date"].dt.year
@@ -249,17 +290,19 @@ def bar_chart_input(ses_data,search_btn,search):
 
 #balance sheet bar
 @app.callback(Output("balance_chart", "figure"),
-            [Input("session","data"),Input("search-button","n_clicks")],[State("input","value")])
+            [Input("coy_session","data"),Input("search-button","n_clicks")],[State("input","value")])
 def bs_chart_input(ses_data,search_btn,search):
     if search_btn:
-        balance_sheet = si.get_balance_sheet(search)
-        bs = balance_sheet.T
+        try:
+            balance_sheet = si.get_balance_sheet(search)
+        except KeyError:
+            balance_sheet = si.get_balance_sheet("aapl")
     elif ses_data:
         balance_sheet = si.get_balance_sheet(ses_data["test"])
-        bs = balance_sheet.T
     else:
         balance_sheet = si.get_balance_sheet("aapl")
-        bs = balance_sheet.T
+    
+    bs = balance_sheet.T
 
     bs["date"] = bs.index
     date= bs["date"].dt.year
@@ -282,34 +325,37 @@ def bs_chart_input(ses_data,search_btn,search):
 
 #income statement bar
 @app.callback(Output("income_chart", "figure"),
-            [Input("session","data"),Input("search-button","n_clicks")],[State("input","value")])
+            [Input("coy_session","data"),Input("search-button","n_clicks")],[State("input","value")])
 def income_bar(ses_data,search_btn,search):
     if search_btn:
-        balance_sheet = si.get_income_statement(search)
-        bs = balance_sheet.T
-    if ses_data:
-        balance_sheet = si.get_income_statement(ses_data["test"])
-        bs = balance_sheet.T
+        try:
+            income_sheet = si.get_income_statement(search)
+        except KeyError:
+            income_sheet = si.get_income_statement("aapl")
+    elif ses_data:
+        income_sheet = si.get_income_statement(ses_data["test"])
+ 
     else:
-        balance_sheet = si.get_income_statement("aapl")
-        bs = balance_sheet.T
-    # print(bs.columns)
-    # print(bs)
-    bs["date"] = bs.index
+        income_sheet = si.get_income_statement("aapl")
+ 
+    inc = income_sheet.T
+    print(inc['netIncome'])
 
-    date= bs["date"].dt.year
-    netincome = (bs["netIncome"]/1000000000).astype(float).round(2)
-    totalrev = (bs["totalRevenue"]/1000000000).astype(float).round(2)
-    opincome = (bs["operatingIncome"]/1000000000).astype(float).round(2)
+    inc["date"] = inc.index
+
+    date= inc["date"].dt.year
+    netincome = (inc["netIncome"]/1000000000).astype(float).round(2)
+    totalrev = (inc["totalRevenue"]/1000000000).astype(float).round(2)
+    opincome = (inc["operatingIncome"]/1000000000).astype(float).round(2)
 
     color=np.array(['rgb(255,255,255)']*netincome.shape[0])
-    color[netincome<0]='red'
+    color[netincome<0]='crimson'
     color[netincome>=0]='green'
 
     fig2 = go.Figure(data=[
-        go.Bar(name='Net Income', x=date, y=bs["netIncome"],marker=dict(color=color.tolist()), text = netincome,textfont_size=8, textposition='outside'),
-        go.Bar(name='Total Revenue', x=date, y=bs["totalRevenue"], text = totalrev,textfont_size=8, textposition='outside',visible='legendonly'),
-        go.Bar(name='Operating Income', x=date, y=bs["operatingIncome"], text = opincome,textfont_size=8, textposition='outside',visible='legendonly')
+        go.Bar(name='Net Income', x=date, y=inc["netIncome"],marker=dict(color=color.tolist()), text = netincome,textfont_size=8, textposition='outside'),
+        go.Bar(name='Total Revenue', x=date, y=inc["totalRevenue"], text = totalrev,textfont_size=8, textposition='outside',visible='legendonly'),
+        go.Bar(name='Operating Income', x=date, y=inc["operatingIncome"], text = opincome,textfont_size=8, textposition='outside',visible='legendonly')
     ])
     # Change the bar mode
     fig2.update_layout(barmode='group',width = 444,title_text='Income Statement',title_x=0.5,margin=dict(t=70,b=20,l=55,r=40),paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
@@ -319,15 +365,20 @@ def income_bar(ses_data,search_btn,search):
 
 # Stats stock table
 @app.callback([Output("stats_table", "columns"),Output("stats_table", "data"),Output("coy_desc","children")],
-            [Input("session","data"),Input("search-button","n_clicks")],[State("input","value")])
+            [Input("coy_session","data"),Input("search-button","n_clicks")],[State("input","value")])
 def stats_table_input(ses_data,search_btn,search):
     if search_btn:
         ndf = yf.Ticker(search)
-        #print(ndf.info)
     elif ses_data:
         ndf= yf.Ticker(ses_data["test"])
-        df = ndf.history(interval="1m",period="1d")
     else:
+        ndf = yf.Ticker("aapl")
+
+    try:
+        stock = ndf.info
+    except ValueError:
+        ndf = yf.Ticker("aapl")
+    except IndexError:
         ndf = yf.Ticker("aapl")
     stock = ndf.info
     data = {'Metrcs Name':  ['Close', 'Open', "Ask", "52wk High", "52wk Low", "Volume", "Volume Average",
@@ -343,30 +394,45 @@ def stats_table_input(ses_data,search_btn,search):
     return columns, data, dec
 
 
-@app.callback([Output("candle","figure"),Output("coy_name","children"),Output("close_price","children"),Output("price_diff","children"),Output("price_date","children")],
-              [Input("session","data"),Input("search-button","n_clicks"),Input("1d-button","n_clicks"),Input("5d-button","n_clicks"),Input("1m-button","n_clicks")],
+@app.callback([Output("candle","figure"),Output("coy_name","children"),Output("close_price","children"),Output("price_diff","children"),Output("price_date","children"),Output("sector","children")],
+              [Input("coy_session","data"),Input("search-button","n_clicks"),Input("1d-button","n_clicks"),Input("5d-button","n_clicks"),Input("1m-button","n_clicks"),Input("6m-button","n_clicks"),Input("1y-button","n_clicks"),Input("ytd-button","n_clicks")],
               [State("input","value")])
-def click(ses_data,search_click,d1,d5,m1,search_input):
+def click(ses_data,search_click,d1,d5,m1,m6,y1,ytd,search_input):
     
     if search_input:
         ndf= yf.Ticker(search_input)
-        df = ndf.history(interval="1m",period="1d")
     elif ses_data:
         ndf= yf.Ticker(ses_data["test"])
-        df = ndf.history(interval="1m",period="1d")
     else:
         ndf= yf.Ticker('aapl')
-        df = ndf.history(interval="1m",period="1d")
+
+    try:
+        stock = ndf.info
+    except ValueError:
+        ndf = yf.Ticker("aapl")
+    except IndexError:
+        ndf = yf.Ticker("aapl")
+    stock = ndf.info
+
+    df = ndf.history(interval="1m",period="1d")
 
     coy_name = str(ndf.info['shortName']) + " (" + str(ndf.info['symbol']) + ")"
+    sector = ndf.info['sector']
     hist = ndf.history(interval="1m",period="1d").tail()
-    close_price = hist["Close"].iloc[[4]]
+    close_price = float(hist["Close"].iloc[[4]])
     price_diff_raw = round(float(hist["Close"].iloc[[4]])-float(hist["Close"].iloc[[3]]),2)
     price_diff_per = round(price_diff_raw/float(hist["Close"].iloc[[4]]) * 100,2)
     price_diff = str(price_diff_raw) + " (" + str(price_diff_per) + "%)"
     hist["date"] = hist.index
     hist["date"] = hist["date"].dt.date
     price_date = "Last Updated: " + str(hist["date"].tail(1)).split(" ")[0].split("e")[2]
+
+    if price_diff_raw > 0:
+        price_diff = "+" + str(price_diff_raw) + " (+" + str(price_diff_per) + "%)"
+        style = {'color': '#05d105'}
+    else:
+        style = {'color': 'red'}
+    price_diff_f = html.Div(price_diff, style = style)
 
     #candle stick
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
@@ -377,6 +443,12 @@ def click(ses_data,search_click,d1,d5,m1,search_input):
         df = ndf.history(interval="5m",period="5d")
     elif "1m-button" in changed_id:
         df = ndf.history(interval= "60m",period="1mo")
+    elif "6m-button" in changed_id:
+        df = ndf.history(interval= "1d",period="6mo")
+    elif "1y-button" in changed_id:
+        df = ndf.history(interval= "1d",period="1y")
+    elif "ytd-button" in changed_id:
+        df = ndf.history(interval= "1d",period="ytd")    
 
     df["Datetime"] = df.index.strftime("%d/%m/%Y, %H:%M:%S")
 
@@ -417,12 +489,21 @@ def click(ses_data,search_click,d1,d5,m1,search_input):
     elif "1m-button" in changed_id:
         dates =  df["Datetime"].index.strftime("%h %d").unique()[::5]
         spaces = [1, 40, 70, 100, 135]
+    elif "6m-button" in changed_id:
+        dates =  df["Datetime"].index.strftime("%h").unique()
+        spaces = [1, 20, 40, 60, 80,100, 120]
+    elif "1y-button" in changed_id:
+        dates =  df["Datetime"].index.strftime("%h").unique()
+        spaces = [1, 20, 40, 60, 80,100, 120,140,160,180,200,220]
+    elif "ytd-button" in changed_id:
+        dates =  df["Datetime"].index.strftime("%h").unique()
+        spaces = [1, 20, 40, 60, 80,100, 120,140,160,180,200,220]
 
 
     fig = go.Figure(data=data, layout=layout)
     fig.update_xaxes(linewidth=0.5, linecolor='Grey', gridcolor='#D3D3D3')
     fig.update_layout(
-        xaxis_rangeslider_visible=False,autosize=False, height = 370,width=900, yaxis_showgrid=False, 
+        xaxis_rangeslider_visible=False,autosize=False, height = 395,width=1005, yaxis_showgrid=False, 
         xaxis = dict(
             #title = 'date',
             showticklabels = True,
@@ -433,7 +514,7 @@ def click(ses_data,search_click,d1,d5,m1,search_input):
             ),
     )
     
-    return fig, coy_name, close_price, price_diff,price_date
+    return fig, coy_name, close_price, price_diff_f, price_date, sector
 
 
 if __name__ == '__main__':
