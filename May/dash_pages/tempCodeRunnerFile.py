@@ -1,2 +1,2 @@
-!= time(18,5):
-#     now = datetim
+    # table_columns = [{"name": i, "id": i} for i in group_by_risk_asset_class[["Asset Class","Amount to Target"]].columns]
+    # table_data = group_by_risk_asset_class[["Asset Class","Amount to Target"]].to_dict('records')
