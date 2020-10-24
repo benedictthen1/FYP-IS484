@@ -35,7 +35,6 @@ df = pd.read_csv('../Client.csv')
 risk_df = pd.read_csv('../RiskLevelsAllocation.csv')
 
 ### Change Date Format ###
-# df[['Position As of Date','Maturity','Next Call Date']] = df[['Position As of Date','Maturity','Next Call Date']].apply(pd.to_datetime)
 
 df['Position As of Date'] = pd.to_datetime(df['Position As of Date'], errors='coerce').dt.strftime('%d/%m/%Y')
 df['Position As of Date']= pd.to_datetime(df['Position As of Date'])
@@ -75,7 +74,6 @@ def return_sign_and_color_string(number):
         color = "#E17F79"
     return sign, color
 
-# this function returns standard_tab_content children
 def return_reminders_summary_table(table_columns, table_data, detailed_table_columns,detailed_table_data): 
     reminders_summary_table_content = [
         dash_table.DataTable(
@@ -114,7 +112,6 @@ def return_reminders_summary_table(table_columns, table_data, detailed_table_col
     
     return reminders_summary_table_content
 
-# this function returns standard_tab_content children
 def return_reminders_tab_content(table_columns, table_data): 
     reminders_tab_content = dbc.Row(
         dbc.Col([dash_table.DataTable(
@@ -310,7 +307,6 @@ app.layout = html.Div([
 
     html.Br(),
 
-    ### Part 2: Overall Banners ###
     dbc.Row([
             dbc.Col(dbc.Card([dbc.CardBody(id='card_assets_value')],color="white", outline=False),width=2),
             dbc.Col(dbc.Card([dbc.CardBody(id='card_liab_value')],color="white", outline=False),width=2),
@@ -706,7 +702,6 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
         today = date.today()
         melted_reminder_df["Days Left"] = (melted_reminder_df['Date'] - today).dt.days
 
-        # melted_reminder_df["Days Left"] = melted_reminder_df["Days Left"].dt.days
         next_reminder_date =  today + timedelta(weeks=52) # change time accordingly here
         time_string = "1 Year" # change accordingly here also
 
@@ -717,16 +712,14 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
         df_next_reminder = df_next_reminder.drop_duplicates()
 
         df_next_reminder.sort_values("Date", inplace=True, ascending=True)
-        print(df_next_reminder)
-        print(df_next_reminder.info())
+        # print(df_next_reminder)
+        # print(df_next_reminder.info())
         df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
 
         df_all_reminder = df_all_reminder.drop_duplicates()
 
         df_all_reminder.sort_values("Date", inplace=True, ascending=True)
 
-        # melted_reminder_df.sort_values("Date", inplace=True, ascending=True)
-        # all_reminders_count = len(melted_reminder_df.index)
         all_reminders_count = len(df_all_reminder.index)
         
         if all_reminders_count != 0:
@@ -750,7 +743,6 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
             color = "#003B70" #Dark Blue
             reminder_tab_table_columns = [{"name": f"There are no Assets due in {time_string}.", "id": "nan"}]
             reminder_tab_table_data = []
-
 
     else:
         reminders_count_1m = 0
