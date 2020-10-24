@@ -697,21 +697,28 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
         latest_date = reminder_df["Position As of Date"].max()
         latest_reminder_df = reminder_df[reminder_df['Position As of Date'] == latest_date]
 
-        melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
-        # melted_reminder_df = reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="DateTime")
-        melted_reminder_df['Date'] = melted_reminder_df['DateTime'].dt.date
-
+        melted_reminder_df = latest_reminder_df.melt(id_vars=reminders_columns_without_dates,var_name="Reminder Type",value_name="Date")
+        
+        melted_reminder_df['Date'] = melted_reminder_df['Date'].dt.date
+        melted_reminder_df["Position As of Date"] = melted_reminder_df["Position As of Date"].dt.date
+        
         melted_reminder_df = melted_reminder_df.drop_duplicates()
         today = date.today()
+        melted_reminder_df["Days Left"] = (melted_reminder_df['Date'] - today).dt.days
+
+        # melted_reminder_df["Days Left"] = melted_reminder_df["Days Left"].dt.days
         next_reminder_date =  today + timedelta(weeks=52) # change time accordingly here
         time_string = "1 Year" # change accordingly here also
 
         df_next_reminder = melted_reminder_df[(melted_reminder_df['Date'] <= next_reminder_date) & (melted_reminder_df['Date'] >= today)]
         # df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
-        df_next_reminder = df_next_reminder[["Name","Reminder Type","Date"]]
+        df_next_reminder = df_next_reminder[["Name","Reminder Type","Date","Days Left"]]
         # print(df_next_reminder)
         df_next_reminder = df_next_reminder.drop_duplicates()
-        # print(df_next_reminder)
+
+        df_next_reminder.sort_values("Date", inplace=True, ascending=True)
+        print(df_next_reminder)
+        print(df_next_reminder.info())
         df_all_reminder = melted_reminder_df[melted_reminder_df['Date'] >= today]
 
         df_all_reminder = df_all_reminder.drop_duplicates()
