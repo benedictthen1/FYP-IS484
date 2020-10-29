@@ -6,22 +6,13 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
 import plotly.graph_objects as go
-# from dash.dependencies import Input, Output
 # import datetime as dt
 # from dt import date
-# import plotly.express as px
-
-# from plotly.subplots import make_subplots
-
 from datetime import datetime, timedelta 
 today_date =datetime.today().strftime('%Y-%m-%d')
-
 import pandas as pd
-# import numpy as np
-# import pandas_datareader.data as web
 
 ################# Import: Yfinance #########################
-import pandas as pd
 import yfinance as yf
 from yahoofinancials import YahooFinancials
 from sklearn.model_selection import train_test_split
@@ -30,7 +21,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
-# plt.style.use('bmh') #Plotting graph 
 import numpy as np
 
 ################# Data Processing #########################
@@ -496,23 +486,10 @@ app.layout = html.Div([
                     clearable=True
                 )
 
-            # dcc.DatePickerRange(
-            #     id='date-picker-range',
-            #     end_date=today_date,
-            #     start_date_placeholder_text='Select a date',
-            #     end_date_placeholder_text = 'Select a date',
-            #     # start_date = today_date,
-            #     style={'width': '100%'}
-            # )
-
-            # dbc.Button("YTD", color="dark",size="sm", id="ytd-button",n_clicks=0, className="mr-1"),
-            
-                # html.Div(id='output-container-date-picker-range')
-
         ],
         width={'size':3}),
 
-        # Filter 3: Forecast period
+        # Filter 3: Forecast period (days)
        dbc.Col([
             html.H3("Forecast Period (days):",style={'color': 'white','text-align': 'left'}),
             dcc.Textarea(
@@ -530,22 +507,16 @@ app.layout = html.Div([
         dbc.Col([
             html.Br(),
             html.Br(),
-
-            # html.Button('Apply', id='submit_btn')
             dbc.Button(children='Apply', color="dark",size="lg", id="submit_btn",n_clicks=0, className="mr-1"),
         ],
         width={'size':3}),
-
-        # Display Outputs 
-        # html.Div(id='my_output')
     ],style={'backgroundColor': "#003B70"}),
     html.Br(),
-    ################# Row 2: Display Outputs #########################   
+    ################# Subsequent Rows: Display Outputs #########################   
     dbc.Row([
-
     ################# Col 1: 1st Accuracy Card #########################   
         dbc.Col([
-            html.Br(),
+            html.H5(children='Accuracy Ranking', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
             dbc.Card([
                 dbc.CardBody(id='left_best_card')              
             ],
@@ -555,11 +526,12 @@ app.layout = html.Div([
         ],width={'size':3}),
     ################# Col 2: 1st Line Graph #########################   
         dbc.Col([
+            html.H5(children='Stock Prediction Chart by different models', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
             dcc.Graph(id='best_chart'),         
         ],width={'size':6}),
     ################# Col 3: 1st Description Card #########################   
         dbc.Col([
-           html.Br(),
+            html.H5(children='Model Description', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
             dbc.Card([
                 dbc.CardBody(id='right_best_card')              
             ],
@@ -572,7 +544,6 @@ app.layout = html.Div([
     dbc.Row([
     ################# Col 1: 2nd Accuracy Card #########################  
         dbc.Col([
-            html.Br(),
             html.Br(),
             dbc.Card([
                 dbc.CardBody(id='left_second_card')              
@@ -600,7 +571,6 @@ app.layout = html.Div([
     ################# Col 1: 3rd Accuracy Card #########################  
         dbc.Col([
             html.Br(),
-            html.Br(),
             dbc.Card([
                 dbc.CardBody(id='left_third_card')              
             ],
@@ -609,6 +579,7 @@ app.layout = html.Div([
         ],width={'size':3}),
     ################# Col 2: 3rd Line Graph #########################  
         dbc.Col([
+            html.Br(),
             dcc.Graph(id='third_chart'),            
         ],width={'size':6}),
     ################# Col 3: 3rd Description Card #########################  
@@ -621,7 +592,7 @@ app.layout = html.Div([
             )            
         ],width={"size":3}),
     ])    
-])
+],style={'backgroundColor': "#CED8E2"})
 
 
 @app.callback(
@@ -629,23 +600,17 @@ app.layout = html.Div([
     Output("best_chart", "figure"),
     Output("second_chart","figure"),
     Output("third_chart","figure"),
-    # Output("sorted_accuracy_table","columns"),
-    # Output("sorted_accuracy_table","data"),
     Output("left_best_card", "children"),
     Output("left_second_card", "children"),
     Output("left_third_card", "children"),
     Output("right_best_card", "children"),
     Output("right_second_card", "children"),
     Output("right_third_card", "children")
-    # Output("sorted_accuracy_table", "columns"),
-    # Output('sorted_accuracy_table','data')
     ],
     Input('submit_btn', 'n_clicks'),
     # values to be passed upon clicking submit button
     [State('ticker_filter', 'value'),
     State('interval','value'),
-    # State('date-picker-range', 'start_date'),
-    # State('date-picker-range', 'end_date'),
     State('forecast_period', 'value')
     ]
 ) 
@@ -654,9 +619,8 @@ app.layout = html.Div([
 def update_output(n_clicks,ticker_subval,interval, period_subval):
     # Check if all 4 inputs are submitted
     errors = []
-    # 1: Check if ticker input submitted
+    # 1: Check if all inputs submitted
     if ticker_subval != "None" and interval != None  and period_subval != None:
-        # return(ticker_subval,start_subval,end_subval, period_subval)
         # 2: Validate each input (except for ticker input)
         # if validate(start_subval) == False:
         #     errors.append("Invalid Start Date input")
@@ -667,46 +631,46 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
             errors.append("Invalid Forecast Period input")
         else:
             period_subval = int(period_subval)
-
         if interval == "1M":
             interval = 21
         elif interval == "6M":
             interval = 126
         elif interval == "1Y":
             interval = 252
-        
 
         # 3: If no validation error, generate relevant dataframes 
         if(errors == []):
-            # prediction_df = get_prediction(ticker_subval,start_subval,end_subval,period_subval)
+            # end_subval (end submitted value) is fixed at today's date
+            # start_subval is computed by subtracting interval(in days) from end_subval 
             end_subval = today_date
             days = timedelta(interval)
             start_subval = datetime.strptime(end_subval,'%Y-%m-%d') - days
             start_subval = start_subval.date()
             start_subval = datetime.strftime(start_subval,'%Y-%m-%d')
 
+            # retrieve and sort the accuracy df
             accuracy_df = get_performance(ticker_subval,start_subval,end_subval,period_subval)
             sorted_accuracy_df = accuracy_df.sort_values(0,axis = 1, ascending=False)
             sorted_accuracy_table = sorted_accuracy_df.to_dict('records')
             sorted_accuracy_table_cols = [{"name": i, "id": i} for i in sorted_accuracy_df.columns]   
             # prediction_SVR_df['RBF SVR Prediction'] = prediction_SVR_df['RBF SVR Prediction'].apply(lambda x: round(x, 4))            
-            # prediction_table = prediction_df.to_dict('records')
-            # prediction_table_cols = [{"name": i, "id": i} for i in prediction_df.columns]
 
-            
             # Retrieve Column names in sorted order (Best -> Worst)
             best_col = sorted_accuracy_df.columns[0] # "Linear Regression Prediction"
             second_col = sorted_accuracy_df.columns[1] # "Linear SVM Regression Prediction"
             third_col = sorted_accuracy_df.columns[2] # "RBF SVM Regression Prediction"
 
+            # Based on 3 inputs + 1 computed variable (start_subval), retrieve 3 model dfs
             LR_df = get_linearprediction(ticker_subval,start_subval,end_subval,period_subval)
             RBFSVM_df = get_RBFSVMPrediction(ticker_subval,start_subval,end_subval,period_subval)
             LRSVM_df = get_LinearSVMPrediction(ticker_subval,start_subval,end_subval,period_subval)
 
+            #  Model descriptions for right column
             LR_desc = "Linear regression attempts to model the relationship between two variables by fitting a linear equation to observed data. One variable is considered to be an explanatory variable, and the other is considered to be a dependent variable. "
             RBFSVM_desc = "Gaussian RBF (Radial Basis Function) is a Kernel method used in SVM models and its value depends on the distance from the origin or from some point."
             LRSVM_desc = "The algorithm creates a line or a hyperplane which separates the data into classes and is a linear model for classification and regression problems."
 
+            # Store each model df + desc according to the accuracy order of the columns in sorted accuracy df
             if best_col == "Linear Regression Prediction":
                 best_model_df = LR_df 
                 best_desc = LR_desc     
@@ -753,11 +717,15 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.H2("Accuracy Rank 1",style={"color":"#003B70"}),
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.H5("Confidence Level: {}".format(best_acc),style={"color":"#003B70"}),
+                html.H2("Accuracy Rank 1",style={'textAlign': 'center','color': '#003B70'}),
+                html.Br(),
+                html.H5("Confidence Level: {}".format(best_acc),style={'textAlign': 'center','color': '#003B70'}),
+                html.Br(),
+                html.Br(),
+                html.Br(),
                 html.Br(),
                 html.Br(),
                 html.Br(),
@@ -767,11 +735,15 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.H2("Accuracy Rank 2",style={"color":"#4665ae"}),
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.H5("Confidence Level: {}".format(second_acc),style={"color":"#4665ae"}),
+                html.H2("Accuracy Rank 2",style={'textAlign': 'center','color': '#4665ae'}),
+                html.Br(),
+                html.H5("Confidence Level: {}".format(second_acc),style={'textAlign': 'center','color': '#4665ae'}),
+                html.Br(),
+                html.Br(),
+                html.Br(),
                 html.Br(),
                 html.Br(),
                 html.Br(),
@@ -781,11 +753,15 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.H2("Accuracy Rank 3",style={"color":"#7791d1"}),
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.H5("Confidence Level: {}".format(third_acc),style={"color":"#7791d1"}),
+                html.H2("Accuracy Rank 3",style={'textAlign': 'center','color': '#7791d1'}),
+                html.Br(),
+                html.H5("Confidence Level: {}".format(third_acc),style={'textAlign': 'center','color': '#7791d1'}),
+                html.Br(),
+                html.Br(),
+                html.Br(),
                 html.Br(),
                 html.Br(),
                 html.Br(),
@@ -795,33 +771,42 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
 
             right_best_card = [
                 html.Br(),
-                html.H2(best_model_df.columns[2],style={"color":"#003B70"}),
                 html.Br(),
-                html.H5("Model Description: {}".format(best_desc),style={"color":"#003B70"}),
+                html.Br(),
+                html.H2(best_model_df.columns[2],style={'textAlign': 'center','color': '#003B70'}),
+                html.Br(),
+                html.H5("Model Description: {}".format(best_desc),style={'textAlign': 'center','color': '#003B70'}),
                 html.Br(),
                 html.Br(),
                 html.Br()
             ]
             right_second_card = [
                 html.Br(),
-                html.H2(second_model_df.columns[2],style={"color":"#4665ae"}),
                 html.Br(),
-                html.H5("Model Description: {}".format(second_desc),style={"color":"#4665ae"}),
                 html.Br(),
+                html.Br(),
+                html.H2(second_model_df.columns[2],style={'textAlign': 'center','color': '#4665ae'}),
+                html.Br(),
+                html.H5("Model Description: {}".format(second_desc),style={'textAlign': 'center','color': '#4665ae'}),
+                html.Br(),
+                html.Br(),              
                 html.Br(),
                 html.Br()
             ]
             right_third_card = [
                 html.Br(),
-                html.H2(third_model_df.columns[2],style={"color":"#7791d1"}),
                 html.Br(),
-                html.H5("Model Description: {}".format(third_desc),style={"color":"#7791d1"}),
                 html.Br(),
+                html.Br(),  
+                html.H2(third_model_df.columns[2],style={'textAlign': 'center','color': '#7791d1'}),
+                html.Br(),
+                html.H5("Model Description: {}".format(third_desc),style={'textAlign': 'center','color': '#7791d1'}),
+                html.Br(),
+                html.Br(),              
                 html.Br(),
                 html.Br()
             ]
             return best_chart,second_chart,third_chart,left_best_card, left_second_card, left_third_card,right_best_card, right_second_card, right_third_card
-            # return "no errors"
         else:
             return errors
 
