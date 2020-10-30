@@ -14,7 +14,8 @@ body {
 .mini_container {
   border-radius: 5px;
   background-color: #f9f9f9;
-  margin: 10px;
+  margin-top: 1%;
+  margin-left: 1.38%;
   padding: 10px;
   position: relative;
   box-shadow: 2px 2px 2px lightgrey;
@@ -25,19 +26,32 @@ body {
   width: 429px;
   height: 95px;
   background-color: #f9f9f9;
-  margin: 10px;
-  padding: 10px;
+  margin-left: 2%;
+  padding: 0.5%;
   position: relative;
   box-shadow: 2px 2px 2px lightgrey;
 }
+
+#coy_name_sector {
+  display: inline-flex;
+}
+
+#sector {
+  margin-left: 5px;
+  margin-top: 5px;
+  background-color: black;
+  font-size: 10px;
+  height: 90%;
+}
+
 .tick_metrics {
   background-color: #3a3f44;
   box-shadow: 2px 2px 2px lightgrey;
   border-radius: 5px;
   height: 95px;
-  width: 140px;
-  margin: 10px;
-  padding: 10px;
+  width: 10%;
+  margin-left:1.38%;
+  padding-top: 0.5%;
   color: white;
   font-size: 30px;
   text-align: center;
@@ -47,24 +61,37 @@ body {
   display: inline-flex;
 }
 
-#close_price {
-  font-size: 35px;
+#coy_name {
+  margin: 0px;
 }
 
-#price_date {
-  font-size:12px;
-  margin: 0px;
-  margin-left: 10px;
+#close_price {
+  font-size: 35px;
+  margin-top: -2px;
 }
 
 #price_diff {
   font-size: 18px;
-  margin-top:17px;
+  margin-top:15px;
   margin-left:8px;
 }
 
+
+#price_date {
+  font-size:12px;
+  margin-top: -4px;
+  padding: 0%;
+}
+
 .search_style {
-  margin-left: 10px;
+  margin-left: 2%;
+  margin-bottom: 0.5%;
+  margin-top: 1%;
+}
+
+#search-button {
+  margin-left: 0.3%;
+  margin-bottom: 0.2%;
   border-radius: 5px;
 }
 .container-display {
@@ -93,6 +120,17 @@ width: 30.6666666667%;
   width: 400px;   
 }
 
+#tabs2 {
+  font-size: 10px;
+  padding: 0%;
+  margin-top: -1.2%
+}
+
+
+#tab-1 {
+  width:300px;
+}
+
 .control-tab {
 max-height: 380px;
 max-width: 400px;
@@ -104,8 +142,9 @@ position: relative;
 
 .tabs_group{
 height: 450px;
-width: 420px;
-margin: 10px;
+width: 429px;
+margin-left: 2%;
+margin-top:1%;
 padding-left: 15px;
 padding-right: 15px;
 padding-top: 10px;
@@ -116,22 +155,78 @@ position: relative;
 box-shadow: 2px 2px 2px lightgrey;
 }
 
+#connectgraph {
+  width: 36.58%;
+  height: 580px;
+  background-color: #f9f9f9;
+  box-shadow: 2px 2px 2px lightgrey;
+  padding: 0.5%;
+  margin-left: 2%;
+}
+
+#client_perf_dropdown{
+  margin-top:1%;
+}
+
+#coy_perf_dropdown {
+  margin-top:1%;
+}
+
+.perfbar_table{
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  height: 480px;
+}
+
+#overall_table {
+  display: flex;
+}
+
+#testtableright {
+  margin-left: 1%;
+  width: 58%;
+  padding: 0%;
+}
+
+#combine_remind {
+  display: inline-flex;
+}
+
+#client_remind_cover {
+  height: 300px;
+}
+
+#top_right_table {
+  background-color: #f9f9f9;
+  box-shadow: 2px 2px 2px lightgrey;
+  margin-bottom: 1%;
+  padding: 0%;
+}
+
+#btn_right_table {
+  background-color: #f9f9f9;
+  box-shadow: 2px 2px 2px lightgrey;
+
+}
+#navtest{
+  background-color: black;
+}
 
 #SIDEBAR
 #sidebar {
-text-align: center;
-padding: 2rem 1rem;
-background-color: #f8f9fa;
+  text-align: center;
+  padding: 2rem 1rem;
+  background-color: #f8f9fa;
 }
 
 #sidebar h2 {
-text-align: left;
-margin-bottom: 0;
+  text-align: left;
+  margin-bottom: 0;
 }
 
 #sidebar_title {
-margin-left: 13px;
-margin-top : 30px;
+  margin-left: 13px;
+  margin-top : 30px;
 }
 
 /* Hide the blurb on a small screen */
@@ -142,8 +237,8 @@ margin-bottom: 12px;
 }
 
 #sidebar-toggle {
-display: none;
-margin-top: 20px;
+  display: none;
+  margin-top: 20px;
 }
 
 #collapse *:first-child {
@@ -217,29 +312,53 @@ padding: 2rem 1rem;
 
 /* set margins of the main content so that it doesn't overlap the sidebar */
 #page-content {
-  margin-left: 20rem;
-  margin-right: 2rem;
+  margin-left: 20%;
+  margin-right: 2%;
   transition: margin-left 0.3s ease-in-out;
 }
 }
 
 #assest_dropdown {
-font-family: 'Lato', sans-serif;
-font-size: 0.7vw;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.7vw;
 }
 
 #main_table {
-border-radius: 5px;
-background-color: #f9f9f9;
-padding: 20px;
-padding-bottom: 45px;
-box-shadow: 2px 2px 2px lightgrey;
-width: 1390px;
-margin-top: 4px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  padding: 1%;
+  padding-bottom: 3%;
+  box-shadow: 2px 2px 2px lightgrey;
+  width: 100%;
+  height: 100%;
+  margin-top: 4px;
+}
+
+#risk_pie_combine {
+  display: inline-flex;
+}
+
+#risk_table {
+  display: block;
+  margin-left: 1%;
+}
+
+#target_risk_filter{
+  margin-top:2%;
+  margin-bottom:2%;
 }
 
 #main_table .row {
 margin: 0;
+}
+
+#top_right_table {
+  padding: 2%;
+}
+
+#remind_table .row {
+  margin: 0;
+  padding: 0;
 }
 
 #client_coy_table .row {
@@ -254,13 +373,15 @@ margin: 0;
 
 .fin_bar_group {
 display: inline-flex;
-width: 444px;
+width: 471px;
 height: 370px;
 border-radius: 5px;
 background-color: #f9f9f9;
 box-shadow: 2px 2px 2px lightgrey;
 padding:0px;
-margin-left: 13px;
+margin-top:1%;
+margin-left: 2%;
+margin-bottom: 2%;
 }
 
 #coy_desc {
@@ -420,13 +541,21 @@ margin-left:10px;
 }
 
 ::-webkit-scrollbar {
-width: 5px;
-height: 5px;
-}
+  width: 5px;
+  height: 5px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  }
 
-::-webkit-scrollbar-thumb {
-border-radius: 5px;
-}
+#connectgraph ::-webkit-scrollbar {
+  background-color:#C0C0C0	 !important;
+    }
+#connectgraph ::-webkit-scrollbar-thumb {
+    background-color: #2F4F4F !important;
+    /*border: 2px solid #2F4F4F;*/
+    }
 
 #collapse ::-webkit-scrollbar {
 background-color:#C0C0C0	 !important;
@@ -481,7 +610,6 @@ background-color: #2F4F4F !important;
 }
 
 
-
 #testingzz {
 background-color: #2F4F4F;
 border-radius: 20px;
@@ -489,9 +617,15 @@ width: 300px;
 padding: 20px;
 }
 
+.breadcrumb {
+  margin: 0px;
+  padding: 0.1%;
+  height: 4%;
+  margin-bottom: 0.3%;
+}
+
 #banner_group {
-display: flex;
-margin-left:5%;
+  display: flex;
 }
 
 #client_table .row {
@@ -505,14 +639,93 @@ margin: 0;
 .client_metrics {
   background-color: #3a3f44;
   box-shadow: 2px 2px 2px lightgrey;
-  border-radius: 5px;
-  height: 90px;
-  width: 220px;
-  margin: 30px;
-  padding: 10px;
+  height: 5%;
+  width: 17.1%;
+  margin: 0.5%;
+  margin-bottom: 0.5%;
+  margin-left: 2%;
+  padding: 0.1%;
   color: white;
   text-align: center;
 }
+
+#remind-collapse {
+  margin-left: 0.5%;
+}
+
+.remind_btn {
+  margin-left: 20px;
+}
+
+#remind_btn_grp {
+  margin-left: 34%;
+  margin-top: 0.4%;
+  margin-bottom: 0%;
+
+}
+
+.remind_metrics {
+  background-color: #3a3f44;
+  box-shadow: 2px 2px 2px lightgrey;
+  height: 47.8px;
+  width: 170px;
+  margin-top: 3.6%;
+  margin-left: 2%;
+  margin-right: 20px;
+  padding: 0.1%;
+  color: white;
+  text-align: center;
+}
+
+
+#remind_dropdown {
+  margin-top: 0.5%;
+}
+
+#remind_dropdown .Select-menu-outer {
+  background-color :white;
+  border-color: transparent;
+  font-size: 10px;
+}
+
+/*dropdown list words*/
+#remind_dropdown .Select-control .Select-value-label {
+  cursor: pointer;
+}
+
+#remind_dropdown .is-open .Select-value-label {
+  color: white;
+}
+
+#remind_dropdown .Select-control {
+  background-color: transparent !important;
+  border-color: black;
+}
+
+#remind_table {
+  margin-top: 1.5%;
+}
+
+.ban_values {
+  margin: 0px;
+  font-size: 28px;
+}
+
+.ban_title {
+  font-size: 13px;
+  margin-bottom: 2%;
+}
+
+.remind_ban_values {
+  margin: 0px;
+  font-size: 20px;
+}
+
+.remind_ban_title {
+  font-size: 10px;
+  margin-bottom: 2%;
+}
+
 
 #modal_header {
 display:inline-flex;

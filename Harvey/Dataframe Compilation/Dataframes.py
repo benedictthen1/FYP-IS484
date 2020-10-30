@@ -136,7 +136,9 @@ def yfinance_update(df):
         yfinance_list.append(ticker_row)
 
     # ,'YTD%','1d %','5d %','1m %','6m %','12m %','Company Description'
-    yfinance_df = pd.DataFrame(yfinance_list,columns=['Ticker','Current Price','Closing Price','YTD%','1d %','5d %','1m %','6m %','12m %','Company Description',"12M Div Yield (%)","Dividend EX Date","P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)","50D MA","200D MA","Profit Margin","Sector","Country (Domicile)"])
+    yfinance_df = pd.DataFrame(yfinance_list,columns=['Ticker','Current Price','Closing Price','YTD%','1d %','5d %','1m %','6m %','12m %',
+    'Company Description',"12M Div Yield (%)","Dividend EX Date","P/E Ratio","P/B Ratio","EPS (Current Year)","EPS (Next Year)","YoY EPS Growth (%)",
+    "50D MA","200D MA","Profit Margin","Sector","Country (Domicile)"])
 
     #Merge and drop extra columns
     df = df.merge(yfinance_df, on='Ticker', how='left')
@@ -191,7 +193,7 @@ def yfinance_update(df):
     df['% Change from Avg Cost']=(df['Current Price'].astype("float")-df['Average Cost'].astype("float"))/df['Average Cost'].astype("float")*100
 
     #Update % to target
-    df['% to target'] = np.where(pd.to_numeric(df['Citi TARGET']) != None, (pd.to_numeric(df['Citi TARGET'])-df['Current Price'].astype("float"))/df['Current Price'].astype("float")*100,np.nan)
+    df['% to target'] = np.where( df['Citi TARGET'] != None, pd.to_numeric(df['Citi TARGET'])-df['Current Price'].astype("float")/df['Current Price'].astype("float")*100, np.nan)
 
     #Update Citi Rating
     df['Citi rating'] = np.where(abs(df['% to target']) < 0.1, "neutral",np.where(abs(df['% to target']) > 0, "buy","sell"))
@@ -209,3 +211,5 @@ df = yfinance_update(df)
 risk_df = get_risk_allocation_df()
 print(df)
 print(risk_df)
+
+df.to_csv("Client.csv")

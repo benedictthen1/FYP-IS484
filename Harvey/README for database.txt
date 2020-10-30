@@ -1,8 +1,8 @@
 #pgadmin 4 Client table Column creation
 ALTER TABLE public."Client"
 	ADD COLUMN "Base Number" VARCHAR(32),
-	ADD COLUMN "Client Name" VARCHAR(16),
     	ADD COLUMN "Position As of Date" VARCHAR(50),
+	ADD COLUMN "Client Name" VARCHAR(16),
 	ADD COLUMN "Asset Class" VARCHAR(50),
 	ADD COLUMN "Asset Sub Class" VARCHAR(50),
 	ADD COLUMN "Name" VARCHAR(100),
@@ -90,11 +90,13 @@ INSERT INTO public."RiskAllocation"(
 			('EQUITIES', '100', '5');
 
 #psql import to local
+psql - U postgres 
+
 \copy public."Client" ("Base Number", "Position As of Date", "Client Name", "Asset Class", "Asset Sub Class", "Name", "Ticker", "CCY", "Nominal Units", "Nominal Amount (CCY)", "Nominal Amount (USD)", "Loan / Cash Rate to client", "% Change from Avg Cost", "Current Price", "Closing Price", "Average Cost", "YTD%", "1d %", "5d %", "1m %", "6m %","12m %", "Company Description", "Citi rating", "Citi TARGET", "% to target", "Market Consensus", "12M Div Yield (%)", "Dividend EX Date", "P/E Ratio", "P/B Ratio", "EPS (Current Year)", "EPS (Next Year)", "YoY EPS Growth (%)", "50D MA", "200D MA", "Profit Margin", "Sector", "Country (Domicile)", "Region (Largest Revenue)", "Rank", "Moodys R", "S&P R", "Fitch", "Coupon", "YTC", "YTM", "Coupon type", "Issue Date", "Maturity", "Next Call Date", "Commitment Amount", "Contribution Amount", "Outstanding Commitment", "% Outstanding Amount","Distribution Amount", "Return on Contribution", "Trade Number", "Exchange Rate (CCY to USD)", "Latest Nominal Amount (USD)", "Estimated Original Amount Paid", "Estimated Profit/Loss", "% Profit/Loss Return", "Target Risk Level") FROM 'C:/Users/Harvey/Desktop/FYP-IS~1/Harvey/Client.csv' DELIMITER ',' CSV HEADER
 
 #Export dump file from local
-pg_dump -Fc --no-acl --no-owner -h localhost -U postgres postgres > mydb.dump
+pg_dump -Fc --no-acl --no-owner -h localhost -U postgres postgres > mydb.sql
 
 #Import dump file to Heroku postgreSQL (Double quotes in bucket url is important)
-heroku pg:backups:restore "https://mydbfin.s3.amazonaws.com/mydb+v4.sql" DATABASE_URL
+heroku pg:backups:restore "https://mydbfin.s3.amazonaws.com/mydb+v6.sql" DATABASE_URL
 

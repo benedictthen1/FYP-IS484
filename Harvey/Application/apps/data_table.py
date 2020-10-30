@@ -211,17 +211,17 @@ main_table = html.Div([
                     #columns=[{'name': i, 'id': i} for i in filtered_data.columns],
                     style_data_conditional=styles,
                     page_size=100,
-                    style_cell={'textAlign': 'center','padding': '6px', 'textOverflow': 'ellipsis','font_size': '10px','font': 'Lato','border': '1px solid grey'},
+                    style_cell={'textAlign': 'center','padding': '4px', 'textOverflow': 'ellipsis','font_size': '9.5px','font': 'Lato','border': '1px solid grey'},
                     style_as_list_view=True,
                     style_header={'fontWeight': 'bold', 'height': 'auto','whiteSpace': 'normal','border': '1px solid grey'},
                     fixed_rows={'headers': True},
                     #export_columns = "all", export_format ="csv",
-                    style_data={'maxWidth': '70px','minWidth': '70px'},
+                    style_data={'maxWidth': '64px','minWidth': '64px'},
                     style_cell_conditional=[
                         {'if': {'column_id': 'Name'},
                         'width': '200px'},
                     ],
-                    style_table={'height': '450px', 'overflowY': 'auto', 'overflowX': 'auto', 'width': '1350px','overflow':'auto'},
+                    style_table={'height': '100%', 'overflowY': 'auto', 'overflowX': 'auto', 'width': "100%"},
                     tooltip_data=[
                         {
                             column: {'value': str(value), 'type': 'markdown'}
@@ -362,17 +362,6 @@ def base_clear(clear,all,select_all,clear_all):
         value = tdf["Asset Class"].unique()
     return value
 
-#Sub Asset filter CLEAR & ALL btn
-# @app.callback(Output("asset_checkbox", "value"),
-#              [Input("asset_clear_btn", "n_clicks"),Input("asset_all_btn","n_clicks")])
-# def base_clear(clear,all):
-#     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-#     if "asset_clear_btn" in changed_id:
-#         value = []
-#     else:
-#         value = df["Asset Class"].unique()
-#     return value
-
 #Base Number Checkbox based on Client input, Base clear and all button filter. 
 @app.callback([Output("base_checkbox","options"),Output("base_checkbox","value")],
               [Input("client_checkbox","value"),Input("base_clear_btn", "n_clicks"),Input("base_all_btn","n_clicks"),Input("main_clear_btn","n_clicks")])
@@ -430,63 +419,6 @@ def CCY_clear(clear,all,select_all,clear_all):
     else:
         value = tdf["CCY"].unique()
     return value
-
-# @app.callback([Output("asset_checkbox","options"),Output("asset_checkbox","value")],
-#              [Input("client_checkbox","value")])
-# def asset_checkbox(client_input):
-#     if not client_input:
-#         options = [{'label': i, 'value': i} for i in df["Asset Class"].unique()]
-#         value = []
-#     else:
-#         options = [{'label': i, 'value': i} for i in df["Asset Class"][df["Client Name"].isin(client_input)].unique()]
-#         value = df["Asset Sub Class"][df["Client Name"].isin(client_input)]
-#     return options,value
-
-#Curreny Dropdown
-# @app.callback(Output("currency_dropdown","options"),
-#               [Input("assest_dropdown","value"),Input("sub_asset_dropdown","value")])
-# def curr_input(Asset_input, Sub_Asset_input):
-#     if not Asset_input and not Sub_Asset_input:
-#         options = [{'label': i, 'value': i} for i in df["CCY"].unique()]
-#     elif Asset_input and not Sub_Asset_input:
-#         options = [{'label': i, 'value': i} for i in df["CCY"][df["Asset Class"] == Asset_input].unique()]
-#     elif not Asset_input and Sub_Asset_input:
-#         options = [{'label': i, 'value': i} for i in df["CCY"][df["Asset Sub Class"] == Sub_Asset_input].unique()]
-#     else:
-#        options = [{'label': i, 'value': i} for i in df["CCY"][(df["Asset Sub Class"] == Sub_Asset_input) & (df["Asset Class"] == Asset_input)].unique()]
-
-#     return options    
-
-#Sub_Asset Dropdown
-# @app.callback(Output("sub_asset_dropdown","options"),
-#               [Input("assest_dropdown","value")])
-# def sub_asset_input(input_value):
-#     if not input_value:
-#         options = [{'label': i, 'value': i} for i in df["Asset Sub Class"].unique()]
-#     else:
-#         options = [{'label': i, 'value': i} for i in df["Asset Sub Class"][df["Asset Class"] == input_value].unique()]
-
-#     return options 
-
-#Asset Dropdown
-# @app.callback(Output("assest_dropdown","options"),
-#               [Input("sub_asset_dropdown","value")])
-# def asset_input(input_value):
-#     if not input_value:
-#         options = [{'label': i, 'value': i} for i in df["Asset Class"].unique()]
-#     else:
-#         options = [{'label': i, 'value': i} for i in df["Asset Class"][df["Asset Sub Class"] == input_value].unique()]
-    
-#     return options
-        
-#Main Table Cells
-# @app.callback(Output("testing","children"),
-#               [Input("main_table","selected_cells"),Input("main_table","derived_virtual_data")])
-# def test(cell,cell2):
-#     if cell:
-#         print(cell)
-#     if cell2:
-#         print(cell2[0]['Asset Class'])
 
 #Main Table column titles change according to excel tabs
 @app.callback(Output("main_table","columns"),
