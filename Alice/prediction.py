@@ -454,13 +454,23 @@ def get_performance(ticker_name,start_date,end_date, future_period):
     return df
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+# Chart Function
+def generate_charts(model_df):
+    return dcc.Graph(
+        style={'height': '300px'},
+        figure = px.line(model_df, x="Date", y=[model_df.columns[1],model_df.columns[2]], 
+        color_discrete_sequence=['gray', 'blue'],title=model_df.columns[2] 
+        + " Chart").update_layout(font={'family': 'verdana','size':12}, 
+        legend={'font':{'size':7}})
+        )
+
 app.layout = html.Div([
 
     ################# Row 1: Filters + Submit Button #########################   
     dbc.Row([
         # Filter 1: Ticker
         dbc.Col([
-            html.H3("Ticker: ",style={'color': 'white','text-align': 'left'}),
+            html.H5("Ticker: ",style={'color': 'white','text-align': 'left'}),
             dcc.Dropdown(
                     id='ticker_filter',
                     options=[
@@ -475,7 +485,7 @@ app.layout = html.Div([
 
         # Filter 2: Start Date & End Date
         dbc.Col([
-            html.H3("Interval:",style={'color': 'white','text-align': 'left'}),
+            html.H5("Interval:",style={'color': 'white','text-align': 'left'}),
             dcc.Dropdown(
                     id='interval',
                     options=[
@@ -491,7 +501,7 @@ app.layout = html.Div([
 
         # Filter 3: Forecast period (days)
        dbc.Col([
-            html.H3("Forecast Period (days):",style={'color': 'white','text-align': 'left'}),
+            html.H5("Forecast Period (days):",style={'color': 'white','text-align': 'left'}),
             dcc.Textarea(
                 id = 'forecast_period',
                 placeholder=' days',
@@ -516,7 +526,7 @@ app.layout = html.Div([
     dbc.Row([
     ################# Col 1: 1st Accuracy Card #########################   
         dbc.Col([
-            html.H5(children='Accuracy Ranking', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
+            html.H6(children='Accuracy Ranking', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
             dbc.Card([
                 dbc.CardBody(id='left_best_card')              
             ],
@@ -526,12 +536,16 @@ app.layout = html.Div([
         ],width={'size':3}),
     ################# Col 2: 1st Line Graph #########################   
         dbc.Col([
-            html.H5(children='Stock Prediction Chart by different models', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
-            dcc.Graph(id='best_chart'),         
+            html.Div([
+                html.H6('Stock Prediction Chart by different models', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
+                # dcc.Graph(id='best_chart'),  
+                html.Div(id="best_chart",style={'height':10}),   
+            ])
+    
         ],width={'size':6}),
     ################# Col 3: 1st Description Card #########################   
         dbc.Col([
-            html.H5(children='Model Description', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
+            html.H6(children='Model Description', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),
             dbc.Card([
                 dbc.CardBody(id='right_best_card')              
             ],
@@ -554,7 +568,7 @@ app.layout = html.Div([
     ################# Col 2: 2nd Line Graph #########################  
         dbc.Col([
             html.Br(),
-            dcc.Graph(id='second_chart'),            
+            html.Div(id="second_chart",style={'height':10}),             
         ],width={'size':6}),
     ################# Col 3: 2nd Description Card #########################  
         dbc.Col([
@@ -580,7 +594,7 @@ app.layout = html.Div([
     ################# Col 2: 3rd Line Graph #########################  
         dbc.Col([
             html.Br(),
-            dcc.Graph(id='third_chart'),            
+            html.Div(id="third_chart",style={'height':10}),         
         ],width={'size':6}),
     ################# Col 3: 3rd Description Card #########################  
         dbc.Col([
@@ -597,9 +611,9 @@ app.layout = html.Div([
 
 @app.callback(
     [
-    Output("best_chart", "figure"),
-    Output("second_chart","figure"),
-    Output("third_chart","figure"),
+    Output("best_chart", "children"),
+    Output("second_chart","children"),
+    Output("third_chart","children"),
     Output("left_best_card", "children"),
     Output("left_second_card", "children"),
     Output("left_third_card", "children"),
@@ -666,10 +680,13 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
             LRSVM_df = get_LinearSVMPrediction(ticker_subval,start_subval,end_subval,period_subval)
 
             #  Model descriptions for right column
-            LR_desc = "Linear regression attempts to model the relationship between two variables by fitting a linear equation to observed data. One variable is considered to be an explanatory variable, and the other is considered to be a dependent variable. "
-            RBFSVM_desc = "Gaussian RBF (Radial Basis Function) is a Kernel method used in SVM models and its value depends on the distance from the origin or from some point."
-            LRSVM_desc = "The algorithm creates a line or a hyperplane which separates the data into classes and is a linear model for classification and regression problems."
+            LR_desc = "Linear regression attempts to model the relationship between two variables by fitting a linear equation to observed data using explanatory and dependent variable."
+            RBFSVM_desc = "Radial Basis Function is a real-valued function used in SVM models and its value only on the distance between the input and some fixed point (called as center)."
+            LRSVM_desc = "Linear Regression SVM Function creates a line or a hyperplane which separates the data into classes and is a linear model for classification and regression problems."
 
+            # LR_breakline = html.Br(),html.Br(),html.Br()
+            # RBFSVM_breakline = html.Br(),html.Br(),html.Br(),html.Br()
+            # LRSVM_breakline = html.Br(),html.Br(),html.Br(),html.Br()
             # Store each model df + desc according to the accuracy order of the columns in sorted accuracy df
             if best_col == "Linear Regression Prediction":
                 best_model_df = LR_df 
@@ -701,12 +718,16 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 third_model_df = RBFSVM_df
                 third_desc = RBFSVM_desc    
 
-            best_chart = px.line(best_model_df, x="Date", y=[best_model_df.columns[1],best_model_df.columns[2]], 
-            color_discrete_sequence=['gray', 'blue'],title=best_model_df.columns[2] + " Chart")
-            second_chart = px.line(second_model_df,x="Date", y=[second_model_df.columns[1],second_model_df.columns[2]], 
-            color_discrete_sequence=['gray', 'blue'],title=second_model_df.columns[2] + " Chart")    
-            third_chart = px.line(third_model_df,x="Date", y=[third_model_df.columns[1],third_model_df.columns[2]], 
-            color_discrete_sequence=['gray', 'blue'],title=third_model_df.columns[2] + " Chart")   
+            best_chart = generate_charts(best_model_df)
+            second_chart = generate_charts(second_model_df)
+            third_chart = generate_charts(third_model_df) 
+
+            # best_chart = px.line(best_model_df, x="Date", y=[best_model_df.columns[1],best_model_df.columns[2]], 
+            # color_discrete_sequence=['gray', 'blue'],title=best_model_df.columns[2] + " Chart")
+            # second_chart = px.line(second_model_df,x="Date", y=[second_model_df.columns[1],second_model_df.columns[2]], 
+            # color_discrete_sequence=['gray', 'blue'],title=second_model_df.columns[2] + " Chart")    
+            # third_chart = px.line(third_model_df,x="Date", y=[third_model_df.columns[1],third_model_df.columns[2]], 
+            # color_discrete_sequence=['gray', 'blue'],title=third_model_df.columns[2] + " Chart")   
 
             # Retrieve Accuracy Values to embed in cards
             best_acc = sorted_accuracy_df.iloc[0][0]  
@@ -717,16 +738,9 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.Br(),
-                html.Br(),
-                html.Br(),
                 html.H2("Accuracy Rank 1",style={'textAlign': 'center','color': '#003B70'}),
                 html.Br(),
-                html.H5("Confidence Level: {}".format(best_acc),style={'textAlign': 'center','color': '#003B70'}),
-                html.Br(),
-                html.Br(),
-                html.Br(),
-                html.Br(),
+                html.H6("Confidence Level: {}".format(best_acc),style={'textAlign': 'center','color': '#003B70'}),
                 html.Br(),
                 html.Br(),
                 html.Br()
@@ -735,16 +749,9 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.Br(),
-                html.Br(),
-                html.Br(),
                 html.H2("Accuracy Rank 2",style={'textAlign': 'center','color': '#4665ae'}),
                 html.Br(),
-                html.H5("Confidence Level: {}".format(second_acc),style={'textAlign': 'center','color': '#4665ae'}),
-                html.Br(),
-                html.Br(),
-                html.Br(),
-                html.Br(),
+                html.H6("Confidence Level: {}".format(second_acc),style={'textAlign': 'center','color': '#4665ae'}),
                 html.Br(),
                 html.Br(),
                 html.Br()
@@ -753,16 +760,9 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.Br(),
-                html.Br(),
-                html.Br(),
                 html.H2("Accuracy Rank 3",style={'textAlign': 'center','color': '#7791d1'}),
                 html.Br(),
-                html.H5("Confidence Level: {}".format(third_acc),style={'textAlign': 'center','color': '#7791d1'}),
-                html.Br(),
-                html.Br(),
-                html.Br(),
-                html.Br(),
+                html.H6("Confidence Level: {}".format(third_acc),style={'textAlign': 'center','color': '#7791d1'}),
                 html.Br(),
                 html.Br(),
                 html.Br()
@@ -773,9 +773,8 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.H2(best_model_df.columns[2],style={'textAlign': 'center','color': '#003B70'}),
-                html.Br(),
-                html.H5("Model Description: {}".format(best_desc),style={'textAlign': 'center','color': '#003B70'}),
+                # html.H2(best_model_df.columns[2],style={'textAlign': 'center','color': '#003B70'}),
+                html.H6("{}".format(best_desc),style={'textAlign': 'center','color': '#003B70'}),
                 html.Br(),
                 html.Br(),
                 html.Br()
@@ -784,12 +783,9 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
+                # html.H2(second_model_df.columns[2],style={'textAlign': 'center','color': '#4665ae'}),
+                html.H6("{}".format(second_desc),style={'textAlign': 'center','color': '#4665ae'}),
                 html.Br(),
-                html.H2(second_model_df.columns[2],style={'textAlign': 'center','color': '#4665ae'}),
-                html.Br(),
-                html.H5("Model Description: {}".format(second_desc),style={'textAlign': 'center','color': '#4665ae'}),
-                html.Br(),
-                html.Br(),              
                 html.Br(),
                 html.Br()
             ]
@@ -797,12 +793,9 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
                 html.Br(),
                 html.Br(),
                 html.Br(),
-                html.Br(),  
-                html.H2(third_model_df.columns[2],style={'textAlign': 'center','color': '#7791d1'}),
+                # html.H2(third_model_df.columns[2],style={'textAlign': 'center','color': '#7791d1'}),
+                html.H6("{}".format(third_desc),style={'textAlign': 'center','color': '#7791d1'}),
                 html.Br(),
-                html.H5("Model Description: {}".format(third_desc),style={'textAlign': 'center','color': '#7791d1'}),
-                html.Br(),
-                html.Br(),              
                 html.Br(),
                 html.Br()
             ]
