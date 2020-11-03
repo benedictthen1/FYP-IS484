@@ -751,11 +751,12 @@ def reminders_section(selected_client_name,selected_base_numbers): # currently n
         reminder_tab_table_columns = [{"name": "Selected Client or Base Number has no relevant Assets to remind.", "id": "nan"}]
         reminder_tab_table_data = []
 
+    time_string = "1 Year" # change accordingly here also
     card_reminders_value = [
             html.H5("Asset Reminders", style={"color":"#003B70"}),
             html.H2(f"{reminders_count_1m} (Due in {time_string})", style={"color":color}),
         ]
-
+    reminders_summary_title = f'Reminders: Assets Due in {time_string}'
 
     return reminder_tab_table_columns, reminder_tab_table_data, reminders_summary_content,reminders_summary_title,card_reminders_value
 
