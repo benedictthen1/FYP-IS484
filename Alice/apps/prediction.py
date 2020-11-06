@@ -36,7 +36,7 @@ df = df[df['Asset Class']=='EQUITIES']
 final_df = df[df['Asset Sub Class'] == 'Common Stocks']
 tickers = final_df["Ticker"].unique()
 # Interval list
-intervals = ['1M','6M','1Y']
+# intervals = ['1M','6M','1.5Y']
 # Function to validate dates
 def validate(date_text):
     if(date_text != None):
@@ -132,10 +132,10 @@ def get_linearprediction(ticker_name,start_date,end_date, future_period):
         end_date +=  timedelta(days=1)
         #print(end_date)
         weekdays = [5,6]
-        df = df.append({'Date': end_date, 'Linear Regression Prediction': lr}, ignore_index = True)  
-    df = df[['Date', 'Close', 'Linear Regression Prediction']]
+        df = df.append({'Date': end_date, 'LR Prediction': lr}, ignore_index = True)  
+    df = df[['Date', 'Close', 'LR Prediction']]
     df["Price"] = df["Close"]
-    df["Price"] = df["Price"].fillna(df["Linear Regression Prediction"])
+    df["Price"] = df["Price"].fillna(df["LR Prediction"])
     return df
 
 def get_RBFSVMPrediction(ticker_name,start_date,end_date,future_period):
@@ -227,11 +227,11 @@ def get_RBFSVMPrediction(ticker_name,start_date,end_date,future_period):
     #         if dt.weekday() not in weekdays:                    # to print only the weekdates
                 #date = dt.strftime("%Y-%m-%d")
 
-        df = df.append({'Date': end_date, 'RBF SVM Regression Prediction': svm}, ignore_index = True)    
+        df = df.append({'Date': end_date, 'RBF SVMR Prediction': svm}, ignore_index = True)    
         
-    df = df[['Date', 'Close', 'RBF SVM Regression Prediction']]
+    df = df[['Date', 'Close', 'RBF SVMR Prediction']]
     df["Price"] = df["Close"]
-    df["Price"] = df["Price"].fillna(df["RBF SVM Regression Prediction"])   
+    df["Price"] = df["Price"].fillna(df["RBF SVMR Prediction"])   
 
     return df
 
@@ -327,19 +327,18 @@ def get_LinearSVMPrediction(ticker_name,start_date,end_date,future_period):
     #         if dt.weekday() not in weekdays:                    # to print only the weekdates
                 #date = dt.strftime("%Y-%m-%d")
 
-        df = df.append({'Date': end_date, 'Linear SVM Regression Prediction': svm}, ignore_index = True)    
+        df = df.append({'Date': end_date, 'LSVMR Prediction': svm}, ignore_index = True)    
         
-    df = df[['Date', 'Close', 'Linear SVM Regression Prediction']]
+    df = df[['Date', 'Close', 'LSVMR Prediction']]
     df["Price"] = df["Close"]
-    df["Price"] = df["Price"].fillna(df["Linear SVM Regression Prediction"])       
+    df["Price"] = df["Price"].fillna(df["LSVMR Prediction"])       
 
     return df
 
 def get_performance(ticker_name,start_date,end_date, future_period):    
     import datetime
     from datetime import timedelta, date
-    
-    
+
     #Download the data from Yfinance
     ticker = yf.Ticker(ticker_name)
     
@@ -455,26 +454,33 @@ def get_performance(ticker_name,start_date,end_date, future_period):
 
     x_forecast = np.array(df.drop(['Prediction'],1))[-future_period:]
 
-    Accuracy = {'Linear Regression Prediction': [lr_confidence], 
-            'RBF SVM Regression Prediction': [rbf_svm_confidence],
-            'Linear SVM Regression Prediction': [lin_svm_confidence]}
+    Accuracy = {'LR Prediction': [lr_confidence], 
+            'RBF SVMR Prediction': [rbf_svm_confidence],
+            'LSVMR Prediction': [lin_svm_confidence]}
     
-    df = pd.DataFrame(Accuracy, columns = ['Linear Regression Prediction', 'RBF SVM Regression Prediction', 'Linear SVM Regression Prediction'])
+    df = pd.DataFrame(Accuracy, columns = ['LR Prediction', 'RBF SVMR Prediction', 'LSVMR Prediction'])
     
     return df
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Chart Function
 def generate_charts(model_df):
-    return dcc.Graph(style={'height': '300px'},
+
+    return dcc.Graph(style={
+        'height': '300px',
+        'box-shadow': '2px 2px 2px grey'
+        },
     figure = px.line(model_df, x="Date", y=[model_df.columns[1],model_df.columns[2]],
-    text = model_df.columns[3], 
-    color_discrete_sequence=['#1E3F66', 'crimson'],title=model_df.columns[2] + " Chart").update_layout(font={'family': 'verdana','size':12},
-    legend={'font':{'size':7}},plot_bgcolor="white",margin=dict(l=100, r=50, t=50, b=50, pad=10)).update_traces(
+    # text = model_df.columns[3], 
+    color_discrete_sequence=['#003B70', 'crimson'],title=model_df.columns[2] + " Chart").update_layout(font={'family': 'verdana','size':8},
+    legend={'font':{'size':7}, 'title':'Price'},plot_bgcolor="white",margin=dict(l=100, r=50, t=50, b=50, pad=10),
+    yaxis_title='Price(USD)').update_traces(
             textposition="top center",
             mode = 'lines+markers',
             # marker_color = '#1E3F66', 
-            texttemplate = "%{text:.2f}").update_xaxes(showspikes=True).update_yaxes(showspikes=True)
+            texttemplate = "%{text:.2f}").update_xaxes(
+                showspikes=True,linewidth=0.5, linecolor='Grey', gridcolor='#D3D3D3'
+                ).update_yaxes(showspikes=True)
     )
 
 app.layout = html.Div([
@@ -490,62 +496,38 @@ app.layout = html.Div([
                 options=[
                     {'label': ticker, 'value': ticker} for ticker in tickers
                 ],
-                style=dict(width="100%"),
+                style={'width':"100%",'padding-left':'5px'},
                 value = tickers[0],
                 placeholder="Filter by Ticker",
                 clearable=False)
             ])
-            ],width=2),
-
-        # Filter 2: Start Date & End Date
-        dbc.Col([
-            html.Div([
-            html.H6("Historical Data Interval:"),
-            dcc.Dropdown(
-                id='interval',
-                options=[
-                    {'label': interval, 'value': interval} for interval in intervals
-                ],
-                value = intervals[0],
-                placeholder="Filter by interval",
-                clearable=True,
-                style=dict(width="100%")
-                )
-            ])
-            ],width=2),
+            ],width=3),
 
         # Filter 3: Forecast period (days)
         dbc.Col([
             html.Div([
-                html.H6("Forecast Period (days):"),
+                html.H6(["Forecast Period (days):"]),
                 dcc.Input(
                     id="forecast_period", 
                     type="text",   
                     placeholder=" days",
                     value = '5',
-                    style = {'marginRight': "10%"}
-                    ),
-                dbc.Button(children= "Apply", color="dark",size="sm", id="submit_btn",n_clicks=0, className="mr-1"),
-            ],className="search_style")
-            ],width=4),
-            # html.H5("Forecast Period (days):",style={'color': 'white','text-align': 'left'}),
-            # dcc.Textarea(
-            #     id = 'forecast_period',
-            #     placeholder=' days',
-            #     value = '5',
-            #     # value='Textarea content initialized\nwith multiple lines of text',
-            #     style={'width': '100%'}
-            # )
-            # ,\
+                    style = {
+                        'width':"50%",
+                        "margin-left": "5px",
+                        # 'marginRight': "10%",
+                        'height':"32px"
+                        }
+                    )
+            ])
+            ],width=3),
+       
+        dbc.Col([
+            html.Div([
+                dbc.Button(children= "Apply", color="dark",size="sm", id="submit_btn",n_clicks=0)
+            ])
+        ],width=2)
 
-        
-
-        # dbc.Col([
-        #     html.Br(),
-        #     html.Br(),
-        #     dbc.Button(children='Apply', color="dark",size="lg", id="submit_btn",n_clicks=0, className="mr-1"),
-        # ],
-        # width={'size':3}),
     ],justify="left",style={'marginLeft': "1%", 'marginRight': "1%", 'marginTop': 20}),
     html.Br(),
     ################# Subsequent Rows: Display Outputs ######################### 
@@ -560,7 +542,7 @@ app.layout = html.Div([
                     'textAlign': 'center',
                     'padding':'2.5px',
                     'color': 'white',
-                    'backgroundColor': "#1E3F66"})
+                    'backgroundColor': "#003B70"})
             ])
         ],width={'size':3}),
         dbc.Col([
@@ -572,7 +554,7 @@ app.layout = html.Div([
                 'textAlign': 'center',
                 'padding':'2.5px',
                 'color': 'white',
-                'backgroundColor': "#1E3F66"})
+                'backgroundColor': "#003B70"})
             ])
         ],width={'size':6}),
         dbc.Col([
@@ -584,7 +566,7 @@ app.layout = html.Div([
                 'textAlign': 'center',
                 'padding':'2.5px',
                 'color': 'white',
-                'backgroundColor': "#1E3F66"})
+                'backgroundColor': "#003B70"})
             ])
         ],width={'size':3})
     ],justify="center",style={'marginLeft': "1%", 'marginRight': "1%", 'marginTop': 0})  ,
@@ -593,10 +575,11 @@ app.layout = html.Div([
         dbc.Col([
             html.Div([
                 html.H2(["Rank 1"],style={'textAlign': 'center','color': 'white'}),
+                html.H5(["R-Square: "], style= {'color':'white'}),
                 html.H5(id = "best_acc", style= {'color':'white'})
                 ],
                 style = {
-                    "backgroundColor": "#003B70",
+                    "backgroundColor": "#004a8c",
                     'box-shadow': '2px 2px 2px grey',
                     'height': '300px',
                     'padding': '100px 0',
@@ -616,14 +599,19 @@ app.layout = html.Div([
         dbc.Col([
             html.Div([
                 html.H5(id="best_col",style={'textAlign': 'center','color': 'white'}),
-                html.P(id = "best_desc", style= {'color':'white'})
+                html.P(id = "best_desc", 
+                style= {
+                    'color':'white',
+                    'padding-left': '20px',
+                    'padding-right': '20px'
+                    })
                 ],
                 style = {
-                    "backgroundColor": "#003B70",
+                    "backgroundColor": "#004a8c",
                     'box-shadow': '2px 2px 2px grey',
                     'height': '300px',
-                    'padding': '80px 0',
-                    'text-align': 'center'
+                    'padding': '55px 0',
+                    'text-align': 'center',
                 }
                 )
         ])
@@ -634,10 +622,11 @@ app.layout = html.Div([
         dbc.Col([
             html.Div([
                 html.H2(["Rank 2"],style={'textAlign': 'center','color': 'white'}),
+                html.H5(["R-Square: "], style= {'color':'white'}),
                 html.H5(id = "second_acc", style= {'color':'white'})
                 ],
                 style = {
-                    "backgroundColor": "#004a8c",
+                    "backgroundColor": "#346a99",
                     'box-shadow': '2px 2px 2px grey',
                     'height': '300px',
                     'padding': '100px 0',
@@ -655,13 +644,18 @@ app.layout = html.Div([
         dbc.Col([
             html.Div([
                 html.H5(id="second_col",style={'textAlign': 'center','color': 'white'}),
-                html.P(id = "second_desc", style= {'color':'white'})
+                html.P(id = "second_desc", 
+                style= {
+                    'color':'white',
+                    'padding-left': '20px',
+                    'padding-right': '20px'
+                    })
                 ],
                 style = {
-                    "backgroundColor": "#004a8c",
+                    "backgroundColor": "#346a99",
                     'box-shadow': '2px 2px 2px grey',
                     'height': '300px',
-                    'padding': '80px 0',
+                    'padding': '55px 0',
                     'text-align': 'center'
                 }
                 )           
@@ -673,10 +667,11 @@ app.layout = html.Div([
         dbc.Col([
             html.Div([
                 html.H2(["Rank 3"],style={'textAlign': 'center','color': 'white'}),
+                html.H5(["R-Square: "], style= {'color':'white'}),
                 html.H5(id = "third_acc", style= {'color':'white'})
                 ],
                 style = {
-                    "backgroundColor": "#0058a6",
+                    "backgroundColor": "#618bb0",
                     'box-shadow': '2px 2px 2px grey',
                     'height': '300px',
                     'padding': '100px 0',
@@ -696,13 +691,18 @@ app.layout = html.Div([
             html.Div([
                 
                 html.H5(id="third_col",style={'textAlign': 'center','color': 'white'}),
-                html.P(id = "third_desc", style= {'color':'white'})
+                html.P(id = "third_desc", 
+                style= {
+                    'color':'white',
+                    'padding-left': '20px',
+                    'padding-right': '20px'
+                    })
                 ],
                 style = {
-                    "backgroundColor": "#0058a6",
+                    "backgroundColor": "#618bb0",
                     'box-shadow': '2px 2px 2px grey',
                     'height': '300px',
-                    'padding': '80px 0',
+                    'padding': '55px 0',
                     'text-align': 'center'
                 }
                 )            
@@ -716,12 +716,6 @@ app.layout = html.Div([
     Output("best_chart", "children"),
     Output("second_chart","children"),
     Output("third_chart","children"),
-    # Output("left_best_card", "children"),
-    # Output("left_second_card", "children"),
-    # Output("left_third_card", "children"),
-    # Output("right_best_card", "children"),
-    # Output("right_second_card", "children"),
-    # Output("right_third_card", "children"),
     Output("best_acc","children"),
     Output("second_acc","children"),
     Output("third_acc","children"),
@@ -735,17 +729,19 @@ app.layout = html.Div([
     Input('submit_btn', 'n_clicks'),
     # values to be passed upon clicking submit button
     [State('ticker_filter', 'value'),
-    State('interval','value'),
+    # State('interval','value'),
     State('forecast_period', 'value')
     ]
 ) 
 
 
-def update_output(n_clicks,ticker_subval,interval, period_subval):
-    # Check if all 4 inputs are submitted
+def update_output(n_clicks,ticker_subval,period_subval):
+    # Check if all 3 inputs are submitted
     errors = []
+    # Lock the interval for user
+    interval = 300
     # 1: Check if all inputs submitted
-    if ticker_subval != "None" and interval != None  and period_subval != None:
+    if ticker_subval != "None"  and period_subval != None:
         # 2: Validate each input (except for ticker input)
         # if validate(start_subval) == False:
         #     errors.append("Invalid Start Date input")
@@ -756,12 +752,6 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
             errors.append("Invalid Forecast Period input")
         else:
             period_subval = int(period_subval)
-        if interval == "1M":
-            interval = 21
-        elif interval == "6M":
-            interval = 126
-        elif interval == "1Y":
-            interval = 252
 
         # 3: If no validation error, generate relevant dataframes 
         if(errors == []):
@@ -782,9 +772,9 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
             # prediction_SVR_df['RBF SVR Prediction'] = prediction_SVR_df['RBF SVR Prediction'].apply(lambda x: round(x, 4))            
 
             # Retrieve Column names in sorted order (Best -> Worst)
-            best_col = sorted_accuracy_df.columns[0] # "Linear Regression Prediction"
-            second_col = sorted_accuracy_df.columns[1] # "Linear SVM Regression Prediction"
-            third_col = sorted_accuracy_df.columns[2] # "RBF SVM Regression Prediction"
+            best_col = sorted_accuracy_df.columns[0] # "LR Prediction"
+            second_col = sorted_accuracy_df.columns[1] # "LSVMR Prediction"
+            third_col = sorted_accuracy_df.columns[2] # "RBF SVMR Prediction Prediction"
 
             # Based on 3 inputs + 1 computed variable (start_subval), retrieve 3 model dfs
             LR_df = get_linearprediction(ticker_subval,start_subval,end_subval,period_subval)
@@ -796,34 +786,31 @@ def update_output(n_clicks,ticker_subval,interval, period_subval):
             RBFSVM_desc = "Radial Basis Function is a real-valued function used in SVM models and its value only on the distance between the input and some fixed point (called as center)."
             LRSVM_desc = "Linear Regression SVM Function creates a line or a hyperplane which separates the data into classes and is a linear model for classification and regression problems."
 
-            # LR_breakline = html.Br(),html.Br(),html.Br()
-            # RBFSVM_breakline = html.Br(),html.Br(),html.Br(),html.Br()
-            # LRSVM_breakline = html.Br(),html.Br(),html.Br(),html.Br()
             # Store each model df + desc according to the accuracy order of the columns in sorted accuracy df
-            if best_col == "Linear Regression Prediction":
+            if best_col == "LR Prediction":
                 best_model_df = LR_df 
                 best_desc = LR_desc     
-            elif second_col == "Linear Regression Prediction":
+            elif second_col == "LR Prediction":
                 second_model_df = LR_df
                 second_desc = LR_desc 
             else:
                 third_model_df = LR_df
                 third_desc = LR_desc 
 
-            if best_col == "Linear SVM Regression Prediction":
+            if best_col == "LSVMR Prediction":
                 best_model_df = LRSVM_df   
                 best_desc = LRSVM_desc   
-            elif second_col == "Linear SVM Regression Prediction":
+            elif second_col == "LSVMR Prediction":
                 second_model_df = LRSVM_df
                 second_desc = LRSVM_desc
             else:
                 third_model_df = LRSVM_df
                 third_desc = LRSVM_desc
 
-            if best_col == "RBF SVM Regression Prediction":
+            if best_col == "RBF SVMR Prediction":
                 best_model_df = RBFSVM_df  
                 best_desc = RBFSVM_desc    
-            elif second_col == "RBF SVM Regression Prediction":
+            elif second_col == "RBF SVMR Prediction":
                 second_model_df = RBFSVM_df
                 second_desc = RBFSVM_desc    
             else:
