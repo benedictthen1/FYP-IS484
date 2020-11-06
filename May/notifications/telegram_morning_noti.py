@@ -10,6 +10,7 @@ import threading
 from threading import Thread
 
 morning_time_string = "8am"
+evening_time_string = "5pm"
 
 def return_values_for_tele_msg():
     ############ Import all data files #################
@@ -193,11 +194,12 @@ def return_evening_msg_text(poorly_performing_client_count,out_of_target_client_
         "Have a lovely evening! "+u'\U0001F917'
     return evening_msg_text
 
-now = datetime.now()
-print("Noti Trigger Time Now:",now.time())
-poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y,no_of_clients_overdue = return_values_for_tele_msg()
-morning_msg_text = return_morning_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y)
-send_msg(chat_id, morning_msg_text)
+def send_morning_message():
+    now = datetime.now()
+    print("Noti Trigger Time Now:",now.time())
+    poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y,no_of_clients_overdue = return_values_for_tele_msg()
+    morning_msg_text = return_morning_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y)
+    send_msg(chat_id, morning_msg_text)
 
 
 
