@@ -11,50 +11,63 @@ body {
   background-color: #f2f2f2;
 }
 
-.mini_container {
+.candle_contaner {
   border-radius: 5px;
   background-color: #f9f9f9;
   margin-top: 1%;
-  margin-left: 1.38%;
   padding: 10px;
   position: relative;
-  box-shadow: 2px 2px 2px lightgrey;
+  box-shadow: 2px 2px 2px grey;
+  /*width:67%;
+  height: 50%*/
 }
 
 #ticker_info_table {
   border-radius: 5px;
-  width: 429px;
-  height: 95px;
+  box-shadow: 2px 2px 2px grey;
+  height: 90px;
   background-color: #f9f9f9;
-  margin-left: 2%;
-  padding: 0.5%;
+  padding-top: 5px;
+  padding-left: 10px;
   position: relative;
-  box-shadow: 2px 2px 2px lightgrey;
+  
 }
 
 #coy_name_sector {
   display: inline-flex;
 }
 
+#combine_coy_dropdown {
+  display: flex;
+}
+
 #sector {
   margin-left: 5px;
   margin-top: 5px;
-  background-color: black;
+  background-color: #1E3F66;
   font-size: 10px;
   height: 90%;
+  color: white;
+}
+
+.mr-1 {
+  background-color: #1E3F66;
 }
 
 .tick_metrics {
   background-color: #3a3f44;
-  box-shadow: 2px 2px 2px lightgrey;
+  box-shadow: 2px 2px 2px grey;
   border-radius: 5px;
-  height: 95px;
-  width: 10%;
+  height: 90px;
+  width: 15%;
   margin-left:1.38%;
   padding-top: 0.5%;
   color: white;
-  font-size: 30px;
+  font-size: 27px;
   text-align: center;
+}
+
+#tick_combine {
 }
 
  #tic_price_info {
@@ -66,20 +79,20 @@ body {
 }
 
 #close_price {
-  font-size: 35px;
-  margin-top: -2px;
+  font-size: 30px;
+  margin-top: -1.5px;
 }
 
 #price_diff {
   font-size: 18px;
-  margin-top:15px;
+  margin-top:11px;
   margin-left:8px;
 }
 
 
 #price_date {
   font-size:12px;
-  margin-top: -4px;
+  margin-top: -6px;
   padding: 0%;
 }
 
@@ -94,8 +107,9 @@ body {
   margin-bottom: 0.2%;
   border-radius: 5px;
 }
+
 .container-display {
-  display: flex;
+  display: inline-flex;
 }
 
 .flex-display {
@@ -117,7 +131,8 @@ width: 30.6666666667%;
 }
 
 #tabs {
-  width: 400px;   
+  /*width: 400px;*/
+  font-size: 10px;
 }
 
 #tabs2 {
@@ -132,19 +147,17 @@ width: 30.6666666667%;
 }
 
 .control-tab {
-max-height: 380px;
+/*max-height: 380px;
 max-width: 400px;
-padding: 10px;
+padding: 10px;*/
 border-radius: 5px;
 background-color: #f9f9f9;
 position: relative;
 }
 
 .tabs_group{
-height: 450px;
-width: 429px;
-margin-left: 2%;
-margin-top:1%;
+height: 445px;
+margin-top:2%;
 padding-left: 15px;
 padding-right: 15px;
 padding-top: 10px;
@@ -152,24 +165,51 @@ padding-bottom: 15px;
 border-radius: 5px;
 background-color: #f9f9f9;
 position: relative;
-box-shadow: 2px 2px 2px lightgrey;
+box-shadow: 2px 2px 2px grey;
 }
 
-#connectgraph {
-  width: 36.58%;
-  height: 580px;
-  background-color: #f9f9f9;
-  box-shadow: 2px 2px 2px lightgrey;
-  padding: 0.5%;
-  margin-left: 2%;
+#target_risk_filter {
+  font-size: 11px;
+}
+
+#target_risk_filter .Select-menu-outer{
+  font-size: 11px;
 }
 
 #client_perf_dropdown{
   margin-top:1%;
+  font-size: 11px;
+}
+
+#client_perf_dropdown .Select-menu-outer {
+  background-color :white;
+  font-size: 11px;
+  width: 55%;
 }
 
 #coy_perf_dropdown {
   margin-top:1%;
+  font-size: 11px;
+  
+}
+
+#coy_perf_dropdown .Select-menu-outer {
+  background-color :white;
+  font-size: 11px;
+  width: 55%;
+}
+
+
+#coy_time_dropdown {
+  margin-top:1%;
+  margin-left: -22%;
+  font-size:11px;
+}
+
+#coy_time_dropdown .Select-menu-outer {
+  background-color :white;
+  font-size: 11px;
+  width: 40%;
 }
 
 .perfbar_table{
@@ -179,33 +219,32 @@ box-shadow: 2px 2px 2px lightgrey;
 }
 
 #overall_table {
-  display: flex;
+  /*display: flex;*/
 }
 
 #testtableright {
-  margin-left: 1%;
+  /*margin-left: 1%;
   width: 58%;
-  padding: 0%;
+  padding: 0%;*/
 }
 
-#combine_remind {
-  display: inline-flex;
-}
-
-#client_remind_cover {
-  height: 300px;
+#connectgraph {
+  background-color: #f9f9f9;
+  box-shadow: 2px 2px 2px grey;
+  padding: 0.5%;
 }
 
 #top_right_table {
   background-color: #f9f9f9;
-  box-shadow: 2px 2px 2px lightgrey;
-  margin-bottom: 1%;
+  box-shadow: 2px 2px 2px grey;
+  margin-bottom: 1.1%;
   padding: 0%;
 }
 
 #btn_right_table {
-  background-color: #f9f9f9;
-  box-shadow: 2px 2px 2px lightgrey;
+  background-color:#f9f9f9;
+  box-shadow: 2px 2px 2px grey;
+  margin-top: 0.5%;
 
 }
 #navtest{
@@ -263,7 +302,7 @@ padding: 2rem 1rem;
   width: 20rem;
   text-align: left;
   transition: margin 0.3s ease-in-out, padding 0.3s ease-in-out;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
 #sidebar-toggle {
@@ -312,8 +351,8 @@ padding: 2rem 1rem;
 
 /* set margins of the main content so that it doesn't overlap the sidebar */
 #page-content {
-  margin-left: 20%;
-  margin-right: 2%;
+  margin-left: 22%;
+  margin-right: 1%;
   transition: margin-left 0.3s ease-in-out;
 }
 }
@@ -334,13 +373,18 @@ padding: 2rem 1rem;
   margin-top: 4px;
 }
 
-#risk_pie_combine {
-  display: inline-flex;
+#risk_table {
+  margin-right: 5%;
 }
 
-#risk_table {
-  display: block;
-  margin-left: 1%;
+
+.perf_bread_title {
+  text-align: center;
+  box-shadow: 2px 2px 2px grey;
+  background-color:#1E3F66;
+  color: white;
+  padding: 2.5px;
+  font-size: 16px;
 }
 
 #target_risk_filter{
@@ -350,6 +394,22 @@ padding: 2rem 1rem;
 
 #main_table .row {
 margin: 0;
+}
+
+#equities_table .row{
+  margin: 0;
+}
+
+#fixed_income_table .row {
+  margin: 0;
+}
+
+#alternatives_table .row {
+  margin: 0;
+}
+
+#capital_markets_table .row {
+  margin: 0;
 }
 
 #top_right_table {
@@ -371,16 +431,23 @@ background-color: lightgrey;
 margin: 0;
 }
 
+#fin_title {
+  background-color: #1E3F66;
+  padding: 2px;
+  text-align: center;
+  color: white;
+  font-size: 17px;
+  box-shadow: 2px 2px 2px grey;
+  
+}
+
 .fin_bar_group {
-display: inline-flex;
-width: 471px;
-height: 370px;
+width: 28%;
+margin-left: 2%;
 border-radius: 5px;
 background-color: #f9f9f9;
-box-shadow: 2px 2px 2px lightgrey;
+box-shadow: 2px 2px 2px grey;
 padding:0px;
-margin-top:1%;
-margin-left: 2%;
 margin-bottom: 2%;
 }
 
@@ -495,29 +562,29 @@ margin-left: 5px;
 
 #client_fitler_box {
 display: inline-flex;
-margin-left: 13px;
+margin-left: 16px;
 }
 
 #base_fitler_box {
 display: inline-flex;
-margin-left: 16px;
+margin-left: 15px;
 }
 
 #asset_fitler_box {
 display: inline-flex;
-margin-left: 13px;
+margin-left: 22px;
 margin-top: 10px;
 }
 
 #asset_sub_fitler_box {
 display: inline-flex;
-margin-left: 16px;
+margin-left: 12px;
 margin-top: 10px;
 }
 
 #ccy_filter_box {
 display: inline-flex;
-margin-left: 13px;
+margin-left: 56px;
 margin-top: 10px;
 }
 
@@ -553,6 +620,39 @@ margin-left:10px;
   background-color:#C0C0C0	 !important;
     }
 #connectgraph ::-webkit-scrollbar-thumb {
+    background-color: #2F4F4F !important;
+    /*border: 2px solid #2F4F4F;*/
+    }
+
+#reminders_summary_content ::-webkit-scrollbar {
+  background-color:#C0C0C0	 !important;
+    }
+#reminders_summary_content ::-webkit-scrollbar-thumb {
+    background-color: #2F4F4F !important;
+    /*border: 2px solid #2F4F4F;*/
+    }
+
+#c_remind_table ::-webkit-scrollbar {
+  background-color:#C0C0C0	 !important;
+    }
+#c_remind_table ::-webkit-scrollbar-thumb {
+    background-color: #2F4F4F !important;
+    /*border: 2px solid #2F4F4F;*/
+    }
+
+#risk_target_status_table ::-webkit-scrollbar {
+  background-color:#C0C0C0	 !important;
+    }
+#risk_target_status_table ::-webkit-scrollbar-thumb {
+    background-color: #2F4F4F !important;
+    /*border: 2px solid #2F4F4F;*/
+    }
+
+
+#remind_table ::-webkit-scrollbar {
+  background-color:#C0C0C0	 !important;
+    }
+#remind_table ::-webkit-scrollbar-thumb {
     background-color: #2F4F4F !important;
     /*border: 2px solid #2F4F4F;*/
     }
@@ -620,16 +720,31 @@ padding: 20px;
 .breadcrumb {
   margin: 0px;
   padding: 0.1%;
-  height: 4%;
   margin-bottom: 0.3%;
+  box-shadow: 2px 2px 2px lightgrey;
+  background-color: transparent;
+}
+
+.breadcrumb .nav-link {
+  color: white;
+}
+
+#navbar_cont {
+  color: white;
+  background-color: #1E3F66   ;
 }
 
 #banner_group {
   display: flex;
+  margin-left: 0.4%;
 }
 
 #client_table .row {
 margin: 0;
+}
+
+#risk_target_status_table {
+  margin: 0;
 }
 
 #coy_table .row {
@@ -637,38 +752,62 @@ margin: 0;
 }
 
 .client_metrics {
-  background-color: #3a3f44;
-  box-shadow: 2px 2px 2px lightgrey;
+  background-color: #1E3F66;
+  box-shadow: 2px 2px 2px grey;
   height: 5%;
-  width: 17.1%;
+  width: 17.13%;
   margin: 0.5%;
-  margin-bottom: 0.5%;
+  margin-bottom: 0.7%;
   margin-left: 2%;
   padding: 0.1%;
   color: white;
   text-align: center;
 }
 
+#clients_coy_btn_combine {
+  display: flex;
+}
+
+#client_invest_title {
+  margin-top: 10px;
+  margin-left: 5px;
+}
+
 #remind-collapse {
   margin-left: 0.5%;
 }
 
-.remind_btn {
+#client_remind_cover {
+  margin-top: 0.5%;
+}
+
+#remind_btn1 {
   margin-left: 20px;
+  background-color: #3bb36f;
+}
+
+#remind_btn2 {
+  margin-left: 20px;
+  background-color: #b20723;
+}
+
+#remind_btn3 {
+  margin-left: 20px;
+  background-color: #60609d ;
 }
 
 #remind_btn_grp {
   margin-left: 34%;
-  margin-top: 0.4%;
-  margin-bottom: 0%;
+  margin-top: 1.4%;
+  margin-bottom: -1%;
 
 }
 
 .remind_metrics {
-  background-color: #3a3f44;
+  background-color:#3a3f44;
   box-shadow: 2px 2px 2px lightgrey;
-  height: 47.8px;
-  width: 170px;
+  height: 45.5px;
+  width: 100%;
   margin-top: 3.6%;
   margin-left: 2%;
   margin-right: 20px;
@@ -679,22 +818,21 @@ margin: 0;
 
 
 #remind_dropdown {
-  margin-top: 0.5%;
+  margin-top: -4.2%;
+  margin-left: 26%;
+  font-size: 10px;
 }
 
 #remind_dropdown .Select-menu-outer {
   background-color :white;
-  border-color: transparent;
   font-size: 10px;
+  width: 60%;
 }
 
 /*dropdown list words*/
 #remind_dropdown .Select-control .Select-value-label {
   cursor: pointer;
-}
 
-#remind_dropdown .is-open .Select-value-label {
-  color: white;
 }
 
 #remind_dropdown .Select-control {
@@ -709,6 +847,7 @@ margin: 0;
 .ban_values {
   margin: 0px;
   font-size: 28px;
+  font-weight: bolder;
 }
 
 .ban_title {
@@ -754,11 +893,152 @@ display: inline-flex;
 box-shadow: 2px 2px 2px lightgrey;
 border-radius: 5px;
 background-color: #f9f9f9;
-box-shadow: 2px 2px 2px lightgrey;
 border-radius: 5px;
 background-color: #f9f9f9;
 margin:20px;
 margin-top:10px;
 width: 650px;
 padding: 20px;
+}
+
+/*CLIENT PAGE CSS */
+#client_name_filter_flex {
+ display: flex;
+}
+
+#current_risk_piechart {
+
+}
+
+#cash_amount_to_target_card, #equities_amount_to_target_card, #fi_amount_to_target_card {
+  text-align: center;
+  box-shadow: 2px 2px 2px grey;
+  height: 93.5px;
+}
+
+#base_num_clear_btn, #base_num_all_btn {
+  width: 7%;
+  height: 30px;
+  margin-left: 1%;
+  margin-top: 0.3%;
+  background-color: #003B70;
+  color: white;
+  font-size: 11px;
+}
+
+#card_assets_value, #card_liab_value, #card_profit_loss_value, #card_current_risk_value, #card_target_risk_value, #card_reminders_value {
+  background-color: white;
+  height: 68px;
+  padding: 5px;
+  padding-top: 3%;
+  text-align: center;
+  box-shadow: 2px 2px 2px grey;
+
+}
+
+#reminders_summary_table .row {
+  margin: 0
+}
+
+#client_page_reminder_table {
+  padding: 2%;
+  background-color: white;
+}
+
+#reminders_summary_title, #asset_liab_timeseries, #asset_class_piechart, #profit_loss_breakdown_barchart, #current_risk_piechart, #target_risk_piechart, #reminders_summary_table, #current_target_risk_barchart {
+  box-shadow: 2px 2px 2px grey;
+}
+
+#current_target_risk_barchart {
+  margin-top:5px;
+}
+
+#card_cash_liab_left1_value, #card_cash_liab_left2_value, #card_cash_liab_right1_value, #card_cash_liab_right2_value {
+  text-align: center;
+  background-color: #1E3F66;
+  height: 80px;
+  box-shadow: 2px 2px 2px grey;
+}
+
+#card_equities_left1_value, #card_equities_left2_value, #card_equities_right1_value, #card_equities_right2_value {
+  text-align: center;
+  background-color: #1E3F66;
+  height: 80px;
+  box-shadow: 2px 2px 2px grey;
+}
+
+#card_fixed_income_left1_value, #card_fixed_income_left2_value, #card_fixed_income_right1_value, #card_fixed_income_right2_value {
+  text-align: center;
+  background-color: #1E3F66;
+  height: 80px;
+  box-shadow: 2px 2px 2px grey;
+}
+
+#card_alternatives_left1_value, #card_alternatives_left2_value, #card_alternatives_right1_value, #card_alternatives_right2_value {
+  text-align: center;
+  background-color: #1E3F66;
+  height: 80px;
+  box-shadow: 2px 2px 2px grey;
+}
+
+#card_capital_markets_left1_value, #card_capital_markets_left2_value, #card_capital_markets_right1_value, #card_capital_markets_right2_value {
+  text-align: center;
+  background-color: #1E3F66;
+  height: 80px;
+  box-shadow: 2px 2px 2px grey;
+}
+
+#card_capital_markets_left1_value, #card_capital_markets_left2_value, #card_capital_markets_right1_value, #card_capital_markets_right2_value {
+  text-align: center;
+  background-color: #1E3F66;
+  height: 80px;
+  box-shadow: 2px 2px 2px grey;
+}
+
+
+#eq_breakdown_card {
+  margin-top: -12px;
+}
+
+#assest_breadkown_cards {
+  margin-top: -12px;
+}
+
+#cash_liab_table {
+  box-shadow: 2px 2px 2px grey;
+}
+
+#cash_liab_chart, #capital_markets_chart, #capital_markets_table {
+  box-shadow: 2px 2px 2px grey;
+}
+
+#equities_table, #equities_chart, #fixed_income_chart, #fixed_income_table, #alternatives_chart, #alternatives_table {
+  box-shadow: 2px 2px 2px grey;
+}
+
+#client_name_dropdown, #base_numbers_checklist {
+  font-size: 11px;
+}
+
+#remind_dropdown {
+  margin-top: -4.2%;
+  margin-left: 26%;
+  font-size: 10px;
+}
+
+#remind_dropdown .Select-menu-outer {
+  background-color :white;
+  font-size: 10px;
+  width: 60%;
+}
+
+#client_name_filter_flex {
+  font-size: 11px;
+}
+
+#fake_cont {
+  height: 160px;
+  padding-left: 10px;
+  box-shadow: 2px 2px 2px grey;
+  background-color: white;
 }

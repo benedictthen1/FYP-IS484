@@ -26,7 +26,7 @@ for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors="coerce")
     df[col].astype("float")
     df[col] = df[col].round(2)
-print(df.columns)
+#print(df.columns)
 
 fig = go.Figure()
 
@@ -47,10 +47,10 @@ client_coy_table = html.Div([
     dash_table.DataTable(
         id='client_coy_table',
         sort_action='native',
-        style_cell={'textAlign': 'center','textOverflow': 'ellipsis','font_size': '11px',},
+        style_cell={'textAlign': 'center','textOverflow': 'ellipsis','font_size': '10px',},
         style_as_list_view=True,
         fixed_rows={'headers': True},
-        style_table={'overflowY': 'auto','height': '345px',"width": '380px'},
+        style_table={'overflowY': 'auto','height': '345px'},
         style_data={'maxWidth': '70px','minWidth': '70px'},
         style_header={'fontWeight': 'bold', 'height': 'auto','whiteSpace': 'normal','border': '1px solid grey'},
         #columns=[{"name": i, "id": i} for i in client_table.columns],
@@ -61,51 +61,66 @@ client_coy_table = html.Div([
 
 layout = html.Div([
 
+    dcc.Location(id='url_coy_to_client', refresh=True),
+
     html.Div([
         dcc.Input(id="input", type="text", placeholder="search ticker"),
         dbc.Button("Apply", color="dark",size="sm", id="search-button",n_clicks=0, className="mr-1"),
     ],className="search_style"),
 
-    html.Div([
-        html.Div([
+    dbc.Row([
+        dbc.Col([html.Div([html.H5(children="Company Key Quotes",id="fin_title")])],width=11),
+    ],justify="center",style={'marginLeft': -52, 'marginRight': -55}),
+
+    dbc.Row([
+    
+        dbc.Col([
             html.Div([
-                html.H5(id ="coy_name"),
-                #html.Div(id="sector"),
-                dbc.Badge(id="sector", color="dark", className="sector"),
-            ],id="coy_name_sector"),
-            html.Br(),
-            html.Div([
-                html.H6(id = "close_price"),
-                html.H6(id = "price_diff"),
-            ],id = "tic_price_info"),
-            html.P(id = "price_date"),
-        ],id="ticker_info_table"),
+                html.Div([
+                    html.H5(id ="coy_name"),
+                    #html.Div(id="sector"),
+                    dbc.Badge(id="sector", className="sector"),
+                ],id="coy_name_sector"),
+                html.Br(),
+                html.Div([
+                    html.H6(id = "close_price"),
+                    html.H6(id = "price_diff"),
+                ],id = "tic_price_info"),
+                html.P(id = "price_date"),
+            ],id="ticker_info_table"),
+        ], width = 3),
 
-        html.Div([html.Div(id="ytd"),html.H5("YTD %")],className="tick_metrics"),
-        html.Div([html.Div(id="1d"),html.H5("1D %")],className="tick_metrics"),
-        html.Div([html.Div(id="5d"),html.H5("5D %")],className="tick_metrics"),
-        html.Div([html.Div(id="1m"),html.H5("1M %")],className="tick_metrics"),
-        html.Div([html.Div(id="6m"),html.H5("6M %")],className="tick_metrics"),
-        html.Div([html.Div(id="12m"),html.H5("12M %")],className="tick_metrics"),
-        
+        dbc.Col([
+        dbc.Row([
+            #html.Div([
+            html.Div([html.Div(dcc.Loading(id="ytd")),html.H5("YTD %")],className="tick_metrics"),
+            html.Div([html.Div(dcc.Loading(id="1d")),html.H5("1D %")],className="tick_metrics"),
+            html.Div([html.Div(dcc.Loading(id="5d")),html.H5("5D %")],className="tick_metrics"),
+            html.Div([html.Div(dcc.Loading(id="1m")),html.H5("1M %")],className="tick_metrics"),
+            html.Div([html.Div(dcc.Loading(id="6m")),html.H5("6M %")],className="tick_metrics"),
+            html.Div([html.Div(dcc.Loading(id="12m")),html.H5("12M %")],className="tick_metrics"),
+            #],id="tick_combine")
+        ],justify="left")
+        ], width = 8),
 
-    ],className="container-display"),
-
-    html.Div([
+    ],justify="center",style={'marginLeft': -52, 'marginRight': -55,'marginTop': 5}),
+    
+    dbc.Row([
+        dbc.Col(
         html.Div([
             dbc.Tabs([
                     dbc.Tab(
                         label="Statistics", 
                         tab_id="tab-1",
                         children=html.Div(className='control-tab',children = [
-                            stats_table
+                            dcc.Loading(stats_table)
                         ]),
                     ),
                     dbc.Tab(
                         label="Clients", 
                         tab_id="tab-2",
                         children=html.Div(className='control-tab',children = [
-                            client_coy_table
+                            dcc.Loading(client_coy_table)
                         ]),
                     ),
                     dbc.Tab(label="News", tab_id="tab-3"),
@@ -116,41 +131,62 @@ layout = html.Div([
                             html.P(id="coy_desc")
                         ]),
                     ),
-                ],
-                id="tabs",
-                active_tab="tab-1",
-                
+                ],id="tabs",active_tab="tab-1",
             ),
         ],className='tabs_group'),
+        width = 3),
 
-        html.Div([
+        dbc.Col([
+            html.Div([
+                dbc.Button("1D", color="dark",size="sm", id="1d-button",n_clicks=0, className="mr-1"),
+                dbc.Button("5D", color="dark",size="sm", id="5d-button",n_clicks=0, className="mr-1"),
+                dbc.Button("1M", color="dark",size="sm", id="1m-button",n_clicks=0, className="mr-1"),
+                dbc.Button("6M", color="dark",size="sm", id="6m-button",n_clicks=0, className="mr-1"),
+                dbc.Button("1Y", color="dark",size="sm", id="1y-button",n_clicks=0, className="mr-1"),
+                dbc.Button("YTD", color="dark",size="sm", id="ytd-button",n_clicks=0, className="mr-1"),
+                dcc.Loading(dcc.Graph(figure=fig, id="candle")),
+            ],className="candle_contaner"),
+        ],width = 8)
 
-            dbc.Button("1D", color="dark",size="sm", id="1d-button",n_clicks=0, className="mr-1"),
-            dbc.Button("5D", color="dark",size="sm", id="5d-button",n_clicks=0, className="mr-1"),
-            dbc.Button("1M", color="dark",size="sm", id="1m-button",n_clicks=0, className="mr-1"),
-            dbc.Button("6M", color="dark",size="sm", id="6m-button",n_clicks=0, className="mr-1"),
-            dbc.Button("1Y", color="dark",size="sm", id="1y-button",n_clicks=0, className="mr-1"),
-            dbc.Button("YTD", color="dark",size="sm", id="ytd-button",n_clicks=0, className="mr-1"),
-
-            dcc.Graph(figure=fig, id="candle"),
-
-        ],className="mini_container"),
-    ], className="container-display"),
+    ],justify="center",style={'marginLeft': -52, 'marginRight': -55, 'marginTop': 5}),
 
     #FINANCIAL BAR CHARTS [BOTTOM]
-    html.Div([
-        dcc.Graph(id="income_chart"),
-    ],className="fin_bar_group"),
-    html.Div([
-        dcc.Graph(id="balance_chart"),
-    ],className="fin_bar_group"),
-    html.Div([
-        dcc.Graph(id="cashflow_bar"),
-    ],className="fin_bar_group")
+
+    dbc.Row([
+        dbc.Col([html.Div([html.H5(children="Company Financial Report",id="fin_title")])],width=11),
+    ],justify="center",style={'marginLeft': -52, 'marginRight': -55, 'marginTop': 15}),
+
+    dbc.Row([
+        html.Div([
+            dcc.Loading(dcc.Graph(id="income_chart")),
+        ],className="fin_bar_group"),
+        html.Div([
+            dcc.Loading(dcc.Graph(id="balance_chart")),
+        ],className="fin_bar_group"),
+        html.Div([
+            dcc.Loading(dcc.Graph(id="cashflow_bar")),
+        ],className="fin_bar_group")
+    ],justify="center",style={'marginLeft': -83, 'marginRight': -55,'marginTop': 5})
 ])
 
 ##### CALLBACKS ######
 
+#Company to Client link callbacks
+@app.callback(Output("coy_to_client_session", "data"),
+            [Input("client_coy_table","selected_cells"),Input("client_coy_table","derived_virtual_data")])
+def coy_client_Table(table_input1,table_input2):
+    if  table_input1:
+         row_num = table_input1[0]["row"]
+         col_name = table_input2[row_num]["Client Name"]
+         return col_name
+
+@app.callback(Output('url_coy_to_client', 'pathname'),
+              [Input("client_coy_table","selected_cells"),Input("client_coy_table","derived_virtual_data")])
+def change_client_link(table_input1,table_input2):
+    if table_input1:
+        pathname = '/apps/client' 
+        return pathname
+            
 #Metrics Banners
 @app.callback([Output("ytd", "children"),Output("1d", "children"),Output("5d", "children"),Output("1m", "children"),
                Output("6m", "children"),Output("12m", "children")],
@@ -226,7 +262,7 @@ def banner(ses_data,search_btn,search):
 #Clients invested in the company table
 @app.callback([Output("client_coy_table", "data"),Output("client_coy_table","columns")],
             [Input("coy_session","data"),Input("search-button","n_clicks")],[State("input","value")])
-def coy_client_Table(ses_data,search_btn,search):
+def coy_client_table(ses_data,search_btn,search):
     data = df
     if search_btn:
         search = search.upper()
@@ -283,7 +319,7 @@ def bar_chart_input(ses_data,search_btn,search):
         go.Bar(name='Financing', x=date, y=cf["totalCashFromFinancingActivities"],marker=dict(color=color3.tolist()),  text = fin,textfont_size=8, textposition='outside',),
     ])
     # Change the bar mode
-    fig4.update_layout(barmode='group',title_text='Cash Flow',title_x=0.5,width = 444,margin=dict(t=70,b=20,l=55,r=40),paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
+    fig4.update_layout(barmode='group',height=395,title_text='Cash Flow',title_x=0.5,margin=dict(t=70,b=20,l=55,r=40),paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
     fig4.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1,xanchor="right",x=0.85,font=dict(size=9,),))
     #fig4.update_xaxes(showline=False,zeroline=True,linewidth=1, linecolor='Black',tickfont=dict(size=10))
     return fig4
@@ -318,7 +354,7 @@ def bs_chart_input(ses_data,search_btn,search):
         go.Bar(name='Total Liability', x=date, y=bs["totalLiab"],marker_color="crimson",  text = tl,textfont_size=8,  textposition='outside',),
     ])
     # Change the bar mode
-    fig3.update_layout(barmode='group',width = 444,title_text='Asset vs Liability',title_x=0.5,margin=dict(t=70,b=20,l=55,r=40),paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
+    fig3.update_layout(barmode='group',height=395,title_text='Asset vs Liability',title_x=0.5,margin=dict(t=70,b=20,l=55,r=40),paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
     fig3.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1,xanchor="right",x=0.75,font=dict(size=9,),))
     return fig3
 
@@ -339,7 +375,6 @@ def income_bar(ses_data,search_btn,search):
         income_sheet = si.get_income_statement("aapl")
  
     inc = income_sheet.T
-    print(inc['netIncome'])
 
     inc["date"] = inc.index
 
@@ -355,10 +390,10 @@ def income_bar(ses_data,search_btn,search):
     fig2 = go.Figure(data=[
         go.Bar(name='Net Income', x=date, y=inc["netIncome"],marker=dict(color=color.tolist()), text = netincome,textfont_size=8, textposition='outside'),
         go.Bar(name='Total Revenue', x=date, y=inc["totalRevenue"], text = totalrev,textfont_size=8, textposition='outside',visible='legendonly'),
-        go.Bar(name='Operating Income', x=date, y=inc["operatingIncome"], text = opincome,textfont_size=8, textposition='outside',visible='legendonly')
+        go.Bar(name='Opt Income', x=date, y=inc["operatingIncome"], text = opincome,textfont_size=8, textposition='outside',visible='legendonly')
     ])
     # Change the bar mode
-    fig2.update_layout(barmode='group',width = 444,title_text='Income Statement',title_x=0.5,margin=dict(t=70,b=20,l=55,r=40),paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
+    fig2.update_layout(barmode='group',height=395,title_text='Income Statement',title_x=0.5,margin=dict(t=70,b=20,l=55,r=40),paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
     fig2.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1,xanchor="right",x=0.95,font=dict(size=9,),))
     
     return fig2
@@ -457,6 +492,7 @@ def click(ses_data,search_click,d1,d5,m1,m6,y1,ytd,search_input):
 
     avg_30 = df.Close.rolling(window=30, min_periods=1).mean()
     avg_50 = df.Close.rolling(window=50, min_periods=1).mean()
+    avg_100 = df.Close.rolling(window=100, min_periods=1).mean()
     df["Average"] = df.Close.mean().round(2)
 
     trace2 = {'x': df.Datetime,'y': avg_30,'type': 'scatter','mode': 'lines',
@@ -467,8 +503,11 @@ def click(ses_data,search_click,d1,d5,m1,m6,y1,ytd,search_input):
 
     trace4 = {'x': df.Datetime,'y': df.Average,'type': 'scatter','mode': 'lines',
         'line': {'dash': 'dash','width': 1.5,'color': 'Grey'},'name': 'Mean'}
+    
+    trace5 = {'x': df.Datetime,'y': avg_100,'type': 'scatter','mode': 'lines',
+        'line': {'width': 1.5,'color': 'pURPLE'},'name': 'MA100'}
 
-    data = [trace1,trace2,trace3,trace4]
+    data = [trace1,trace2,trace3,trace5,trace4]
     # Config graph layout
     layout = go.Layout({
         'plot_bgcolor': '#f9f9f9',
@@ -503,7 +542,7 @@ def click(ses_data,search_click,d1,d5,m1,m6,y1,ytd,search_input):
     fig = go.Figure(data=data, layout=layout)
     fig.update_xaxes(linewidth=0.5, linecolor='Grey', gridcolor='#D3D3D3')
     fig.update_layout(
-        xaxis_rangeslider_visible=False,autosize=False, height = 395,width=1005, yaxis_showgrid=False, 
+        xaxis_rangeslider_visible=False,autosize=False, height = 395, yaxis_showgrid=False,
         xaxis = dict(
             #title = 'date',
             showticklabels = True,
