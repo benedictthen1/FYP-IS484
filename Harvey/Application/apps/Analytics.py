@@ -315,7 +315,20 @@ def time_series(query):
         date_time.append(tweet.created_at)
 
     data = {'Tweets': tweets_list,  'Date_Time': date_time}
-    df = pd.DataFrame(data) 
+    df = pd.DataFrame(data)
+    if df.empty:
+        tweets_search = tweepy.Cursor(api.search, q = "stock"+ ' -filter:retweets', result_type = 'recent', lang = 'en' , tweet_mode='extended').items(100)    
+
+        tweets_list = []
+        date_time = []
+
+        for tweet in tweets_search:
+            tweets_list.append(tweet.full_text) 
+            tweet.created_at += timedelta(hours=8)
+            date_time.append(tweet.created_at)
+
+        data = {'Tweets': tweets_list,  'Date_Time': date_time}
+        df = pd.DataFrame(data)
           
     df['Cleaned'] = df['Tweets'].apply(clean_txt)
 
@@ -331,20 +344,21 @@ def time_series(query):
     df_sampled = df.set_index('Date_Time').resample('20S').mean().reset_index()
     df_sampled['Sentiment'] = df_sampled['Sentiment'].fillna(0)
     df_sampled['Date_Time'] = df_sampled['Date_Time'].dt.time
-    
+
+
     return df_sampled
 
 # Using Sentiment to implement color on table rows
 def quick_color(s):
 
     if s == "Positive":
-        return "green"
+        return "#60bba3"
 
     elif s == "Negative":
-        return "crimson"
+        return "#db504b"
 
     else:
-        return "#EAECEE"
+        return "#F7F5DD"
 
 # News table headers
 news_table_header = html.Table(
@@ -353,7 +367,7 @@ news_table_header = html.Table(
         html.Thead(
             html.Tr(
                 children=[
-                    html.Th("News title",style={'font-family': 'verdana','font-size':11,'text-align': 'left','width':'65.5%','border': '1px solid lightgrey','color':'#003B70'}),
+                    html.Th("News title",style={'font-family': 'verdana','font-size':11,'text-align': 'center','width':'65.5%','border': '1px solid lightgrey','color':'#003B70'}),
                     html.Th("Date",style={'font-family': 'verdana','font-size':11,'text-align': 'center','width':'16.5%','border': '1px solid lightgrey','color':'#003B70'}),
                     html.Th("Sentiment",style={'font-family': 'verdana','font-size':11,'text-align': 'center','width':'17%','border': '1px solid lightgrey','color':'#003B70'}),
                 ],
@@ -364,7 +378,8 @@ news_table_header = html.Table(
     style={
         'border': '1px solid lightgrey', 
         'vertical-align': 'bottom',
-        'width':'100%'
+        'width':'100%',
+        "box-shadow": "2px 2px 2px grey"
         },
 )
 
@@ -375,7 +390,7 @@ twitter_table_header = html.Table(
         html.Thead(
             html.Tr(
                 children=[
-                    html.Th("Tweet",style={'font-family': 'verdana','font-size': 11,'text-align': 'left','width':'65.5%','border': '1px solid lightgrey','color':'#003B70'}),
+                    html.Th("Tweet",style={'font-family': 'verdana','font-size': 11,'text-align': 'center','width':'65.5%','border': '1px solid lightgrey','color':'#003B70'}),
                     html.Th("Date",style={'font-family': 'verdana','font-size': 11,'text-align': 'center','width':'16.5%','border': '1px solid lightgrey','color':'#003B70'}),
                     html.Th("Sentiment",style={'font-family': 'verdana','font-size': 11,'text-align': 'center','width':'17%','border': '1px solid lightgrey','color':'#003B70'}),
                 ],
@@ -386,7 +401,8 @@ twitter_table_header = html.Table(
     style={
         'border': '1px lightgrey', 
         'vertical-align': 'bottom',
-        'width':'100%'
+        'width':'100%',
+        "box-shadow": "2px 2px 2px grey"
         },
 )
 
@@ -423,13 +439,12 @@ def generate_news_table(news_df,source):
                     html.Td(d[4],style={'font-family': 'verdana','height':15,'text-align': 'center','width':'17%','border': '1px solid lightgrey','font-size': 11}),
                     html.Td(d[3],style={'font-family': 'verdana','height':15,'text-align': 'center','width':'15%','border': '1px solid lightgrey','font-size': 11}),
                 ], 
-                style={'height':35,'color':'#000000','background-color':quick_color(d[3])})
+                style={'height':35,'color':'#000000','background-color':quick_color(d[3]),"opacity":0.9})
                 for d in news_df.values.tolist()]),
         style={
             'border': '1px solid lightgrey', 
             'text-align': 'left',
             'vertical-align': 'bottom',
-            'width':'100%',
             'height': 470, 'overflow-y':'scroll','display':'block'
             },
     )
@@ -445,13 +460,12 @@ def generate_twitter_table(twitter_df):
                     html.Td(d[3],style={'font-family': 'verdana','text-align': 'center','height':20,'width':'17%','border': '1px solid lightgrey','font-size': 11}),
                     html.Td(d[1],style={'font-family': 'verdana','text-align': 'center','height':20,'width':'15%','border': '1px solid lightgrey','font-size': 11}),
                 ], 
-                style={'height':35,'color':'#000000','background-color':quick_color(d[1])})
+                style={'height':35,'color':'#000000','background-color':quick_color(d[1]),"opacity":0.9})
                 for d in twitter_df.values.tolist()]),
         style={
             'border': '1px solid lightgrey', 
             'text-align': 'left',
             'vertical-align': 'bottom',
-            'width':'100%',
             'height':215, 'overflow-y':'scroll','display':'block'
             },
     )
@@ -461,11 +475,11 @@ def generate_piechart(breakdown_df):
     return dcc.Graph(
         figure = px.pie(
             breakdown_df, values='Overall Score', 
-            names='Sentiment', width=290, height=170, color="Sentiment",
+            names='Sentiment', height=180, color="Sentiment",
             # color_discrete_sequence=px.colors.qualitative.Pastel, 
-            color_discrete_map={'Positive': "green",
-                                 'Neutral': px.colors.qualitative.Pastel[10],
-                                 'Negative': "crimson"},
+            color_discrete_map={'Positive': "#60bba3",
+                                 'Neutral': "#F7F5DD",
+                                 'Negative': "#d85344"},
             hole=.5).update_traces(textposition='inside', 
             textinfo='percent+label').update_layout(font={'family': 'verdana','size':8}, 
             margin={'t': 10,"b": 10, "r": 0, "l":0},legend={'font':{'size':5.5},
@@ -477,7 +491,7 @@ def generate_wordcloud(data):
 
     image = Image.open("circle_mask.png")
     mask = np.array(image)
-    wc = WordCloud(background_color='white', mask = mask, width=290, height=227)
+    wc = WordCloud(background_color='white', mask = mask)
     wc.fit_words(data)
     
     img = BytesIO()
@@ -496,7 +510,7 @@ def generate_graph(topword_df):
                 textposition = 'auto',
                 orientation="h",
                 hovertemplate = '"%{y}", %{x} times<extra></extra>',
-                marker_color='#7791d1'
+                marker_color='#003B70'
             )],
             "layout": go.Layout(
                 hovermode='closest',
@@ -504,8 +518,8 @@ def generate_graph(topword_df):
                 font_family='verdana',
                 font_color='darkblue',
                 font_size= 10,
-                width=290,
-                height=495
+                width=300,
+                height=495,
             )
         },
         config={'displayModeBar': False}
@@ -513,43 +527,41 @@ def generate_graph(topword_df):
 
 # Twitter Timeseries
 def generate_timeseries(timeseries_df):
-    fig = px.line(timeseries_df, x='Date_Time', y='Sentiment', width=615, height=225)
-    fig.update_layout(font={'family': 'verdana','color':'darkblue','size':10},margin={'t': 5,'b': 5, 'r': 5, 'l':5}, 
+    fig = px.line(timeseries_df, x='Date_Time', y='Sentiment', height=225)
+    fig.update_traces(line_color="#003B70")
+    fig.update_layout(
+        font={'family': 'verdana','color':'darkblue','size':10},margin={'t': 5,'b': 5, 'r': 5, 'l':5}, 
     xaxis_title='Time', yaxis_title='Sentiment',plot_bgcolor = '#EAECEE')
+    fig.update_xaxes(showspikes=True).update_yaxes(showspikes=True)
     return fig
 
-# App layout 2 with tabs (below)
+# App layout 3 with tabs & standardized style (below)
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 app.layout = html.Div([
 
-    # Part 1: Search Row
+    #CLIENT FILTERS
     dbc.Row([
         dbc.Col([
-            html.H5("Search Keyword:", style={"margin-bottom":5,"margin-top":5, "margin-left":20,'font-family': 'verdana','font-size':15,'height':20,'width':140,'textAlign': 'left','color': 'white'}),   
-        ],width=1.5),
-        dbc.Col([
-            html.Div([
-                dcc.Input(id="keyword", type="text", placeholder="E.g. Apple", style={"margin-bottom":5,"margin-top":5}),
-                dbc.Button("Search", color="dark",size="sm", id="search_button",n_clicks=0, className="mr-1"),
-            ],className="search_style"),
-            html.P(id = "search_datetime"),],
-            width=3),
-        dbc.Col([
-            html.Div(html.P(id = "price_date"),style={'color': 'white'}),],
-            width=6),
-    ],style={"height":40,'backgroundColor': "#20315A"}), 
+        html.Div([
+            html.H6("Search Keyword: "),
+            dcc.Input(id="keyword", type="text", placeholder="E.g. Apple",style={"width":"100%","height":40,"font-size":11}),
+            dbc.Button(
+                "Search", color="dark",size="sm", id="search_button",n_clicks=0,
+                style={"width": "20%","height":40,"margin-left":"1%","margin-top":"0.3%","background-color":"#003B70","color":"white","font-size":11}
+                ),
+        ],style={"display":"flex"}),
+        html.P(id = "search_datetime"),
+        ],width=4),
+    ],style={'marginLeft': "1%", 'marginRight': "1%"}),
 
-    html.Br(),
-
-    html.Div([
-        dcc.Tabs(children=[
-
-            # Part 2: News content
-            dcc.Tab(label='News',
-                    children=[
-                            dbc.Row([
-                                    html.H5("Select News Source:", style={"margin-bottom":5,"margin-top":5, 'font-family': 'verdana','font-size':15,'height':20,'width':180,'textAlign': 'left','color': 'black','margin-left':20}), 
+    dbc.Row([
+            dbc.Col([
+                dbc.Tabs([
+                    dbc.Tab(
+                        label='News', 
+                        children=[
+                                dbc.Row([
+                                    html.H6("Select News Source:", style={"margin-bottom":5,"margin-top":5, 'font-family': 'verdana','font-size':15,'height':20,'width':180,'textAlign': 'left','color': 'black','margin-left':20}), 
                                     html.Div(
                                         dcc.Dropdown(
                                             id='sources_dropdown', 
@@ -560,58 +572,60 @@ app.layout = html.Div([
                             ],style={"margin-top":5}), 
 
                         dbc.Row([
-                            dbc.Col(html.H5("News Today", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5}),
+                            dbc.Col(html.H5("News Today", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"box-shadow": "2px 2px 2px grey"}),
                             width=6,style={'margin-left':5}),
 
-                            dbc.Col(html.H5("Sentiment Breakdown", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5}),
+                            dbc.Col(html.H5("Sentiment Breakdown", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"box-shadow": "2px 2px 2px grey"}),
                             width=3),
 
-                            dbc.Col(html.H5("Top 10 Mentioned Words", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5,"width":300}),
+                            dbc.Col(html.H5("Top 10 Mentioned Words", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"width":300,"box-shadow": "2px 2px 2px grey"}),
                             width=2.5),
                         ]),
-                            
-                            dbc.Row([
 
+                            dbc.Row([
                                 # Part 2.1: News table
-                                dbc.Col(html.Div([
+                                dbc.Col(dcc.Loading(html.Div([
                                     news_table_header,
-                                    html.Div(id="news_table"),
-                                ]), 
+                                    html.Div(id="news_table",style={"box-shadow": "2px 2px 2px grey"}),
+                                ])), 
                                 width=6,style={'margin-left':5}),
 
                                 dbc.Col(html.Div([
-                                    
-                                    # Part 2.2: News piechart
-                                    html.Div(id="news_piechart"),
 
-                                    html.H5("Wordcloud", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5}),
+                                    # Part 2.2: News piechart
+                                    dcc.Loading(html.Div(id="news_piechart",style={"box-shadow": "2px 2px 2px grey"})),
+
+                                    html.H5("Wordcloud", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"box-shadow": "2px 2px 2px grey"}),
 
                                     # Part 2.3: News wordcloud
-                                    html.Img(id="news_wordcloud")
-
+                                    dcc.Loading(
+                                        html.Div(
+                                            html.Img(id="news_wordcloud"),style={'backgroundColor':'white','box-shadow': '2px 2px 2px grey','display':'flex'}
+                                        )
+                                    )
                                     ]),        
                                 width=3),
 
                                 # Part 2.4: News bargraph
-                                dbc.Col(html.Div(id="news_graph"),
+                                dbc.Col(html.Div(id="news_graph",style={"box-shadow": "2px 2px 2px grey"}),
                                 width=2.8),
+                                
                             ]),
-                    ],
-                    style=tab_style, 
-                    selected_style=tab_selected_style
-                    ),
 
-            # Part 3: Twitter content
-            dcc.Tab(label='Twitter',
-                    children=[
+                            html.Br(),
+                        ], 
+                        style={'backgroundColor': "#f2f2f2"}),
+                    dbc.Tab(
+                        label='Twitter', 
+                        children=[
                         dbc.Row([
-                            dbc.Col(html.H5("Tweets Today", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5}),
+                            dbc.Col(html.H5("Tweets Today", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"box-shadow": "2px 2px 2px grey"}),
                             width=6,style={'margin-left':5}),
 
-                            dbc.Col(html.H5("Sentiment Breakdown", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5}),
+                            dbc.Col(html.H5("Sentiment Breakdown", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"box-shadow": "2px 2px 2px grey"}),
                             width=3),
 
-                            dbc.Col(html.H5("Top 10 Mentioned Words", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5,"width":300}),
+                            dbc.Col(html.H5("Top 10 Mentioned Words", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"width":300,"box-shadow": "2px 2px 2px grey"}),
                             width=2.5),
                         ]),
 
@@ -619,22 +633,18 @@ app.layout = html.Div([
                             dbc.Col([
                                 
                                 # Part 3.1: Twitter timeseries
-                                dcc.Loading(
-                                    type="default",
-                                    children=dcc.Graph(id='twitter_timeseries',style={'margin-bottom':5})
-                                ),
+                                dcc.Loading(dcc.Graph(id='twitter_timeseries',style={'margin-bottom':5,"box-shadow": "2px 2px 2px grey"},)),
                                 
                                 dcc.Tabs(
-                                id="tabs",
                                 children=[
 
                                     # Part 3.2: Twitter popular table
                                     dcc.Tab(
                                         label="Popular",
-                                        children=html.Div([
+                                        children=dcc.Loading(html.Div([
                                             twitter_table_header,
-                                            html.Div(id="twitter_table_popular"),
-                                        ]),
+                                            html.Div(id="twitter_table_popular",style={"box-shadow": "2px 2px 2px grey"}),
+                                        ])),
                                         style=tab_style, 
                                         selected_style=tab_selected_style
                                     ),
@@ -642,10 +652,10 @@ app.layout = html.Div([
                                     # Part 3.3: Twitter recent table
                                     dcc.Tab(
                                         label="Recent",
-                                        children=html.Div([
+                                        children=dcc.Loading(html.Div([
                                             twitter_table_header,
-                                            html.Div(id="twitter_table_recent"),
-                                        ]),
+                                            html.Div(id="twitter_table_recent",style={"box-shadow": "2px 2px 2px grey"}),
+                                        ])),
                                         style=tab_style, 
                                         selected_style=tab_selected_style
                                     ),
@@ -657,30 +667,33 @@ app.layout = html.Div([
                             dbc.Col(html.Div([
                                 
                                 # Part 3.4: Twitter piechart
-                                html.Div(id="twitter_piechart"),
+                                dcc.Loading(html.Div(id="twitter_piechart",style={"box-shadow": "2px 2px 2px grey"})),
 
-                                html.H5("Wordcloud", style={'font-family': 'verdana','font-size':16,'height':20,'textAlign': 'center','color': 'white','backgroundColor': "#20315A","margin-top":5}),
+                                html.H5("Wordcloud", style={'font-family': 'verdana','textAlign': 'center','color': 'white','backgroundColor': "#003B70","margin-top":5,"box-shadow": "2px 2px 2px grey"}),
 
                                 # Part 3.5: Twitter wordcloud
-                                html.Img(id="twitter_wordcloud")
+                                dcc.Loading(
+                                    html.Div(
+                                        html.Img(id="twitter_wordcloud"),style={'backgroundColor':'white','box-shadow': '2px 2px 2px grey','display':'flex'}
+                                    )
+                                )
 
                                 ]),        
                             width=3),
 
                             # Part 3.5: Twitter bargraph
-                            dbc.Col(html.Div(id="twitter_graph"),
+                            dbc.Col(html.Div(id="twitter_graph",style={"box-shadow": "2px 2px 2px grey"}),
                             width=2.8),
                         ]),
 
                         html.Br(),
-                    ],
-                    style=tab_style, 
-                    selected_style=tab_selected_style
-            ),
-        ]),
-    ],style={'padding-bottom':50,'backgroundColor': "#7791d1"}),
-],style={'backgroundColor': "#4665AE"})
 
+                        ], 
+                        style={'backgroundColor': "#f2f2f2"}),
+                ],id="asset_breakdown_tab")
+            ],width =12)
+        ],justify="center",style={'marginLeft': "1%", 'marginRight': "1%", 'marginBottom': "1%"}),  
+],style={'backgroundColor': "#f2f2f2"})
 # Callbacks (below)
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -721,8 +734,16 @@ def update_page(search_click,source,search_input):
 
         #Twitter
         common_twitter_df = tweet_search(search_input, 'popular')
+
+        if common_twitter_df.empty:
+            common_twitter_df = tweet_search('stock', 'popular')
+
         popular_twitter_df = common_twitter_df[['Tweets', 'Sentiment', 'url', 'date']][0:15]
         recent_twitter_df = tweet_search(search_input, 'recent')[['Tweets', 'Sentiment', 'url', 'date']][0:15]
+
+        if recent_twitter_df.empty:
+            recent_twitter_df = tweet_search('stock', 'recent')[['Tweets', 'Sentiment', 'url', 'date']][0:15]
+
         twitter_topword_df = twt_top_mentioned(common_twitter_df, 'stock')[0:10]
         twitter_wordcloud_dict = dict(sorted(twt_top_mentioned(common_twitter_df, 'stock').values.tolist()))
         twitter_piechart_df = overallsentiment(common_twitter_df)
