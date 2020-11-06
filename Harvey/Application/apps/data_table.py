@@ -22,7 +22,7 @@ numeric_cols = ['% Change from Avg Cost','YTD%', '1d %', '5d %', '1m % ', '6m %'
 for col in numeric_cols:
     tdf[col] = pd.to_numeric(tdf[col], errors="coerce")
     tdf[col].astype("float")
-    tdf[col] = tdf[col].round(2)
+    tdf[col] = tdf[col].round(1)
 
 #SIDEBAR FILTER 
 sidebar_header = dbc.Row([
@@ -203,6 +203,9 @@ def discrete_background_color_bins(df, n_bins=7, columns= ['% Change from Avg Co
 print(tdf.columns)
 (styles) = discrete_background_color_bins(tdf)
 
+tdf['Nominal Amount (CCY)'] = tdf['Nominal Amount (CCY)'].apply(lambda x : "{:,}".format(x))
+tdf['Nominal Amount (USD)']= tdf['Nominal Amount (USD)'].apply(lambda x : "{:,}".format(x))
+
 #MAIN DASH TABLE
 main_table = html.Div([
                 dash_table.DataTable(
@@ -238,15 +241,13 @@ fig21 = px.scatter(testdata, x="sepal_width", y="sepal_length")
 layout = html.Div([
 
     sidebar,
-
-    html.Div(id="testing"),
     html.Div([
         dbc.Button("Main", color="dark",size="sm", id="main_btn",n_clicks=0, className="mr-1"),
         dbc.Button("Equities", color="dark",size="sm", id="eq_btn",n_clicks=0, className="mr-1"),
         dbc.Button("Cash Liab", color="dark",size="sm", id="cl_btn",n_clicks=0, className="mr-1"),
         dbc.Button("Fixed Inc", color="dark",size="sm", id="fi_btn",n_clicks=0, className="mr-1"),
         dbc.Button("Alters", color="dark",size="sm", id="alt_btn",n_clicks=0, className="mr-1"),
-        main_table,
+        dcc.Loading(main_table),
     ],id="page-content"),
 
     dbc.Modal(
