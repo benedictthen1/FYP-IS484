@@ -5,6 +5,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -19,13 +20,17 @@ from datetime import datetime, date, timedelta
 ###### global variables ######
 morning_time_string = "8 am"
 evening_time_string = "5 pm"
+latest_equities_clients_list = []
+latest_fixed_income_clients_list = []
+latest_alternatives_clients_list = []
+first_time_threshold_set_check = True
 ##############################
 
 #### For WhatsApp ####
 from twilio.rest import Client 
 
 account_sid = 'ACb57b07af4c72e89c16a87a2341d26a32' 
-auth_token = '2012586a77273c845da7a014c8aec217' 
+auth_token = '3b773f9bc3be631a33dfea84b2dc4110' 
 client = Client(account_sid, auth_token) 
 
 def send_whatsapp_message(msg_text):
@@ -43,8 +48,8 @@ def send_whatsapp_message(msg_text):
 import requests 
 import json
 
-# chat_id = 387218772 # fill in your chat id here
-chat_id = -376934065 # fill in your chat id here
+chat_id = 387218772 # fill in your chat id here
+# chat_id = -376934065 # fill in your chat id here
 api_token = '1075159647:AAGLjAejPey6VpHyOxAqbUR2tS18BnhXdP4' # fill in your API token here
 base_url = 'https://api.telegram.org/bot{}/'.format(api_token)
 
@@ -65,11 +70,31 @@ def is_thresholds_set():
     print("Importing for latest set_values_df...")
     set_values_df = pd.read_csv('set_values_df.csv')
     check_no_of_nulls = set_values_df["Column Set"].isnull().sum()
-    print(set_values_df["Column Set"].isnull().sum())
+    print("No. of values NOT set:",set_values_df["Column Set"].isnull().sum())
     if check_no_of_nulls != 3:
         return True
     return False
 #### End of - is_thresholds_set Function ####
+
+
+#### is_same_as_last_update_lists Function checks if current results are same as last updated results ####
+def is_same_as_last_update_lists(eq_clients_list, fi_clients_list, al_clients_list):
+    eq_clients_list.sort()
+    fi_clients_list.sort()
+    al_clients_list.sort()
+    global latest_equities_clients_list
+    global latest_fixed_income_clients_list
+    global latest_alternatives_clients_list
+    
+    if ((eq_clients_list == latest_equities_clients_list) & (fi_clients_list == latest_fixed_income_clients_list) & (al_clients_list == latest_alternatives_clients_list)):
+        return True
+    else:
+        latest_equities_clients_list = eq_clients_list
+        latest_fixed_income_clients_list = fi_clients_list
+        latest_alternatives_clients_list = al_clients_list
+        return False
+    
+#### End of - is_same_as_last_update_lists Function ####
 
 #### return_filtered_df Function that returns filtered df based on asset_type,column_name,condition,value set in web form ####
 def return_filtered_df(df,asset_type,column_name,condition,value):
@@ -96,7 +121,7 @@ def return_filtered_df(df,asset_type,column_name,condition,value):
 
 #### End of - return_filtered_df Function ####
 
-#### return_values_for_msg Function: imports lastest data and  ####
+#### return_values_for_msg Function: imports lastest data and returns the three lists and three values ####
 def return_values_for_msg():
     ############ Import all data files #################
     print("Importing for latest Client data...")
@@ -117,18 +142,35 @@ def return_values_for_msg():
     latest_client_data = client_df[client_df['Position As of Date'] == latest_date]
     ################################################
 
+    # set_values_df.fillna('-', inplace=True)
+    # print("After fillna:",set_values_df)
     # print(type(set_values_df["Percentage Amount Set"][0]))
-    eq_df = return_filtered_df(latest_client_data,set_values_df["Asset Type"][0],set_values_df["Column Set"][0],set_values_df["Filter Condition"][0],set_values_df["Percentage Amount Set"][0])
-    print("Equities Clients List:",eq_df["Client Name"].unique().tolist())
-    no_of_clients_affected_in_equities = len(eq_df["Client Name"].unique())
-    fi_df = return_filtered_df(latest_client_data,set_values_df["Asset Type"][1],set_values_df["Column Set"][1],set_values_df["Filter Condition"][1],set_values_df["Percentage Amount Set"][1])
-    print("Fixed Income Clients List:",fi_df["Client Name"].unique().tolist())
-    no_of_clients_affected_in_fixedincome = len(fi_df["Client Name"].unique())
-    al_df = return_filtered_df(latest_client_data,set_values_df["Asset Type"][2],set_values_df["Column Set"][2],set_values_df["Filter Condition"][2],set_values_df["Percentage Amount Set"][2])
-    print("Alternatives Clients List:",al_df["Client Name"].unique().tolist())
-    no_of_clients_affected_in_alternatives = len(al_df["Client Name"].unique())
+    if pd.isnull(set_values_df["Column Set"][0]):
+        no_of_clients_affected_in_equities = "-"
+        eq_clients_list = []
+    else:
+        eq_df = return_filtered_df(latest_client_data,set_values_df["Asset Type"][0],set_values_df["Column Set"][0],set_values_df["Filter Condition"][0],set_values_df["Percentage Amount Set"][0])
+        print("Equities Clients List:",eq_df["Client Name"].unique().tolist())
+        eq_clients_list = eq_df["Client Name"].unique().tolist()
+        no_of_clients_affected_in_equities = len(eq_df["Client Name"].unique())
+    if pd.isnull(set_values_df["Column Set"][1]):
+        no_of_clients_affected_in_fixedincome = "-"
+        fi_clients_list = []
+    else:
+        fi_df = return_filtered_df(latest_client_data,set_values_df["Asset Type"][1],set_values_df["Column Set"][1],set_values_df["Filter Condition"][1],set_values_df["Percentage Amount Set"][1])
+        print("Fixed Income Clients List:",fi_df["Client Name"].unique().tolist())
+        fi_clients_list = fi_df["Client Name"].unique().tolist()
+        no_of_clients_affected_in_fixedincome = len(fi_df["Client Name"].unique())
+    if  pd.isnull(set_values_df["Column Set"][2]):
+        no_of_clients_affected_in_alternatives = "-"
+        al_clients_list = []
+    else:
+        al_df = return_filtered_df(latest_client_data,set_values_df["Asset Type"][2],set_values_df["Column Set"][2],set_values_df["Filter Condition"][2],set_values_df["Percentage Amount Set"][2])
+        print("Alternatives Clients List:",al_df["Client Name"].unique().tolist())
+        al_clients_list = al_df["Client Name"].unique().tolist()
+        no_of_clients_affected_in_alternatives = len(al_df["Client Name"].unique())
 
-    return no_of_clients_affected_in_equities, no_of_clients_affected_in_fixedincome, no_of_clients_affected_in_alternatives
+    return eq_clients_list, fi_clients_list, al_clients_list, no_of_clients_affected_in_equities, no_of_clients_affected_in_fixedincome, no_of_clients_affected_in_alternatives
 
 
 ######### text message format to send #########
@@ -189,6 +231,15 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 
 app.layout = html.Div([
+    dcc.Interval(
+        id='my_interval',
+        disabled=False,     #if True, the counter will no longer update
+        interval=10*1000,    #increment the counter n_intervals every interval milliseconds
+        n_intervals=0,      #number of times the interval has passed
+        max_intervals=-1,    #number of times the interval will be fired.
+                            #if -1, then the interval has no limit (the default)
+                            #and if 0 then the interval stops running.
+    ),
     dbc.Row([
         dbc.Col(html.H6(children='Set Values to Monitor and Send Notifications', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),width=8),
         dbc.Col(html.H6(children='Latest Values Set to Monitor', style={'textAlign': 'center','color': 'white','backgroundColor': "#003B70"}),width=4),
@@ -279,12 +330,12 @@ app.layout = html.Div([
                 dbc.Col(dbc.Input(type="number", id="alternatives_percentage_amount", placeholder="Enter percentage amount"),width=3),
             ],row=True),
 
-            dbc.Row(dbc.Col(dbc.Button("Set Values", id='button-2', color="primary", outline=True), style={'textAlign': 'right'},width=11)),
+            dbc.Row(dbc.Col(dbc.Button("Set Values", id='set_values_button', color="primary", outline=True), style={'textAlign': 'right'},width=11)),
 
         ], style={"height": "100%"}), width=8),
         dbc.Col(dbc.Card([
             # html.Div(html.H4("Latest Values Set to Monitor and Send Notifications"), style={'textAlign': 'center'}),
-            html.Div(id='output', style={'textAlign': 'center'}),
+            html.Div(id='output_message', style={'textAlign': 'center'}),
             html.Br(),
             html.Div(id="set_values_table"),
         ]), width=4)
@@ -312,8 +363,8 @@ app.layout = html.Div([
 
 @app.callback(
     [Output('set_values_table','children'),
-    Output('output', 'children')],
-    [Input('button-2', 'n_clicks')],
+    Output('output_message', 'children')],
+    [Input('set_values_button', 'n_clicks')],
     state=[
         State('equities_columns_dropdown', 'value'),
         State('equities_conditions_dropdown', 'value'),
@@ -355,7 +406,7 @@ def generate_set_values(n_clicks, equities_columns_dropdown, equities_conditions
 def whatsapp_clicks(n_clicks):
     if n_clicks is not None:
         if is_thresholds_set():
-            eq_client_no, fi_client_no, al_client_no = return_values_for_msg()
+            eq_clients_list, fi_clients_list, al_clients_list, eq_client_no, fi_client_no, al_client_no = return_values_for_msg()
             # print(eq_client_no, fi_client_no, al_client_no)
             normal_msg_text = return_normal_msg_text(eq_client_no, fi_client_no, al_client_no)
             send_whatsapp_message(normal_msg_text)
@@ -368,22 +419,31 @@ def whatsapp_clicks(n_clicks):
 
 @app.callback(
     Output('telegram_button_clicks', 'children'),
-    [Input('telegram_button', 'n_clicks')])
-def telegram_clicks(n_clicks):
-    if n_clicks is not None:
+    # [Input('telegram_button', 'n_clicks')])
+    [Input('my_interval', 'n_intervals')])
+# def telegram_clicks(n_clicks):
+def telegram_clicks(n_intervals):
+    if n_intervals is None:
+        raise PreventUpdate
+    else:
+    # if n_clicks is not None:
         if is_thresholds_set():
-            eq_client_no, fi_client_no, al_client_no = return_values_for_msg()
+            eq_clients_list, fi_clients_list, al_clients_list, eq_client_no, fi_client_no, al_client_no = return_values_for_msg()
             # print(eq_client_no, fi_client_no, al_client_no)
-            normal_msg_text = return_normal_msg_text(eq_client_no, fi_client_no, al_client_no)
-            # send_whatsapp_message(normal_msg_text)
-            send_telegram_message(normal_msg_text)
+            if not is_same_as_last_update_lists(eq_clients_list, fi_clients_list, al_clients_list):
+                normal_msg_text = return_normal_msg_text(eq_client_no, fi_client_no, al_client_no)
+                # send_whatsapp_message(normal_msg_text)
+                send_telegram_message(normal_msg_text)
         else:
-            no_threshold_msg_text = return_no_threshold_msg_text()
-            # send_whatsapp_message(no_threshold_msg_text)
-            send_telegram_message(no_threshold_msg_text)
-    return 'Send to Telegram Button has been clicked {} times'.format(n_clicks)
+            global first_time_threshold_set_check
+            if first_time_threshold_set_check:
+                no_threshold_msg_text = return_no_threshold_msg_text()
+                # send_whatsapp_message(no_threshold_msg_text)
+                send_telegram_message(no_threshold_msg_text)
+                first_time_threshold_set_check = False
+
+    return 'Send to Telegram Button has been clicked {} times'.format(n_intervals)
 
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-    app.config['suppress_callback_exceptions'] = True

@@ -1,0 +1,1 @@
+equities_companies_table_rows

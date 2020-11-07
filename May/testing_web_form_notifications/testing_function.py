@@ -25,7 +25,7 @@ evening_time_string = "5 pm"
 from twilio.rest import Client 
 
 account_sid = 'ACb57b07af4c72e89c16a87a2341d26a32' 
-auth_token = '2012586a77273c845da7a014c8aec217' 
+auth_token = '3b773f9bc3be631a33dfea84b2dc4110' 
 client = Client(account_sid, auth_token) 
 
 def send_whatsapp_message(msg_text):
