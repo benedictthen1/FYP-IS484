@@ -170,25 +170,21 @@ more_details_text = "====================\n"+\
     "====================\n"
 
 def return_summary_info_text_w_values(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y):
-    summary_info_text = "Here is the current summary info of all the clients!\n\n"+\
+    summary_info_text = "Here is a quick summary info of all the clients!\n\n"+\
         f"*{poorly_performing_client_count}  : poorly performing clients*\n"+\
         f"*{out_of_target_client_no}  : clients out of risk target*\n"+\
         f"*{no_of_clients_due_in_1y}  : clients to remind (for Assets due in 1 year)*\n\n"
     return summary_info_text
 
 def return_morning_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y):
-    morning_msg_text = f"==========\nThis is morning testing message. (Supposed to be sent at {morning_time_string})\n"+\
-        f"== Server Time Now: {datetime.now().time().hour}hr{datetime.now().time().minute}min ==\n==========\n"+\
-        "Good Morning! "+u'\U0001F604'+"\n\n"+\
+    morning_msg_text = "Good Morning! "+u'\U0001F604'+"\n\n"+\
         return_summary_info_text_w_values(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y) +\
         more_details_text +\
         "Have a wonderful day ahead! "+u'\U0001F60A'
     return morning_msg_text
 
 def return_evening_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y):
-    evening_msg_text = f"==========\nThis is evening testing message. (Supposed to be sent at {evening_time_string})\n"+\
-        f"== Server Time Now: {datetime.now().time().hour}hr{datetime.now().time().minute}min ==\n==========\n"+\
-        "Good Evening! I hope you had a great day! "+u'\U0001F60A'+"\n\n"+\
+    evening_msg_text = "Good Evening! I hope you had a great day! "+u'\U0001F60A'+"\n\n"+\
         return_summary_info_text_w_values(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y) +\
         more_details_text +\
         "Have a lovely evening! "+u'\U0001F917'
@@ -200,8 +196,9 @@ def send_morning_message():
     poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y,no_of_clients_overdue = return_values_for_tele_msg()
     morning_msg_text = return_morning_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y)
     send_msg(chat_id, morning_msg_text)
+    # print(f"Morning Message Sent! ServerTime: {datetime.now().time().hour}:{datetime.now().time().minute}:{datetime.now().time().second}")
 
-
+send_morning_message()
 
 
 
