@@ -150,7 +150,8 @@ def return_values_for_tele_msg():
     return poorly_performing_client_count, out_of_target_client_no, no_of_clients_due_in_1y, no_of_clients_overdue
 
 # chat_id = 387218772 # fill in your chat id here
-chat_id = -376934065 # fill in your chat id here
+# chat_id = -376934065 # fill in your chat id here
+chat_ids = [387218772, -376934065]
 api_token = '1075159647:AAGLjAejPey6VpHyOxAqbUR2tS18BnhXdP4' # fill in your API token here
 base_url = 'https://api.telegram.org/bot{}/'.format(api_token)
 
@@ -195,7 +196,8 @@ def send_morning_message():
     print("Noti Trigger Time Now:",now.time())
     poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y,no_of_clients_overdue = return_values_for_tele_msg()
     morning_msg_text = return_morning_msg_text(poorly_performing_client_count,out_of_target_client_no,no_of_clients_due_in_1y)
-    send_msg(chat_id, morning_msg_text)
+    for chat_id in chat_ids:
+        send_msg(chat_id, morning_msg_text)
     # print(f"Morning Message Sent! ServerTime: {datetime.now().time().hour}:{datetime.now().time().minute}:{datetime.now().time().second}")
 
 send_morning_message()
